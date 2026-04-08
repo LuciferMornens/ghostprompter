@@ -4,8 +4,6 @@ import { useModeStore } from "@/store/modeStore";
 import { useSettingsStore } from "@/store/settingsStore";
 import { ipc } from "@/lib/ipc";
 import { scriptStats } from "@/lib/scriptStats";
-import { ChannelLabel } from "@/ui/ChannelLabel";
-import { Frame } from "@/ui/Frame";
 import { StatBlock } from "@/ui/StatBlock";
 import { MarkdownEditor } from "./MarkdownEditor";
 import { MarkdownPreview } from "./MarkdownPreview";
@@ -37,198 +35,130 @@ export function EditorView() {
   };
 
   return (
-    <div
-      className="relative flex flex-col h-full overflow-hidden gp-grain"
-      style={{ color: "var(--color-gp-paper)" }}
-    >
+    <div className="relative flex flex-col h-full overflow-hidden">
+      {/* Aurora backdrop */}
+      <div className="gp-aurora" aria-hidden />
+
       {/* ================= TOP BAR ================= */}
-      <header
-        className="relative flex items-center gap-4 px-6 h-14 border-b gp-reveal gp-reveal-1"
-        style={{
-          borderColor: "var(--color-gp-line)",
-          background:
-            "linear-gradient(180deg, var(--color-gp-surface-2), var(--color-gp-surface))",
-        }}
-      >
+      <header className="relative z-10 flex items-center gap-5 px-8 pt-7 pb-5 gp-reveal gp-reveal-1">
         {/* Brand mark */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3.5">
           <BrandMark />
-          <div className="flex flex-col leading-none">
+          <div className="flex flex-col leading-tight">
             <span
-              className="text-[15px]"
               style={{
-                fontFamily: "var(--font-display)",
-                fontWeight: 800,
-                letterSpacing: "-0.01em",
+                fontFamily: "var(--font-prompter)",
+                fontSize: 19,
+                fontWeight: 500,
+                letterSpacing: "-0.022em",
+                color: "var(--color-gp-paper)",
+                fontVariationSettings: '"opsz" 144',
               }}
             >
-              GhostPrompter
+              Ghost
+              <span style={{ fontStyle: "italic", fontWeight: 400 }}>
+                prompter
+              </span>
             </span>
             <span
-              className="text-[9px] mt-0.5"
+              className="mt-[3px]"
               style={{
                 fontFamily: "var(--font-mono)",
-                letterSpacing: "0.25em",
-                color: "var(--color-gp-mute)",
+                fontSize: 9.5,
+                letterSpacing: "0.14em",
+                color: "var(--color-gp-paper-dim-2)",
+                textTransform: "uppercase",
               }}
             >
-              BROADCAST TERMINAL · v0.1
+              a quiet teleprompter
             </span>
           </div>
         </div>
 
-        <div
-          className="h-7 w-px"
-          style={{ background: "var(--color-gp-line)" }}
-        />
-
-        {/* Toolbar buttons */}
-        <div className="flex items-center gap-1">
-          <ToolbarButton onClick={newScript}>New</ToolbarButton>
-          <ToolbarButton onClick={openFromDisk}>Open</ToolbarButton>
-          <ToolbarButton onClick={saveToDisk}>Save</ToolbarButton>
-          <ToolbarButton onClick={saveAs}>Save As</ToolbarButton>
-        </div>
-
-        {/* Script name + dirty marker (centered) */}
+        {/* Centered script name chip */}
         <div className="flex-1 flex justify-center">
-          <div
-            className="inline-flex items-center gap-2 px-3 py-1 border rounded-sm"
-            style={{
-              borderColor: "var(--color-gp-line)",
-              background: "var(--color-gp-surface)",
-            }}
+          <span
+            className={`gp-chip ${
+              script.dirty ? "gp-chip--dirty" : "gp-chip--dot"
+            }`}
           >
             <span
-              className="w-1.5 h-1.5 rounded-full"
+              className="truncate max-w-[440px]"
               style={{
-                background: script.dirty
-                  ? "var(--color-gp-amber)"
-                  : "var(--color-gp-phosphor)",
-                boxShadow: script.dirty
-                  ? "0 0 8px var(--color-gp-amber)"
-                  : "0 0 6px var(--color-gp-phosphor)",
-              }}
-              aria-hidden
-            />
-            <span
-              className="text-xs truncate max-w-[420px]"
-              style={{
-                fontFamily: "var(--font-mono)",
-                color: "var(--color-gp-paper-dim)",
-                letterSpacing: "0.05em",
+                fontFamily: "var(--font-prompter)",
+                fontStyle: "italic",
+                fontSize: 12,
+                fontVariationSettings: '"opsz" 144',
+                color: "var(--color-gp-paper)",
+                letterSpacing: "-0.008em",
               }}
             >
               {script.name}
               {script.dirty ? " •" : ""}
             </span>
-          </div>
+          </span>
         </div>
 
-        <ToolbarButton onClick={() => setSettingsOpen(true)}>
-          Settings
-        </ToolbarButton>
-        <button
-          onClick={onGo}
-          className="gp-btn-live"
-          style={{ borderRadius: "2px" }}
-        >
-          <span
-            className="inline-block w-2 h-2 rounded-full"
-            style={{
-              background: "var(--color-gp-ink)",
-            }}
-            aria-hidden
-          />
-          Go Live
-        </button>
+        {/* Right-side actions */}
+        <div className="flex items-center gap-2">
+          <ToolbarButton onClick={newScript}>New</ToolbarButton>
+          <ToolbarButton onClick={openFromDisk}>Open</ToolbarButton>
+          <ToolbarButton onClick={saveToDisk}>Save</ToolbarButton>
+          <ToolbarButton onClick={saveAs}>Save As</ToolbarButton>
+          <span className="gp-divider mx-1.5" />
+          <ToolbarButton onClick={() => setSettingsOpen(true)}>
+            Settings
+          </ToolbarButton>
+          <button
+            onClick={onGo}
+            className="gp-btn-live ml-2"
+            aria-label="Go Live"
+          >
+            <span className="gp-btn-live-dot" aria-hidden />
+            Go Live
+          </button>
+        </div>
       </header>
 
       {/* ================= MAIN WORKAREA ================= */}
-      <main className="relative flex-1 min-h-0 grid grid-cols-2 gap-px"
-        style={{ background: "var(--color-gp-line)" }}
-      >
+      <main className="relative z-10 flex-1 min-h-0 px-8 pb-5 grid grid-cols-2 gap-6">
         {/* Editor panel */}
-        <section
-          className="relative flex flex-col min-h-0 gp-reveal gp-reveal-2"
-          style={{ background: "var(--color-gp-surface)" }}
-        >
-          <PanelHeader code="CH.01" label="SCRIPT" tone="phosphor" />
-          <Frame className="flex-1 min-h-0 flex mx-3 mb-3">
+        <section className="relative flex flex-col min-h-0 gp-reveal gp-reveal-2">
+          <PanelHeader label="Script" code="draft" />
+          <div className="gp-glass gp-glass-sheen flex-1 min-h-0 flex overflow-hidden">
             <MarkdownEditor />
-          </Frame>
+          </div>
         </section>
 
         {/* Preview panel */}
-        <section
-          className="relative flex flex-col min-h-0 gp-reveal gp-reveal-3"
-          style={{ background: "var(--color-gp-surface)" }}
-        >
-          <PanelHeader code="CH.02" label="PREVIEW" tone="amber" />
-          <Frame className="flex-1 min-h-0 flex flex-col mx-3 mb-3">
-            <div
-              className="flex-1 min-h-0 overflow-auto gp-scroll px-8 py-8"
-            >
+        <section className="relative flex flex-col min-h-0 gp-reveal gp-reveal-3">
+          <PanelHeader label="Preview" code="live render" />
+          <div className="gp-glass gp-glass-sheen flex-1 min-h-0 flex flex-col overflow-hidden">
+            <div className="flex-1 min-h-0 overflow-auto gp-scroll px-14 py-12">
               <MarkdownPreview content={script.content} />
             </div>
-          </Frame>
+          </div>
         </section>
       </main>
 
       {/* ================= STATUS BAR ================= */}
-      <footer
-        className="flex items-center gap-8 px-6 h-20 border-t gp-reveal gp-reveal-4"
-        style={{
-          borderColor: "var(--color-gp-line)",
-          background: "var(--color-gp-surface-2)",
-        }}
-      >
-        <StatBlock label="WORDS" value={stats.words} />
-        <Divider />
-        <StatBlock label="CHARS" value={stats.chars} />
-        <Divider />
-        <StatBlock
-          label="READ TIME"
-          value={stats.duration}
-          hint="at 150 wpm"
-        />
-        <Divider />
-        <div className="flex items-center gap-3">
-          <span
-            className="text-[10px] tracking-[0.22em] uppercase"
-            style={{
-              fontFamily: "var(--font-mono)",
-              color: "var(--color-gp-mute)",
-            }}
-          >
-            SIGNAL
-          </span>
-          <span
-            className="w-2 h-2 rounded-full"
-            style={{
-              background: "var(--color-gp-phosphor)",
-              boxShadow: "0 0 10px var(--color-gp-phosphor)",
-            }}
-            aria-hidden
+      <footer className="relative z-10 px-8 pb-7 gp-reveal gp-reveal-4">
+        <div className="gp-glass gp-glass-sheen flex items-center gap-8 px-8 py-5">
+          <StatBlock label="Words" value={stats.words} />
+          <span className="gp-divider" />
+          <StatBlock label="Chars" value={stats.chars} />
+          <span className="gp-divider" />
+          <StatBlock
+            label="Read time"
+            value={stats.duration}
+            hint="at 150 wpm"
           />
-          <span
-            className="text-xs"
-            style={{
-              fontFamily: "var(--font-mono)",
-              color: "var(--color-gp-paper-dim)",
-              letterSpacing: "0.1em",
-            }}
-          >
-            READY
-          </span>
-        </div>
-
-        <div className="flex-1" />
-
-        <div className="flex items-center gap-3">
-          <KbdHint keys={["F7"]} label="Play" />
-          <KbdHint keys={["F6"]} label="Edit" />
-          <KbdHint keys={["Esc"]} label="Exit" />
+          <div className="flex-1" />
+          <div className="flex items-center gap-3.5">
+            <KbdHint keys={["F7"]} label="Play" />
+            <KbdHint keys={["F6"]} label="Edit" />
+            <KbdHint keys={["Esc"]} label="Exit" />
+          </div>
         </div>
       </footer>
 
@@ -240,101 +170,114 @@ export function EditorView() {
 function BrandMark() {
   return (
     <div
-      className="relative w-9 h-9 grid place-items-center"
+      className="relative grid place-items-center"
       aria-hidden
       style={{
-        border: "1px solid var(--color-gp-amber)",
+        width: 42,
+        height: 42,
+        borderRadius: 13,
+        background:
+          "radial-gradient(130% 150% at 18% 8%, rgba(110,198,255,0.62), transparent 58%), radial-gradient(130% 150% at 82% 92%, rgba(180,138,255,0.62), transparent 58%), radial-gradient(80% 120% at 50% 110%, rgba(134,242,201,0.2), transparent 60%), #0a0c12",
+        border: "1px solid rgba(255,255,255,0.2)",
         boxShadow:
-          "0 0 0 1px rgba(255,160,51,0.15), 0 0 20px rgba(255,160,51,0.2)",
+          "inset 0 1px 0 rgba(255,255,255,0.4), 0 0 0 1px rgba(0,0,0,0.3) inset, 0 14px 36px -10px rgba(110,198,255,0.45), 0 8px 22px -8px rgba(180,138,255,0.35)",
       }}
     >
       <span
-        className="block w-3 h-3"
+        aria-hidden
         style={{
-          background: "var(--color-gp-amber)",
-          boxShadow: "0 0 12px var(--color-gp-amber)",
+          position: "absolute",
+          inset: 1,
+          borderRadius: 12,
+          background:
+            "radial-gradient(80% 140% at 50% -20%, rgba(255,255,255,0.22), transparent 60%)",
+          pointerEvents: "none",
         }}
       />
-      <span
-        className="absolute -top-1 -left-1 w-2 h-2"
-        style={{ borderTop: "1px solid var(--color-gp-amber)", borderLeft: "1px solid var(--color-gp-amber)" }}
-      />
-      <span
-        className="absolute -top-1 -right-1 w-2 h-2"
-        style={{ borderTop: "1px solid var(--color-gp-amber)", borderRight: "1px solid var(--color-gp-amber)" }}
-      />
-      <span
-        className="absolute -bottom-1 -left-1 w-2 h-2"
-        style={{ borderBottom: "1px solid var(--color-gp-amber)", borderLeft: "1px solid var(--color-gp-amber)" }}
-      />
-      <span
-        className="absolute -bottom-1 -right-1 w-2 h-2"
-        style={{ borderBottom: "1px solid var(--color-gp-amber)", borderRight: "1px solid var(--color-gp-amber)" }}
-      />
+      {/* Ghost outline glyph */}
+      <svg
+        width="19"
+        height="19"
+        viewBox="0 0 18 18"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        style={{ position: "relative" }}
+      >
+        <path
+          d="M3 8a6 6 0 1 1 12 0v8l-2-1.5L11 16l-2-1.5L7 16l-2-1.5L3 16V8Z"
+          stroke="#fff"
+          strokeOpacity="0.9"
+          strokeWidth="1.2"
+          strokeLinejoin="round"
+        />
+        <circle cx="7" cy="8.5" r="0.9" fill="#fff" fillOpacity="0.95" />
+        <circle cx="11" cy="8.5" r="0.9" fill="#fff" fillOpacity="0.95" />
+      </svg>
     </div>
   );
 }
 
-function PanelHeader({
-  code,
-  label,
-  tone,
-}: {
-  code: string;
-  label: string;
-  tone: "phosphor" | "amber" | "mute";
-}) {
+function PanelHeader({ label, code }: { label: string; code: string }) {
   return (
-    <div className="flex items-center justify-between px-6 h-9">
-      <ChannelLabel code={code} label={label} tone={tone} />
+    <div className="flex items-baseline justify-between px-2 pb-3.5 pt-0">
       <span
-        className="text-[9px] tracking-[0.25em]"
+        className="inline-flex items-center gap-2.5"
         style={{
-          fontFamily: "var(--font-mono)",
-          color: "var(--color-gp-mute-2)",
+          fontFamily: "var(--font-prompter)",
+          fontSize: 14,
+          fontStyle: "italic",
+          fontWeight: 500,
+          letterSpacing: "-0.012em",
+          color: "var(--color-gp-paper)",
+          fontVariationSettings: '"opsz" 144',
         }}
       >
-        ━━━━━
+        <span
+          aria-hidden
+          style={{
+            display: "inline-block",
+            width: 4,
+            height: 4,
+            borderRadius: 999,
+            background:
+              "linear-gradient(135deg, var(--color-gp-cerulean), var(--color-gp-violet))",
+            boxShadow: "0 0 8px rgba(110,198,255,0.7)",
+          }}
+        />
+        {label}
+      </span>
+      <span
+        style={{
+          fontFamily: "var(--font-mono)",
+          fontSize: 9.5,
+          letterSpacing: "0.16em",
+          color: "var(--color-gp-paper-dim-2)",
+          textTransform: "uppercase",
+        }}
+      >
+        {code}
       </span>
     </div>
-  );
-}
-
-function Divider() {
-  return (
-    <span
-      className="h-10 w-px"
-      style={{ background: "var(--color-gp-line)" }}
-      aria-hidden
-    />
   );
 }
 
 function KbdHint({ keys, label }: { keys: string[]; label: string }) {
   return (
     <span
-      className="inline-flex items-center gap-2 text-[10px]"
+      className="inline-flex items-center gap-1.5"
       style={{
         fontFamily: "var(--font-mono)",
-        color: "var(--color-gp-mute)",
+        fontSize: 10,
+        color: "var(--color-gp-paper-dim-2)",
+        letterSpacing: "0.04em",
       }}
     >
       {keys.map((k) => (
-        <kbd
-          key={k}
-          className="inline-block px-1.5 py-0.5 border text-[10px]"
-          style={{
-            fontFamily: "var(--font-mono)",
-            color: "var(--color-gp-paper-dim)",
-            borderColor: "var(--color-gp-line)",
-            background: "var(--color-gp-surface)",
-            borderRadius: 2,
-          }}
-        >
+        <kbd key={k} className="gp-kbd">
           {k}
         </kbd>
       ))}
-      <span className="uppercase tracking-[0.1em]">{label}</span>
+      <span className="ml-0.5">{label}</span>
     </span>
   );
 }
@@ -347,7 +290,7 @@ function ToolbarButton({
   onClick: () => void;
 }) {
   return (
-    <button onClick={onClick} className="gp-btn" style={{ borderRadius: "2px" }}>
+    <button onClick={onClick} className="gp-btn">
       {children}
     </button>
   );

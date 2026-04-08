@@ -3,16 +3,14 @@ import { useSettingsStore } from "@/store/settingsStore";
 import { DEFAULT_HOTKEYS, type Hotkeys } from "@/types";
 import { HotkeyRecorder } from "./HotkeyRecorder";
 import { ipc } from "@/lib/ipc";
-import { ChannelLabel } from "@/ui/ChannelLabel";
-import { Frame } from "@/ui/Frame";
 
 type Tab = "appearance" | "playback" | "hotkeys" | "about";
 
 const TABS: Array<[Tab, string, string]> = [
-  ["appearance", "Appearance", "CH.A"],
-  ["playback", "Playback", "CH.B"],
-  ["hotkeys", "Hotkeys", "CH.C"],
-  ["about", "About", "CH.D"],
+  ["appearance", "Appearance", "typography, color, mirror"],
+  ["playback", "Playback", "scroll, reading line"],
+  ["hotkeys", "Hotkeys", "global shortcuts"],
+  ["about", "About", "system, capture status"],
 ];
 
 export function SettingsModal({ onClose }: { onClose: () => void }) {
@@ -41,151 +39,136 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
       className="fixed inset-0 flex items-center justify-center z-50"
       onClick={onClose}
       style={{
-        background: "rgba(8,8,10,0.72)",
-        backdropFilter: "blur(6px)",
+        background: "rgba(5,6,10,0.64)",
+        backdropFilter: "blur(18px) saturate(120%)",
+        WebkitBackdropFilter: "blur(18px) saturate(120%)",
       }}
     >
-      <Frame
-        className="w-[820px] max-h-[85vh] flex flex-col overflow-hidden"
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="gp-glass gp-glass-sheen w-[880px] max-h-[86vh] flex flex-col overflow-hidden gp-scale-in"
         style={{
-          background: "var(--color-gp-surface)",
-          border: "1px solid var(--color-gp-line-strong)",
-          boxShadow:
-            "0 40px 120px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,160,51,0.12), 0 0 80px rgba(255,160,51,0.08)",
+          borderRadius: 24,
+          background: "rgba(11, 13, 21, 0.74)",
         }}
       >
-        <div
-          onClick={(e) => e.stopPropagation()}
-          className="flex flex-col min-h-0 flex-1"
+        {/* ========= Modal header ========= */}
+        <header
+          className="flex items-center justify-between px-8 h-16"
+          style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}
         >
-          {/* ========= Modal header ========= */}
-          <header
-            className="flex items-center justify-between px-6 h-12 border-b"
-            style={{
-              borderColor: "var(--color-gp-line)",
-              background: "var(--color-gp-surface-2)",
-            }}
-          >
-            <div className="flex items-center gap-3">
-              <ChannelLabel code="SYS" label="CONFIG" tone="amber" />
-              <h2
-                className="text-sm"
-                style={{
-                  fontFamily: "var(--font-display)",
-                  fontWeight: 700,
-                  letterSpacing: "0.02em",
-                }}
-              >
-                Settings
-              </h2>
-            </div>
-            <button
-              onClick={onClose}
-              className="inline-flex items-center justify-center"
+          <div className="flex items-center gap-3.5">
+            <span
+              aria-hidden
               style={{
-                width: 24,
-                height: 24,
-                border: "1px solid var(--color-gp-line)",
-                color: "var(--color-gp-mute)",
+                display: "inline-block",
+                width: 6,
+                height: 6,
+                borderRadius: 999,
+                background:
+                  "linear-gradient(135deg, var(--color-gp-cerulean), var(--color-gp-violet))",
+                boxShadow:
+                  "0 0 10px rgba(110,198,255,0.7), 0 0 18px rgba(180,138,255,0.5)",
+              }}
+            />
+            <span
+              style={{
+                fontFamily: "var(--font-prompter)",
+                fontSize: 22,
+                fontWeight: 500,
+                fontStyle: "italic",
+                letterSpacing: "-0.024em",
+                color: "var(--color-gp-paper)",
+                fontVariationSettings: '"opsz" 144',
+              }}
+            >
+              <h2 style={{ margin: 0, fontSize: "inherit" }}>Settings</h2>
+            </span>
+            <span
+              className="ml-1"
+              style={{
                 fontFamily: "var(--font-mono)",
-                fontSize: 12,
-                background: "transparent",
-                cursor: "pointer",
+                fontSize: 9.5,
+                letterSpacing: "0.16em",
+                textTransform: "uppercase",
+                color: "var(--color-gp-paper-dim-2)",
               }}
             >
-              ✕
-            </button>
-          </header>
+              preferences
+            </span>
+          </div>
+          <button
+            onClick={onClose}
+            aria-label="✕"
+            className="gp-close"
+          >
+            ✕
+          </button>
+        </header>
 
-          {/* ========= Body ========= */}
-          <div className="flex flex-1 min-h-0">
-            {/* Tabs rail */}
-            <nav
-              className="w-48 border-r p-3 flex flex-col gap-1"
-              style={{
-                borderColor: "var(--color-gp-line)",
-                background: "var(--color-gp-surface)",
-              }}
-            >
-              <div
-                className="px-2 py-2 mb-1 text-[9px] tracking-[0.22em] uppercase"
-                style={{
-                  fontFamily: "var(--font-mono)",
-                  color: "var(--color-gp-mute-2)",
-                }}
-              >
-                Channels
-              </div>
-              {TABS.map(([id, label, code]) => {
-                const active = tab === id;
-                return (
-                  <button
-                    key={id}
-                    onClick={() => setTab(id)}
-                    className="relative text-left px-3 py-2 flex items-center gap-2"
+        {/* ========= Body ========= */}
+        <div className="flex flex-1 min-h-0">
+          {/* Tabs rail */}
+          <nav
+            className="w-60 p-4 flex flex-col gap-1"
+            style={{ borderRight: "1px solid rgba(255,255,255,0.06)" }}
+          >
+            {TABS.map(([id, label, hint]) => {
+              const active = tab === id;
+              return (
+                <button
+                  key={id}
+                  onClick={() => setTab(id)}
+                  className={`gp-tab ${active ? "gp-tab--active" : ""}`.trim()}
+                >
+                  <span
                     style={{
-                      border: `1px solid ${
-                        active ? "var(--color-gp-amber)" : "transparent"
-                      }`,
-                      background: active
-                        ? "rgba(255,160,51,0.06)"
-                        : "transparent",
-                      color: active
-                        ? "var(--color-gp-amber)"
-                        : "var(--color-gp-paper-dim)",
-                      fontFamily: "var(--font-mono)",
-                      fontSize: 11,
-                      letterSpacing: "0.08em",
-                      textTransform: "uppercase",
-                      cursor: "pointer",
-                      borderRadius: 2,
+                      fontSize: 13,
+                      fontWeight: 500,
+                      letterSpacing: "-0.008em",
                     }}
                   >
-                    <span
-                      aria-hidden
-                      className="text-[9px]"
-                      style={{ color: "var(--color-gp-mute-2)" }}
-                    >
-                      {code}
-                    </span>
-                    <span>{label}</span>
-                    {active && (
-                      <span
-                        className="absolute right-2 top-1/2 -translate-y-1/2 w-1 h-1"
-                        style={{
-                          background: "var(--color-gp-amber)",
-                          boxShadow: "0 0 6px var(--color-gp-amber)",
-                        }}
-                      />
-                    )}
-                  </button>
-                );
-              })}
+                    {label}
+                  </span>
+                  <span
+                    aria-hidden
+                    style={{
+                      fontSize: 10,
+                      fontFamily: "var(--font-mono)",
+                      color: "var(--color-gp-paper-dim-2)",
+                      letterSpacing: "0.04em",
+                    }}
+                  >
+                    {hint}
+                  </span>
+                  {active && <span aria-hidden className="gp-tab__beam" />}
+                </button>
+              );
+            })}
 
-              <div className="flex-1" />
-              <div
-                className="px-2 pt-2 border-t text-[9px] tracking-[0.22em] uppercase"
-                style={{
-                  borderColor: "var(--color-gp-line)",
-                  fontFamily: "var(--font-mono)",
-                  color: "var(--color-gp-mute-2)",
-                }}
-              >
-                GhostPrompter v0.1
-              </div>
-            </nav>
-
-            {/* Tab content */}
+            <div className="flex-1" />
             <div
-              className="flex-1 p-6 overflow-auto gp-scroll"
+              className="px-3 pt-3 mt-1 text-[10px]"
               style={{
-                background: "var(--color-gp-surface-2)",
+                borderTop: "1px solid rgba(255,255,255,0.06)",
                 fontFamily: "var(--font-mono)",
+                color: "var(--color-gp-mute)",
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
               }}
             >
-              {tab === "appearance" && (
-                <div className="space-y-6">
-                  <SectionHeading>Typography</SectionHeading>
+              Ghostprompter v0.1
+            </div>
+          </nav>
+
+          {/* Tab content */}
+          <div
+            className="flex-1 overflow-auto gp-scroll"
+            style={{ padding: "32px 36px" }}
+          >
+            {tab === "appearance" && (
+              <div className="space-y-8">
+                <Section title="Typography">
                   <Field
                     label="Font size"
                     value={`${settings.fontSize}px`}
@@ -215,8 +198,9 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
                       }
                     />
                   </Field>
+                </Section>
 
-                  <SectionHeading>Color</SectionHeading>
+                <Section title="Color">
                   <div className="grid grid-cols-2 gap-6">
                     <FieldInline label="Text color">
                       <input
@@ -248,8 +232,9 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
                       }
                     />
                   </Field>
+                </Section>
 
-                  <SectionHeading>Mirror</SectionHeading>
+                <Section title="Mirror">
                   <div className="flex gap-6">
                     <Checkbox
                       label="Mirror horizontal"
@@ -262,12 +247,13 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
                       onChange={(v) => update({ mirrorVertical: v })}
                     />
                   </div>
-                </div>
-              )}
+                </Section>
+              </div>
+            )}
 
-              {tab === "playback" && (
-                <div className="space-y-6">
-                  <SectionHeading>Scroll</SectionHeading>
+            {tab === "playback" && (
+              <div className="space-y-8">
+                <Section title="Scroll">
                   <Field
                     label="Scroll speed"
                     value={`${settings.scrollSpeed} px/s`}
@@ -282,8 +268,9 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
                       }
                     />
                   </Field>
+                </Section>
 
-                  <SectionHeading>Reading Line</SectionHeading>
+                <Section title="Reading line">
                   <Field
                     label="Reading line position"
                     value={`${Math.round(
@@ -308,133 +295,150 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
                     checked={settings.highlightReadingLine}
                     onChange={(v) => update({ highlightReadingLine: v })}
                   />
-                </div>
-              )}
+                </Section>
+              </div>
+            )}
 
-              {tab === "hotkeys" && (
-                <div className="space-y-3">
-                  <SectionHeading>Global Shortcuts</SectionHeading>
-                  <HotkeyRow
-                    label="Play / Pause"
-                    value={settings.hotkeys.playPause}
-                    onChange={setHotkey("playPause")}
-                  />
-                  <HotkeyRow
-                    label="Slower"
-                    value={settings.hotkeys.slower}
-                    onChange={setHotkey("slower")}
-                  />
-                  <HotkeyRow
-                    label="Faster"
-                    value={settings.hotkeys.faster}
-                    onChange={setHotkey("faster")}
-                  />
-                  <HotkeyRow
-                    label="Hide / Show"
-                    value={settings.hotkeys.hideShow}
-                    onChange={setHotkey("hideShow")}
-                  />
-                  <HotkeyRow
-                    label="Toggle edit mode"
-                    value={settings.hotkeys.toggleEditMode}
-                    onChange={setHotkey("toggleEditMode")}
-                  />
-                  <HotkeyRow
-                    label="Line up"
-                    value={settings.hotkeys.lineUp}
-                    onChange={setHotkey("lineUp")}
-                  />
-                  <HotkeyRow
-                    label="Line down"
-                    value={settings.hotkeys.lineDown}
-                    onChange={setHotkey("lineDown")}
-                  />
-                  <HotkeyRow
-                    label="Jump to start"
-                    value={settings.hotkeys.jumpStart}
-                    onChange={setHotkey("jumpStart")}
-                  />
-                  <HotkeyRow
-                    label="Jump to end"
-                    value={settings.hotkeys.jumpEnd}
-                    onChange={setHotkey("jumpEnd")}
-                  />
-                  <HotkeyRow
-                    label="Stop / Exit"
-                    value={settings.hotkeys.stop}
-                    onChange={setHotkey("stop")}
-                  />
-                  <div className="pt-3">
-                    <button
-                      onClick={() => update({ hotkeys: DEFAULT_HOTKEYS })}
-                      className="text-[10px] underline"
-                      style={{
-                        color: "var(--color-gp-mute)",
-                        fontFamily: "var(--font-mono)",
-                        letterSpacing: "0.1em",
-                        textTransform: "uppercase",
-                        background: "transparent",
-                        border: "none",
-                        cursor: "pointer",
-                      }}
-                    >
-                      reset hotkeys to defaults
-                    </button>
+            {tab === "hotkeys" && (
+              <div className="space-y-4">
+                <Section title="Global shortcuts">
+                  <div className="flex flex-col gap-2">
+                    <HotkeyRow
+                      label="Play / Pause"
+                      value={settings.hotkeys.playPause}
+                      onChange={setHotkey("playPause")}
+                    />
+                    <HotkeyRow
+                      label="Slower"
+                      value={settings.hotkeys.slower}
+                      onChange={setHotkey("slower")}
+                    />
+                    <HotkeyRow
+                      label="Faster"
+                      value={settings.hotkeys.faster}
+                      onChange={setHotkey("faster")}
+                    />
+                    <HotkeyRow
+                      label="Hide / Show"
+                      value={settings.hotkeys.hideShow}
+                      onChange={setHotkey("hideShow")}
+                    />
+                    <HotkeyRow
+                      label="Toggle edit mode"
+                      value={settings.hotkeys.toggleEditMode}
+                      onChange={setHotkey("toggleEditMode")}
+                    />
+                    <HotkeyRow
+                      label="Line up"
+                      value={settings.hotkeys.lineUp}
+                      onChange={setHotkey("lineUp")}
+                    />
+                    <HotkeyRow
+                      label="Line down"
+                      value={settings.hotkeys.lineDown}
+                      onChange={setHotkey("lineDown")}
+                    />
+                    <HotkeyRow
+                      label="Jump to start"
+                      value={settings.hotkeys.jumpStart}
+                      onChange={setHotkey("jumpStart")}
+                    />
+                    <HotkeyRow
+                      label="Jump to end"
+                      value={settings.hotkeys.jumpEnd}
+                      onChange={setHotkey("jumpEnd")}
+                    />
+                    <HotkeyRow
+                      label="Stop / Exit"
+                      value={settings.hotkeys.stop}
+                      onChange={setHotkey("stop")}
+                    />
                   </div>
-                </div>
-              )}
-
-              {tab === "about" && (
-                <div className="space-y-5">
-                  <SectionHeading>System</SectionHeading>
-                  <div
-                    className="text-base"
+                </Section>
+                <div>
+                  <button
+                    onClick={() => update({ hotkeys: DEFAULT_HOTKEYS })}
                     style={{
-                      fontFamily: "var(--font-display)",
-                      fontWeight: 800,
-                      letterSpacing: "-0.01em",
+                      color: "var(--color-gp-paper-dim-2)",
+                      fontFamily: "var(--font-sans)",
+                      fontSize: 11,
+                      background: "transparent",
+                      border: "none",
+                      cursor: "pointer",
+                      textDecoration: "underline",
+                      textDecorationColor: "rgba(255,255,255,0.2)",
+                      textUnderlineOffset: 3,
+                    }}
+                  >
+                    reset hotkeys to defaults
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {tab === "about" && (
+              <div className="space-y-6">
+                <Section title="System">
+                  <div
+                    style={{
+                      fontFamily: "var(--font-prompter)",
+                      fontWeight: 500,
+                      fontStyle: "italic",
+                      fontSize: 22,
+                      letterSpacing: "-0.02em",
                       color: "var(--color-gp-paper)",
+                      fontVariationSettings: '"opsz" 144',
                     }}
                   >
                     GhostPrompter 0.1.0
                   </div>
                   <p
-                    className="text-xs leading-relaxed"
                     style={{
                       color: "var(--color-gp-paper-dim)",
-                      fontFamily: "var(--font-mono)",
-                      maxWidth: 520,
+                      fontFamily: "var(--font-sans)",
+                      fontSize: 13,
+                      lineHeight: 1.65,
+                      maxWidth: 560,
+                      marginTop: 10,
                     }}
                   >
-                    Capture-invisible teleprompter. Your teleprompter window
-                    is skipped by standard screen capture APIs on Windows and
-                    macOS.
+                    A quiet, capture-invisible teleprompter. Your teleprompter
+                    window is skipped by standard screen-capture APIs on Windows
+                    and macOS — invisible to OBS, Zoom, Discord, and any other
+                    capture tool that respects the platform flag.
                   </p>
+                </Section>
 
-                  <SectionHeading>Capture Invisibility</SectionHeading>
+                <Section title="Capture invisibility">
                   <div className="flex items-center gap-3">
                     <span
                       className="w-2 h-2 rounded-full"
                       style={{
-                        background: captureSupported
-                          ? "var(--color-gp-phosphor)"
-                          : captureSupported === null
-                            ? "var(--color-gp-mute-2)"
-                            : "var(--color-gp-magenta)",
-                        boxShadow: captureSupported
-                          ? "0 0 8px var(--color-gp-phosphor)"
-                          : "none",
+                        background:
+                          captureSupported === null
+                            ? "rgba(255,255,255,0.25)"
+                            : captureSupported
+                              ? "var(--color-gp-mint)"
+                              : "var(--color-gp-sunset)",
+                        boxShadow:
+                          captureSupported === true
+                            ? "0 0 10px rgba(134,242,201,0.8)"
+                            : captureSupported === false
+                              ? "0 0 10px rgba(255,157,122,0.7)"
+                              : "none",
                       }}
                     />
                     <span
-                      className="text-xs uppercase tracking-[0.12em]"
                       style={{
-                        fontFamily: "var(--font-mono)",
-                        color: captureSupported
-                          ? "var(--color-gp-phosphor)"
-                          : captureSupported === null
-                            ? "var(--color-gp-mute)"
-                            : "var(--color-gp-magenta)",
+                        fontFamily: "var(--font-sans)",
+                        fontSize: 12,
+                        fontWeight: 500,
+                        color:
+                          captureSupported === null
+                            ? "var(--color-gp-paper-dim-2)"
+                            : captureSupported
+                              ? "var(--color-gp-mint)"
+                              : "var(--color-gp-sunset)",
                       }}
                     >
                       {captureSupported === null
@@ -445,69 +449,82 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
                     </span>
                   </div>
                   <p
-                    className="text-[11px]"
                     style={{
-                      color: "var(--color-gp-mute)",
-                      fontFamily: "var(--font-mono)",
-                      maxWidth: 520,
+                      color: "var(--color-gp-paper-dim-2)",
+                      fontFamily: "var(--font-sans)",
+                      fontSize: 11.5,
+                      lineHeight: 1.6,
+                      maxWidth: 560,
+                      marginTop: 8,
                     }}
                   >
-                    Windows 10 (build 19041+) or macOS 10.13+ required for
-                    full invisibility.
+                    Windows 10 (build 19041+) or macOS 10.13+ required for full
+                    invisibility.
                   </p>
+                </Section>
 
-                  <div className="pt-3">
-                    <button
-                      onClick={reset}
-                      className="text-[10px] underline"
-                      style={{
-                        color: "var(--color-gp-mute)",
-                        fontFamily: "var(--font-mono)",
-                        letterSpacing: "0.1em",
-                        textTransform: "uppercase",
-                        background: "transparent",
-                        border: "none",
-                        cursor: "pointer",
-                      }}
-                    >
-                      reset all settings to defaults
-                    </button>
-                  </div>
+                <div className="pt-2">
+                  <button
+                    onClick={reset}
+                    style={{
+                      color: "var(--color-gp-paper-dim-2)",
+                      fontFamily: "var(--font-sans)",
+                      fontSize: 11,
+                      background: "transparent",
+                      border: "none",
+                      cursor: "pointer",
+                      textDecoration: "underline",
+                      textDecorationColor: "rgba(255,255,255,0.2)",
+                      textUnderlineOffset: 3,
+                    }}
+                  >
+                    reset all settings to defaults
+                  </button>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
-      </Frame>
+      </div>
     </div>
   );
 }
 
-function SectionHeading({ children }: { children: React.ReactNode }) {
+function Section({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
   return (
-    <div
-      className="flex items-center gap-3 pb-1"
-      style={{
-        borderBottom: "1px dashed var(--color-gp-line)",
-      }}
-    >
-      <span
-        className="w-1.5 h-1.5"
-        style={{
-          background: "var(--color-gp-amber)",
-          boxShadow: "0 0 6px var(--color-gp-amber)",
-        }}
-      />
-      <span
-        className="text-[10px] tracking-[0.22em] uppercase"
-        style={{
-          fontFamily: "var(--font-mono)",
-          color: "var(--color-gp-paper-dim)",
-        }}
-      >
-        {children}
-      </span>
-    </div>
+    <section className="flex flex-col gap-6">
+      <div className="flex items-center gap-4">
+        <span
+          style={{
+            fontFamily: "var(--font-prompter)",
+            fontStyle: "italic",
+            fontSize: 14,
+            fontWeight: 500,
+            letterSpacing: "-0.014em",
+            color: "var(--color-gp-paper)",
+            fontVariationSettings: '"opsz" 144',
+          }}
+        >
+          {title}
+        </span>
+        <span
+          className="flex-1"
+          style={{
+            height: 1,
+            background:
+              "linear-gradient(90deg, rgba(255,255,255,0.14), transparent)",
+          }}
+          aria-hidden
+        />
+      </div>
+      <div className="space-y-6">{children}</div>
+    </section>
   );
 }
 
@@ -522,12 +539,14 @@ function Field({
 }) {
   return (
     <label className="block">
-      <div className="flex items-center justify-between mb-2">
+      <div className="flex items-center justify-between mb-3">
         <span
-          className="text-[10px] tracking-[0.18em] uppercase"
           style={{
-            fontFamily: "var(--font-mono)",
-            color: "var(--color-gp-mute)",
+            fontFamily: "var(--font-sans)",
+            fontSize: 12,
+            fontWeight: 500,
+            color: "var(--color-gp-paper-dim)",
+            letterSpacing: "-0.005em",
           }}
         >
           {label}: {value}
@@ -546,12 +565,22 @@ function FieldInline({
   children: React.ReactNode;
 }) {
   return (
-    <label className="flex items-center justify-between gap-3">
+    <label
+      className="flex items-center justify-between gap-3 px-4 py-3.5"
+      style={{
+        background: "rgba(255,255,255,0.028)",
+        border: "1px solid rgba(255,255,255,0.065)",
+        borderRadius: 11,
+        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04)",
+      }}
+    >
       <span
-        className="text-[10px] tracking-[0.18em] uppercase"
         style={{
-          fontFamily: "var(--font-mono)",
-          color: "var(--color-gp-mute)",
+          fontFamily: "var(--font-sans)",
+          fontSize: 12,
+          fontWeight: 500,
+          color: "var(--color-gp-paper-dim)",
+          letterSpacing: "-0.005em",
         }}
       >
         {label}
@@ -572,10 +601,12 @@ function Checkbox({
 }) {
   return (
     <label
-      className="flex items-center gap-2 cursor-pointer text-[11px] uppercase tracking-[0.1em]"
+      className="flex items-center gap-2.5 cursor-pointer"
       style={{
         color: "var(--color-gp-paper-dim)",
-        fontFamily: "var(--font-mono)",
+        fontFamily: "var(--font-sans)",
+        fontSize: 12,
+        fontWeight: 500,
       }}
     >
       <input
@@ -599,18 +630,22 @@ function HotkeyRow({
 }) {
   return (
     <div
-      className="flex items-center justify-between py-1.5 px-3"
+      className="flex items-center justify-between gap-4 px-4 py-3"
       style={{
-        background: "var(--color-gp-surface)",
-        border: "1px solid var(--color-gp-line)",
-        borderRadius: 2,
+        background: "rgba(255,255,255,0.024)",
+        border: "1px solid rgba(255,255,255,0.065)",
+        borderRadius: 11,
+        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04)",
+        transition: "border-color 200ms var(--gp-ease-swift)",
       }}
     >
       <span
-        className="text-[11px] uppercase tracking-[0.08em]"
         style={{
           color: "var(--color-gp-paper-dim)",
-          fontFamily: "var(--font-mono)",
+          fontFamily: "var(--font-sans)",
+          fontSize: 12,
+          fontWeight: 500,
+          letterSpacing: "-0.005em",
         }}
       >
         {label}

@@ -167,23 +167,26 @@ describe("<EditorView />", () => {
     expect(next.content.length).toBeGreaterThan(0);
   });
 
-  it("renders the GhostPrompter wordmark/brand in the header", () => {
-    render(<EditorView />);
-    // Broadcast-style brand text is present somewhere in the header
-    expect(screen.getByText(/ghostprompter/i)).toBeInTheDocument();
+  it("renders the Ghostprompter wordmark/brand in the header", () => {
+    const { container } = render(<EditorView />);
+    // Wordmark may be split across nested spans for italic treatment —
+    // assert on the combined header text.
+    const header = container.querySelector("header");
+    expect(header).not.toBeNull();
+    expect(header!.textContent?.toLowerCase()).toContain("ghostprompter");
   });
 
-  it("renders the SCRIPT channel label on the editor panel", () => {
+  it("renders a SCRIPT label on the editor panel", () => {
     render(<EditorView />);
     expect(screen.getByText(/script/i)).toBeInTheDocument();
   });
 
-  it("renders the PREVIEW channel label on the preview panel", () => {
+  it("renders a PREVIEW label on the preview panel", () => {
     render(<EditorView />);
     expect(screen.getByText(/preview/i)).toBeInTheDocument();
   });
 
-  it("renders a status bar with WORDS stat block", () => {
+  it("renders a status bar with Words stat block", () => {
     useScriptStore.setState({
       script: {
         path: null,
@@ -193,11 +196,11 @@ describe("<EditorView />", () => {
       },
     });
     render(<EditorView />);
-    expect(screen.getByText("WORDS")).toBeInTheDocument();
+    expect(screen.getByText("Words")).toBeInTheDocument();
     expect(screen.getByText("5")).toBeInTheDocument();
   });
 
-  it("renders a status bar with CHARS stat block", () => {
+  it("renders a status bar with Chars stat block", () => {
     useScriptStore.setState({
       script: {
         path: null,
@@ -207,10 +210,10 @@ describe("<EditorView />", () => {
       },
     });
     render(<EditorView />);
-    expect(screen.getByText("CHARS")).toBeInTheDocument();
+    expect(screen.getByText("Chars")).toBeInTheDocument();
   });
 
-  it("renders a status bar with READ TIME stat block", () => {
+  it("renders a status bar with Read time stat block", () => {
     useScriptStore.setState({
       script: {
         path: null,
@@ -220,12 +223,11 @@ describe("<EditorView />", () => {
       },
     });
     render(<EditorView />);
-    expect(screen.getByText("READ TIME")).toBeInTheDocument();
+    expect(screen.getByText("Read time")).toBeInTheDocument();
   });
 
-  it("Go button includes the word LIVE or GO to act as broadcast trigger", () => {
+  it("Go button includes the word 'Go' to act as broadcast trigger", () => {
     render(<EditorView />);
-    // Either GO or GO LIVE is acceptable (test existing contract: name must match /Go/)
     const btn = screen.getByRole("button", { name: /go/i });
     expect(btn).toBeInTheDocument();
   });

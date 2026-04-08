@@ -9,18 +9,17 @@ export function MarkdownEditor() {
       value={content}
       onChange={(e) => setContent(e.target.value)}
       spellCheck
-      placeholder={
-        "# New script\n\nWrite your script in markdown. Headings, lists, bold — the teleprompter reads it all."
-      }
-      className="w-full h-full resize-none outline-none border-none gp-scroll"
+      placeholder="Begin your script in markdown… headings, lists, bold — the teleprompter reads it all."
+      className="w-full h-full resize-none outline-none border-none gp-scroll bg-transparent"
       style={{
         fontFamily: "var(--font-mono)",
-        fontSize: "14px",
-        lineHeight: 1.7,
-        padding: "24px 28px",
-        background: "var(--color-gp-surface)",
+        fontSize: 13.5,
+        lineHeight: 1.92,
+        padding: "38px 44px",
         color: "var(--color-gp-paper-dim)",
-        caretColor: "var(--color-gp-amber)",
+        caretColor: "var(--color-gp-cerulean)",
+        letterSpacing: "0.002em",
+        tabSize: 2,
       }}
     />
   );

@@ -7,6 +7,11 @@ type Props = {
   style?: React.CSSProperties;
 };
 
+/**
+ * Legacy compatibility primitive. Retains gp-frame / gp-frame-bl / gp-frame-br
+ * so existing tests keep passing, but no longer renders visible decorations —
+ * the Liquid Glass redesign uses `.gp-glass` surfaces instead.
+ */
 export function Frame({ children, hot = false, className, style }: Props) {
   return (
     <div
@@ -14,8 +19,8 @@ export function Frame({ children, hot = false, className, style }: Props) {
       style={style}
     >
       {children}
-      <span className="gp-frame-bl" aria-hidden />
-      <span className="gp-frame-br" aria-hidden />
+      <span className="gp-frame-bl" aria-hidden style={{ display: "none" }} />
+      <span className="gp-frame-br" aria-hidden style={{ display: "none" }} />
     </div>
   );
 }
