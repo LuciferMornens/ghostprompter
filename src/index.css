@@ -1,0 +1,147 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ghost-bg: #000000;
+  --color-ghost-panel: #0b0b0f;
+  --color-ghost-panel-2: #14141c;
+  --color-ghost-border: #262633;
+  --color-ghost-text: #f5f5f7;
+  --color-ghost-muted: #8b8b9a;
+  --color-ghost-accent: #22d3ee;
+  --color-ghost-accent-2: #a78bfa;
+  --font-display: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-prompter: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background: transparent;
+  color: var(--color-ghost-text);
+  font-family: var(--font-display);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body.mode-editor {
+  background: #0b0b0f;
+}
+
+body.mode-teleprompter {
+  background: transparent;
+}
+
+button {
+  font-family: inherit;
+}
+
+textarea {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+}
+
+/* Prose styles for markdown preview + teleprompter */
+.gp-prose {
+  color: var(--gp-text, var(--color-ghost-text));
+  line-height: 1.6;
+  word-wrap: break-word;
+}
+.gp-prose h1,
+.gp-prose h2,
+.gp-prose h3,
+.gp-prose h4 {
+  font-weight: 700;
+  line-height: 1.15;
+  margin-top: 1.4em;
+  margin-bottom: 0.6em;
+  color: var(--color-ghost-accent);
+}
+.gp-prose h1 {
+  font-size: 1.4em;
+}
+.gp-prose h2 {
+  font-size: 1.25em;
+}
+.gp-prose h3 {
+  font-size: 1.1em;
+}
+.gp-prose p {
+  margin: 0.6em 0;
+}
+.gp-prose strong {
+  font-weight: 800;
+  color: var(--color-ghost-accent-2);
+}
+.gp-prose em {
+  font-style: italic;
+  color: var(--color-ghost-accent);
+}
+.gp-prose ul,
+.gp-prose ol {
+  padding-left: 1.4em;
+  margin: 0.6em 0;
+}
+.gp-prose li {
+  margin: 0.2em 0;
+}
+.gp-prose blockquote {
+  border-left: 4px solid var(--color-ghost-accent);
+  padding: 0.2em 0.8em;
+  color: var(--color-ghost-muted);
+  margin: 0.8em 0;
+}
+.gp-prose code {
+  background: rgba(255, 255, 255, 0.08);
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+.gp-prose pre {
+  background: rgba(0, 0, 0, 0.4);
+  padding: 0.8em 1em;
+  border-radius: 8px;
+  overflow-x: auto;
+}
+.gp-prose hr {
+  border: none;
+  border-top: 1px solid var(--color-ghost-border);
+  margin: 1.2em 0;
+}
+
+/* Reading line glow */
+.gp-reading-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--color-ghost-accent) 20%,
+    var(--color-ghost-accent-2) 80%,
+    transparent
+  );
+  box-shadow: 0 0 12px var(--color-ghost-accent), 0 0 28px var(--color-ghost-accent-2);
+  opacity: 0.8;
+}
+
+/* Edit-mode dashed border */
+.gp-edit-mode-border {
+  position: absolute;
+  inset: 4px;
+  pointer-events: none;
+  border: 2px dashed var(--color-ghost-accent);
+  border-radius: 10px;
+}
+
+/* Hide scrollbar in teleprompter */
+.gp-no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.gp-no-scrollbar {
+  scrollbar-width: none;
+}
