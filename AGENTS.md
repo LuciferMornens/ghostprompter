@@ -64,3 +64,14 @@ Desktop **teleprompter** for creators (OBS/capture-friendly): **markdown editor*
 - Types for script/settings/hotkeys: `src/types.ts`.
 - **Backend ↔ frontend:** `#[tauri::command]` names ↔ `src/lib/ipc.ts`; emitted events **`mode-changed`** / **`hotkey://…`** ↔ `src/lib/events.ts`.
 - Frontend mocks for Tauri in tests: `src/test/mocks/tauri.ts`, `src/test/setup.ts`.
+
+## Work
+
+When working on this codebase, use skills available in here: D:\coding\somewhat\.agents\skills
+
+- Frontend skill for frontend design
+- Tauri-v2 to not make mistake with tauri
+- React best practices by vercel
+- Web desgin guidelines
+
+Find that each is good for something, retrieve as needed.

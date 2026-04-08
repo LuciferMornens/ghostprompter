@@ -166,4 +166,67 @@ describe("<EditorView />", () => {
     expect(next.content).not.toBe("stale");
     expect(next.content.length).toBeGreaterThan(0);
   });
+
+  it("renders the GhostPrompter wordmark/brand in the header", () => {
+    render(<EditorView />);
+    // Broadcast-style brand text is present somewhere in the header
+    expect(screen.getByText(/ghostprompter/i)).toBeInTheDocument();
+  });
+
+  it("renders the SCRIPT channel label on the editor panel", () => {
+    render(<EditorView />);
+    expect(screen.getByText(/script/i)).toBeInTheDocument();
+  });
+
+  it("renders the PREVIEW channel label on the preview panel", () => {
+    render(<EditorView />);
+    expect(screen.getByText(/preview/i)).toBeInTheDocument();
+  });
+
+  it("renders a status bar with WORDS stat block", () => {
+    useScriptStore.setState({
+      script: {
+        path: null,
+        name: "Untitled.md",
+        content: "one two three four five",
+        dirty: false,
+      },
+    });
+    render(<EditorView />);
+    expect(screen.getByText("WORDS")).toBeInTheDocument();
+    expect(screen.getByText("5")).toBeInTheDocument();
+  });
+
+  it("renders a status bar with CHARS stat block", () => {
+    useScriptStore.setState({
+      script: {
+        path: null,
+        name: "Untitled.md",
+        content: "hello",
+        dirty: false,
+      },
+    });
+    render(<EditorView />);
+    expect(screen.getByText("CHARS")).toBeInTheDocument();
+  });
+
+  it("renders a status bar with READ TIME stat block", () => {
+    useScriptStore.setState({
+      script: {
+        path: null,
+        name: "Untitled.md",
+        content: "one two three four five six seven eight",
+        dirty: false,
+      },
+    });
+    render(<EditorView />);
+    expect(screen.getByText("READ TIME")).toBeInTheDocument();
+  });
+
+  it("Go button includes the word LIVE or GO to act as broadcast trigger", () => {
+    render(<EditorView />);
+    // Either GO or GO LIVE is acceptable (test existing contract: name must match /Go/)
+    const btn = screen.getByRole("button", { name: /go/i });
+    expect(btn).toBeInTheDocument();
+  });
 });

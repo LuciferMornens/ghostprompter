@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 vi.mock("@tauri-apps/api/core", () => ({
@@ -199,5 +199,32 @@ describe("<TeleprompterView />", () => {
     const scrollable = container.querySelector(".gp-no-scrollbar") as HTMLElement;
     expect(scrollable).not.toBeNull();
     expect(scrollable.style.transform).toContain("scaleX(-1)");
+  });
+
+  it("HUD shows a REC dot that is active only when playing=true", () => {
+    useModeStore.setState({ editMode: true, playing: false });
+    const { container, rerender } = render(<TeleprompterView />);
+    // idle state present
+    expect(container.querySelector(".gp-rec-dot--idle")).not.toBeNull();
+
+    act(() => {
+      useModeStore.setState({ playing: true });
+    });
+    rerender(<TeleprompterView />);
+    expect(container.querySelector(".gp-rec-dot")).not.toBeNull();
+    // After rerender with playing=true, no element should have the idle modifier
+    expect(container.querySelector(".gp-rec-dot--idle")).toBeNull();
+  });
+
+  it("HUD shows the current scroll speed in px/s", () => {
+    useModeStore.setState({ editMode: true });
+    useSettingsStore.setState({
+      settings: { ...DEFAULT_SETTINGS, scrollSpeed: 73 },
+      loaded: true,
+    });
+    render(<TeleprompterView />);
+    // Shown in both the top-right HUD and the edit-mode control cluster.
+    const matches = screen.getAllByText("73");
+    expect(matches.length).toBeGreaterThanOrEqual(1);
   });
 });

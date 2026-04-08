@@ -1,17 +1,58 @@
 @import "tailwindcss";
 
+/* =========================================================================
+   GhostPrompter — Cinematic Broadcast Terminal
+   A 1970s broadcast control room meets a modern film-set teleprompter.
+   Typography: Syne (display), IBM Plex Mono (HUD), Fraunces (script body).
+   ========================================================================= */
+
 @theme {
-  --color-ghost-bg: #000000;
-  --color-ghost-panel: #0b0b0f;
-  --color-ghost-panel-2: #14141c;
-  --color-ghost-border: #262633;
-  --color-ghost-text: #f5f5f7;
-  --color-ghost-muted: #8b8b9a;
-  --color-ghost-accent: #22d3ee;
-  --color-ghost-accent-2: #a78bfa;
-  --font-display: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --font-prompter: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  /* Canvas & surfaces — warm, slightly desaturated near-black */
+  --color-gp-ink: #08080a;
+  --color-gp-surface: #0f0f13;
+  --color-gp-surface-2: #16161c;
+  --color-gp-surface-3: #1d1d25;
+  --color-gp-line: #262631;
+  --color-gp-line-strong: #35353f;
+
+  /* Text — warm paper, never pure white */
+  --color-gp-paper: #f0efe7;
+  --color-gp-paper-dim: #c9c8bf;
+  --color-gp-mute: #7e7d76;
+  --color-gp-mute-2: #55544e;
+
+  /* Signal colors — broadcast palette */
+  --color-gp-amber: #ffa033;         /* LIVE / REC */
+  --color-gp-amber-hot: #ff6b1a;     /* pressed / hover */
+  --color-gp-phosphor: #c7f284;      /* prompter green */
+  --color-gp-phosphor-dim: #7aa055;
+  --color-gp-cyan: #5fd2ff;          /* secondary accent */
+  --color-gp-magenta: #ff4d8a;       /* danger / stop */
+
+  /* Legacy names preserved so existing tests & styles keep matching */
+  --color-ghost-bg: var(--color-gp-ink);
+  --color-ghost-panel: var(--color-gp-surface);
+  --color-ghost-panel-2: var(--color-gp-surface-2);
+  --color-ghost-border: var(--color-gp-line);
+  --color-ghost-text: var(--color-gp-paper);
+  --color-ghost-muted: var(--color-gp-mute);
+  --color-ghost-accent: var(--color-gp-phosphor);
+  --color-ghost-accent-2: var(--color-gp-amber);
+
+  --font-display: "Syne", "Helvetica Neue", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas,
+    monospace;
+  --font-prompter: "Fraunces", "Iowan Old Style", Georgia, serif;
+
+  /* Radii & motion */
+  --gp-radius: 4px;
+  --gp-radius-lg: 10px;
+  --gp-ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
+
+/* =========================================================================
+   Base
+   ========================================================================= */
 
 html,
 body,
@@ -21,14 +62,27 @@ body,
   padding: 0;
   overflow: hidden;
   background: transparent;
-  color: var(--color-ghost-text);
-  font-family: var(--font-display);
+  color: var(--color-gp-paper);
+  font-family: var(--font-mono);
+  font-feature-settings: "ss01", "ss02", "zero";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  letter-spacing: 0.005em;
 }
 
 body.mode-editor {
-  background: #0b0b0f;
+  background:
+    radial-gradient(
+      1200px 800px at 20% -10%,
+      rgba(255, 160, 51, 0.06),
+      transparent 60%
+    ),
+    radial-gradient(
+      900px 600px at 110% 110%,
+      rgba(95, 210, 255, 0.05),
+      transparent 60%
+    ),
+    var(--color-gp-ink);
 }
 
 body.mode-teleprompter {
@@ -36,112 +90,549 @@ body.mode-teleprompter {
 }
 
 button {
-  font-family: inherit;
+  font-family: var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 11px;
+  font-weight: 500;
 }
 
 textarea {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-family: var(--font-mono);
+  font-weight: 400;
+  letter-spacing: 0;
 }
 
-/* Prose styles for markdown preview + teleprompter */
+/* Custom selection */
+::selection {
+  background: var(--color-gp-amber);
+  color: var(--color-gp-ink);
+}
+
+/* Scrollbars in panels */
+.gp-scroll::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+.gp-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.gp-scroll::-webkit-scrollbar-thumb {
+  background: var(--color-gp-line);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.gp-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--color-gp-line-strong);
+  background-clip: padding-box;
+  border: 2px solid transparent;
+}
+
+/* =========================================================================
+   Atmosphere: subtle film grain + scan lines overlay
+   ========================================================================= */
+
+.gp-grain {
+  position: relative;
+}
+.gp-grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  mix-blend-mode: overlay;
+  opacity: 0.05;
+  background-image:
+    radial-gradient(rgba(255, 255, 255, 0.8) 1px, transparent 1px),
+    radial-gradient(rgba(255, 255, 255, 0.6) 1px, transparent 1px);
+  background-size: 3px 3px, 7px 7px;
+  background-position: 0 0, 1px 2px;
+}
+
+.gp-scanlines::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.015) 0px,
+    rgba(255, 255, 255, 0.015) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+}
+
+/* =========================================================================
+   Corner-bracket viewfinder frame (film camera crop marks)
+   ========================================================================= */
+
+.gp-frame {
+  position: relative;
+}
+.gp-frame::before,
+.gp-frame::after,
+.gp-frame > .gp-frame-br,
+.gp-frame > .gp-frame-bl {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-color: var(--color-gp-line-strong);
+  border-style: solid;
+  content: "";
+  pointer-events: none;
+}
+.gp-frame::before {
+  top: 6px;
+  left: 6px;
+  border-width: 2px 0 0 2px;
+}
+.gp-frame::after {
+  top: 6px;
+  right: 6px;
+  border-width: 2px 2px 0 0;
+}
+.gp-frame > .gp-frame-bl {
+  bottom: 6px;
+  left: 6px;
+  border-width: 0 0 2px 2px;
+}
+.gp-frame > .gp-frame-br {
+  bottom: 6px;
+  right: 6px;
+  border-width: 0 2px 2px 0;
+}
+.gp-frame-hot::before,
+.gp-frame-hot::after,
+.gp-frame-hot > .gp-frame-br,
+.gp-frame-hot > .gp-frame-bl {
+  border-color: var(--color-gp-amber);
+}
+
+/* =========================================================================
+   Channel label — monospace uppercase strip shown on panels
+   ========================================================================= */
+
+.gp-channel {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-gp-mute);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.gp-channel::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  background: var(--color-gp-phosphor);
+  box-shadow: 0 0 8px var(--color-gp-phosphor);
+  display: inline-block;
+}
+.gp-channel--amber::before {
+  background: var(--color-gp-amber);
+  box-shadow: 0 0 10px var(--color-gp-amber);
+}
+.gp-channel--mute::before {
+  background: var(--color-gp-mute-2);
+  box-shadow: none;
+}
+
+/* =========================================================================
+   Buttons
+   ========================================================================= */
+
+.gp-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  background: transparent;
+  color: var(--color-gp-paper-dim);
+  border: 1px solid var(--color-gp-line);
+  border-radius: var(--gp-radius);
+  cursor: pointer;
+  transition:
+    background-color 160ms var(--gp-ease),
+    color 160ms var(--gp-ease),
+    border-color 160ms var(--gp-ease),
+    transform 120ms var(--gp-ease);
+}
+.gp-btn:hover {
+  color: var(--color-gp-paper);
+  border-color: var(--color-gp-line-strong);
+  background: var(--color-gp-surface-2);
+}
+.gp-btn:active {
+  transform: translateY(1px);
+}
+
+.gp-btn-ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--color-gp-mute);
+}
+.gp-btn-ghost:hover {
+  color: var(--color-gp-paper);
+  background: var(--color-gp-surface-2);
+}
+
+.gp-btn-live {
+  background: var(--color-gp-amber);
+  color: var(--color-gp-ink);
+  border: 1px solid var(--color-gp-amber);
+  font-weight: 600;
+  padding: 9px 18px;
+  letter-spacing: 0.18em;
+  box-shadow:
+    0 0 0 1px rgba(255, 160, 51, 0.3),
+    0 0 24px rgba(255, 160, 51, 0.25);
+}
+.gp-btn-live:hover {
+  background: var(--color-gp-amber-hot);
+  border-color: var(--color-gp-amber-hot);
+  box-shadow:
+    0 0 0 1px rgba(255, 107, 26, 0.4),
+    0 0 32px rgba(255, 107, 26, 0.35);
+}
+
+/* =========================================================================
+   REC dot — pulsing broadcast light
+   ========================================================================= */
+
+.gp-rec-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--color-gp-amber);
+  box-shadow: 0 0 12px var(--color-gp-amber), 0 0 3px var(--color-gp-amber);
+  display: inline-block;
+  animation: gp-rec-pulse 1.6s ease-in-out infinite;
+}
+.gp-rec-dot--idle {
+  background: var(--color-gp-mute-2);
+  box-shadow: none;
+  animation: none;
+}
+
+@keyframes gp-rec-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.35;
+    transform: scale(0.85);
+  }
+}
+
+/* =========================================================================
+   Prose — markdown preview inside editor (Plex Mono vibe, readable)
+   ========================================================================= */
+
 .gp-prose {
-  color: var(--gp-text, var(--color-ghost-text));
-  line-height: 1.6;
+  color: var(--gp-text, var(--color-gp-paper));
+  line-height: 1.75;
   word-wrap: break-word;
+  font-family: var(--font-prompter);
+  font-weight: 400;
+  font-size: 15px;
+}
+.gp-prose > *:first-child {
+  margin-top: 0;
 }
 .gp-prose h1,
 .gp-prose h2,
 .gp-prose h3,
 .gp-prose h4 {
+  font-family: var(--font-display);
   font-weight: 700;
-  line-height: 1.15;
-  margin-top: 1.4em;
-  margin-bottom: 0.6em;
-  color: var(--color-ghost-accent);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  margin-top: 1.6em;
+  margin-bottom: 0.5em;
+  color: var(--color-gp-paper);
 }
 .gp-prose h1 {
-  font-size: 1.4em;
+  font-size: 1.9em;
+  background: linear-gradient(90deg, var(--color-gp-paper) 0%, var(--color-gp-amber) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 .gp-prose h2 {
-  font-size: 1.25em;
+  font-size: 1.45em;
+  color: var(--color-gp-phosphor);
 }
 .gp-prose h3 {
-  font-size: 1.1em;
+  font-size: 1.18em;
+  color: var(--color-gp-cyan);
 }
 .gp-prose p {
-  margin: 0.6em 0;
+  margin: 0.8em 0;
 }
 .gp-prose strong {
-  font-weight: 800;
-  color: var(--color-ghost-accent-2);
+  font-weight: 700;
+  color: var(--color-gp-amber);
 }
 .gp-prose em {
   font-style: italic;
-  color: var(--color-ghost-accent);
+  color: var(--color-gp-phosphor);
 }
 .gp-prose ul,
 .gp-prose ol {
   padding-left: 1.4em;
-  margin: 0.6em 0;
-}
-.gp-prose li {
-  margin: 0.2em 0;
-}
-.gp-prose blockquote {
-  border-left: 4px solid var(--color-ghost-accent);
-  padding: 0.2em 0.8em;
-  color: var(--color-ghost-muted);
   margin: 0.8em 0;
 }
+.gp-prose ul > li::marker {
+  color: var(--color-gp-amber);
+}
+.gp-prose ol > li::marker {
+  color: var(--color-gp-phosphor);
+  font-family: var(--font-mono);
+}
+.gp-prose li {
+  margin: 0.3em 0;
+}
+.gp-prose blockquote {
+  border-left: 2px solid var(--color-gp-amber);
+  padding: 0.4em 0 0.4em 1em;
+  color: var(--color-gp-paper-dim);
+  margin: 1em 0;
+  font-style: italic;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 160, 51, 0.06),
+    transparent 40%
+  );
+}
 .gp-prose code {
-  background: rgba(255, 255, 255, 0.08);
-  padding: 0.1em 0.35em;
-  border-radius: 4px;
-  font-size: 0.9em;
+  font-family: var(--font-mono);
+  background: var(--color-gp-surface-3);
+  color: var(--color-gp-phosphor);
+  padding: 0.1em 0.4em;
+  border-radius: 3px;
+  font-size: 0.88em;
+  border: 1px solid var(--color-gp-line);
 }
 .gp-prose pre {
-  background: rgba(0, 0, 0, 0.4);
-  padding: 0.8em 1em;
-  border-radius: 8px;
+  background: var(--color-gp-surface);
+  padding: 1em 1.2em;
+  border-radius: 6px;
   overflow-x: auto;
+  border: 1px solid var(--color-gp-line);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.4);
+}
+.gp-prose pre code {
+  background: transparent;
+  border: none;
+  padding: 0;
 }
 .gp-prose hr {
   border: none;
-  border-top: 1px solid var(--color-ghost-border);
-  margin: 1.2em 0;
+  border-top: 1px dashed var(--color-gp-line);
+  margin: 1.5em 0;
+}
+.gp-prose a {
+  color: var(--color-gp-cyan);
+  text-decoration: underline;
+  text-decoration-color: rgba(95, 210, 255, 0.4);
+  text-underline-offset: 3px;
+}
+.gp-prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1em 0;
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+}
+.gp-prose th,
+.gp-prose td {
+  border: 1px solid var(--color-gp-line);
+  padding: 0.5em 0.8em;
+  text-align: left;
+}
+.gp-prose th {
+  background: var(--color-gp-surface-2);
+  color: var(--color-gp-phosphor);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.85em;
 }
 
-/* Reading line glow */
+/* Teleprompter-specific prose: larger, serif, more air */
+.gp-prose--stage {
+  font-family: var(--font-prompter);
+  font-weight: 500;
+  line-height: inherit; /* inherits from settings */
+}
+.gp-prose--stage h1,
+.gp-prose--stage h2,
+.gp-prose--stage h3 {
+  font-family: var(--font-display);
+  background: none;
+  -webkit-background-clip: initial;
+  background-clip: initial;
+  color: var(--color-gp-amber);
+  letter-spacing: -0.015em;
+}
+
+/* =========================================================================
+   Reading line — cinematic horizontal bar
+   ========================================================================= */
+
 .gp-reading-line {
   position: absolute;
   left: 0;
   right: 0;
   pointer-events: none;
-  height: 3px;
+  height: 2px;
   background: linear-gradient(
     90deg,
     transparent,
-    var(--color-ghost-accent) 20%,
-    var(--color-ghost-accent-2) 80%,
+    var(--color-gp-amber) 30%,
+    var(--color-gp-amber) 70%,
     transparent
   );
-  box-shadow: 0 0 12px var(--color-ghost-accent), 0 0 28px var(--color-ghost-accent-2);
-  opacity: 0.8;
+  box-shadow:
+    0 0 14px rgba(255, 160, 51, 0.7),
+    0 0 36px rgba(255, 160, 51, 0.35);
+  opacity: 0.9;
 }
-
-/* Edit-mode dashed border */
-.gp-edit-mode-border {
+.gp-reading-line::before,
+.gp-reading-line::after {
+  content: "";
   position: absolute;
-  inset: 4px;
-  pointer-events: none;
-  border: 2px dashed var(--color-ghost-accent);
-  border-radius: 10px;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  transform: translateY(-50%) rotate(45deg);
+  border: 2px solid var(--color-gp-amber);
+  background: var(--color-gp-ink);
+  box-shadow: 0 0 10px rgba(255, 160, 51, 0.8);
+}
+.gp-reading-line::before {
+  left: 8px;
+}
+.gp-reading-line::after {
+  right: 8px;
 }
 
-/* Hide scrollbar in teleprompter */
+/* Hide scrollbar on teleprompter */
 .gp-no-scrollbar::-webkit-scrollbar {
   display: none;
 }
 .gp-no-scrollbar {
   scrollbar-width: none;
+}
+
+/* =========================================================================
+   Edit-mode dashed frame (teleprompter)
+   ========================================================================= */
+
+.gp-edit-mode-border {
+  position: absolute;
+  inset: 4px;
+  pointer-events: none;
+  border: 1px dashed var(--color-gp-amber);
+  border-radius: 8px;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 160, 51, 0.08),
+    0 0 32px rgba(255, 160, 51, 0.05);
+}
+
+/* =========================================================================
+   Intro reveal — staggered fade on editor mount
+   ========================================================================= */
+
+@keyframes gp-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.gp-reveal {
+  animation: gp-fade-up 520ms var(--gp-ease) both;
+}
+.gp-reveal-1 {
+  animation-delay: 40ms;
+}
+.gp-reveal-2 {
+  animation-delay: 120ms;
+}
+.gp-reveal-3 {
+  animation-delay: 200ms;
+}
+.gp-reveal-4 {
+  animation-delay: 280ms;
+}
+
+/* =========================================================================
+   Range input & checkbox — minimal broadcast controls
+   ========================================================================= */
+
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 2px;
+  background: var(--color-gp-line-strong);
+  outline: none;
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  background: var(--color-gp-amber);
+  border: 1px solid var(--color-gp-amber);
+  box-shadow: 0 0 10px rgba(255, 160, 51, 0.5);
+  cursor: pointer;
+}
+input[type="range"]::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  background: var(--color-gp-amber);
+  border: 1px solid var(--color-gp-amber);
+  box-shadow: 0 0 10px rgba(255, 160, 51, 0.5);
+  cursor: pointer;
+}
+
+input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--color-gp-line-strong);
+  background: var(--color-gp-surface);
+  display: inline-grid;
+  place-content: center;
+  cursor: pointer;
+}
+input[type="checkbox"]:checked {
+  border-color: var(--color-gp-amber);
+  background: var(--color-gp-amber);
+}
+input[type="checkbox"]:checked::after {
+  content: "";
+  width: 6px;
+  height: 6px;
+  background: var(--color-gp-ink);
+}
+
+input[type="color"] {
+  width: 42px;
+  height: 26px;
+  border: 1px solid var(--color-gp-line);
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
 }

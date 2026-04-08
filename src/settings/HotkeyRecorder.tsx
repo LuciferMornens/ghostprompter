@@ -33,11 +33,27 @@ export function HotkeyRecorder({ value, onChange }: Props) {
       type="button"
       onClick={() => setRecording((r) => !r)}
       onKeyDown={onKeyDown}
-      className={`px-3 py-1.5 text-sm rounded-md border min-w-32 text-left ${
-        recording
-          ? "border-ghost-accent text-ghost-accent"
-          : "border-ghost-border text-ghost-text"
-      } bg-ghost-panel hover:bg-ghost-panel-2`}
+      className="inline-block text-left"
+      style={{
+        minWidth: 160,
+        padding: "6px 10px",
+        fontFamily: "var(--font-mono)",
+        fontSize: 11,
+        letterSpacing: "0.05em",
+        textTransform: "none",
+        color: recording ? "var(--color-gp-amber)" : "var(--color-gp-paper)",
+        background: recording
+          ? "rgba(255,160,51,0.08)"
+          : "var(--color-gp-ink)",
+        border: `1px solid ${
+          recording ? "var(--color-gp-amber)" : "var(--color-gp-line)"
+        }`,
+        borderRadius: 2,
+        cursor: "pointer",
+        boxShadow: recording
+          ? "0 0 0 1px rgba(255,160,51,0.3), 0 0 12px rgba(255,160,51,0.15)"
+          : "none",
+      }}
     >
       {recording ? "press keys..." : value}
     </button>
@@ -45,6 +61,7 @@ export function HotkeyRecorder({ value, onChange }: Props) {
 }
 
 function normalizeKey(key: string, code: string): string | null {
+  // Map special keys first, BEFORE length-1 fallback, so that Space (key=" ") → "Space"
   const map: Record<string, string> = {
     " ": "Space",
     ArrowUp: "Up",
