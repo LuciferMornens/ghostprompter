@@ -42,30 +42,27 @@ export function EditorView() {
       {/* ================= TOP BAR ================= */}
       <header className="relative z-10 flex items-center gap-5 px-8 pt-7 pb-5 gp-reveal gp-reveal-1">
         {/* Brand mark */}
-        <div className="flex items-center gap-3.5">
+        <div className="flex items-center gap-3">
           <BrandMark />
           <div className="flex flex-col leading-tight">
             <span
               style={{
-                fontFamily: "var(--font-prompter)",
-                fontSize: 19,
-                fontWeight: 500,
+                fontFamily: "var(--font-display)",
+                fontSize: 15,
+                fontWeight: 600,
                 letterSpacing: "-0.022em",
                 color: "var(--color-gp-paper)",
-                fontVariationSettings: '"opsz" 144',
               }}
             >
-              Ghost
-              <span style={{ fontStyle: "italic", fontWeight: 400 }}>
-                prompter
-              </span>
+              Ghostprompter
             </span>
             <span
               className="mt-[3px]"
               style={{
                 fontFamily: "var(--font-mono)",
-                fontSize: 9.5,
-                letterSpacing: "0.14em",
+                fontSize: 9,
+                fontWeight: 400,
+                letterSpacing: "0.16em",
                 color: "var(--color-gp-paper-dim-2)",
                 textTransform: "uppercase",
               }}
@@ -85,12 +82,11 @@ export function EditorView() {
             <span
               className="truncate max-w-[440px]"
               style={{
-                fontFamily: "var(--font-prompter)",
-                fontStyle: "italic",
-                fontSize: 12,
-                fontVariationSettings: '"opsz" 144',
+                fontFamily: "var(--font-sans)",
+                fontSize: 11.5,
+                fontWeight: 500,
                 color: "var(--color-gp-paper)",
-                letterSpacing: "-0.008em",
+                letterSpacing: "-0.005em",
               }}
             >
               {script.name}
@@ -173,31 +169,19 @@ function BrandMark() {
       className="relative grid place-items-center"
       aria-hidden
       style={{
-        width: 42,
-        height: 42,
-        borderRadius: 13,
+        width: 32,
+        height: 32,
+        borderRadius: 10,
         background:
-          "radial-gradient(130% 150% at 18% 8%, rgba(110,198,255,0.62), transparent 58%), radial-gradient(130% 150% at 82% 92%, rgba(180,138,255,0.62), transparent 58%), radial-gradient(80% 120% at 50% 110%, rgba(134,242,201,0.2), transparent 60%), #0a0c12",
-        border: "1px solid rgba(255,255,255,0.2)",
+          "linear-gradient(145deg, rgba(255,255,255,0.12), rgba(255,255,255,0.02) 45%, rgba(0,0,0,0.18)), #0b0d14",
+        border: "1px solid rgba(255,255,255,0.14)",
         boxShadow:
-          "inset 0 1px 0 rgba(255,255,255,0.4), 0 0 0 1px rgba(0,0,0,0.3) inset, 0 14px 36px -10px rgba(110,198,255,0.45), 0 8px 22px -8px rgba(180,138,255,0.35)",
+          "inset 0 1px 0 rgba(255,255,255,0.24), 0 6px 18px -8px rgba(0,0,0,0.55), 0 0 0 1px rgba(0,0,0,0.25) inset",
       }}
     >
-      <span
-        aria-hidden
-        style={{
-          position: "absolute",
-          inset: 1,
-          borderRadius: 12,
-          background:
-            "radial-gradient(80% 140% at 50% -20%, rgba(255,255,255,0.22), transparent 60%)",
-          pointerEvents: "none",
-        }}
-      />
-      {/* Ghost outline glyph */}
       <svg
-        width="19"
-        height="19"
+        width="16"
+        height="16"
         viewBox="0 0 18 18"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
@@ -205,13 +189,13 @@ function BrandMark() {
       >
         <path
           d="M3 8a6 6 0 1 1 12 0v8l-2-1.5L11 16l-2-1.5L7 16l-2-1.5L3 16V8Z"
-          stroke="#fff"
-          strokeOpacity="0.9"
-          strokeWidth="1.2"
+          stroke="#ffffff"
+          strokeOpacity="0.92"
+          strokeWidth="1.25"
           strokeLinejoin="round"
         />
-        <circle cx="7" cy="8.5" r="0.9" fill="#fff" fillOpacity="0.95" />
-        <circle cx="11" cy="8.5" r="0.9" fill="#fff" fillOpacity="0.95" />
+        <circle cx="7" cy="8.5" r="0.85" fill="#ffffff" fillOpacity="0.95" />
+        <circle cx="11" cy="8.5" r="0.85" fill="#ffffff" fillOpacity="0.95" />
       </svg>
     </div>
   );
@@ -219,29 +203,28 @@ function BrandMark() {
 
 function PanelHeader({ label, code }: { label: string; code: string }) {
   return (
-    <div className="flex items-baseline justify-between px-2 pb-3.5 pt-0">
+    <div className="flex items-center justify-between px-2 pb-3.5 pt-0">
       <span
         className="inline-flex items-center gap-2.5"
         style={{
-          fontFamily: "var(--font-prompter)",
-          fontSize: 14,
-          fontStyle: "italic",
-          fontWeight: 500,
-          letterSpacing: "-0.012em",
+          fontFamily: "var(--font-display)",
+          fontSize: 12,
+          fontWeight: 600,
+          letterSpacing: "-0.008em",
           color: "var(--color-gp-paper)",
-          fontVariationSettings: '"opsz" 144',
         }}
       >
         <span
           aria-hidden
           style={{
             display: "inline-block",
-            width: 4,
-            height: 4,
+            width: 5,
+            height: 5,
             borderRadius: 999,
             background:
               "linear-gradient(135deg, var(--color-gp-cerulean), var(--color-gp-violet))",
-            boxShadow: "0 0 8px rgba(110,198,255,0.7)",
+            boxShadow:
+              "0 0 8px rgba(110,198,255,0.65), 0 0 14px rgba(180,138,255,0.4)",
           }}
         />
         {label}
@@ -249,8 +232,9 @@ function PanelHeader({ label, code }: { label: string; code: string }) {
       <span
         style={{
           fontFamily: "var(--font-mono)",
-          fontSize: 9.5,
-          letterSpacing: "0.16em",
+          fontSize: 9,
+          fontWeight: 400,
+          letterSpacing: "0.18em",
           color: "var(--color-gp-paper-dim-2)",
           textTransform: "uppercase",
         }}

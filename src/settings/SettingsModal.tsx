@@ -73,13 +73,11 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
             />
             <span
               style={{
-                fontFamily: "var(--font-prompter)",
-                fontSize: 22,
-                fontWeight: 500,
-                fontStyle: "italic",
-                letterSpacing: "-0.024em",
+                fontFamily: "var(--font-display)",
+                fontSize: 16,
+                fontWeight: 600,
+                letterSpacing: "-0.018em",
                 color: "var(--color-gp-paper)",
-                fontVariationSettings: '"opsz" 144',
               }}
             >
               <h2 style={{ margin: 0, fontSize: "inherit" }}>Settings</h2>
@@ -381,13 +379,11 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
                 <Section title="System">
                   <div
                     style={{
-                      fontFamily: "var(--font-prompter)",
-                      fontWeight: 500,
-                      fontStyle: "italic",
-                      fontSize: 22,
+                      fontFamily: "var(--font-display)",
+                      fontWeight: 600,
+                      fontSize: 17,
                       letterSpacing: "-0.02em",
                       color: "var(--color-gp-paper)",
-                      fontVariationSettings: '"opsz" 144',
                     }}
                   >
                     GhostPrompter 0.1.0
@@ -502,13 +498,12 @@ function Section({
       <div className="flex items-center gap-4">
         <span
           style={{
-            fontFamily: "var(--font-prompter)",
-            fontStyle: "italic",
-            fontSize: 14,
-            fontWeight: 500,
-            letterSpacing: "-0.014em",
+            fontFamily: "var(--font-display)",
+            fontSize: 11,
+            fontWeight: 600,
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
             color: "var(--color-gp-paper)",
-            fontVariationSettings: '"opsz" 144',
           }}
         >
           {title}

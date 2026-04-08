@@ -102,8 +102,9 @@ export function TeleprompterView() {
           color: settings.textColor,
           fontSize: `${settings.fontSize}px`,
           lineHeight: settings.lineHeight,
-          fontFamily: "var(--font-prompter)",
-          fontWeight: 400,
+          fontFamily: "var(--font-display)",
+          fontWeight: 500,
+          letterSpacing: "-0.022em",
           transform: transform || undefined,
         }}
       >
@@ -146,12 +147,11 @@ export function TeleprompterView() {
           />
           <span
             style={{
-              fontFamily: "var(--font-prompter)",
-              fontStyle: "italic",
-              fontSize: 12.5,
-              fontVariationSettings: '"opsz" 144',
+              fontFamily: "var(--font-sans)",
+              fontSize: 11.5,
+              fontWeight: 500,
               color: "var(--color-gp-paper-dim)",
-              letterSpacing: "-0.005em",
+              letterSpacing: "-0.004em",
               maxWidth: 220,
               overflow: "hidden",
               textOverflow: "ellipsis",
@@ -180,12 +180,12 @@ export function TeleprompterView() {
           <span
             className="tabular-nums"
             style={{
-              fontFamily: "var(--font-prompter)",
-              fontSize: 15,
-              fontVariationSettings: '"opsz" 144',
+              fontFamily: "var(--font-display)",
+              fontSize: 13.5,
               color: "var(--color-gp-paper)",
-              fontWeight: 500,
+              fontWeight: 600,
               letterSpacing: "-0.012em",
+              fontFeatureSettings: '"tnum", "lnum"',
             }}
           >
             {settings.scrollSpeed}
@@ -241,12 +241,12 @@ export function TeleprompterView() {
               <span
                 className="mt-1.5 tabular-nums"
                 style={{
-                  fontFamily: "var(--font-prompter)",
-                  fontSize: 16,
-                  fontVariationSettings: '"opsz" 144',
+                  fontFamily: "var(--font-display)",
+                  fontSize: 14.5,
                   color: "var(--color-gp-paper)",
-                  fontWeight: 500,
+                  fontWeight: 600,
                   letterSpacing: "-0.014em",
+                  fontFeatureSettings: '"tnum", "lnum"',
                 }}
               >
                 {settings.scrollSpeed}

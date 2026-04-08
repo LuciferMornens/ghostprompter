@@ -3,7 +3,7 @@
 /* =========================================================================
    GhostPrompter — Liquid Glass / Aurora
    Translucent frosted surfaces over a deep twilight aurora. Editorial,
-   refined, motion-driven. Fraunces + Geist + Geist Mono.
+   refined, motion-driven. Geist + Geist Mono throughout.
    ========================================================================= */
 
 @theme {
@@ -48,15 +48,16 @@
   --color-ghost-accent: var(--color-gp-cerulean);
   --color-ghost-accent-2: var(--color-gp-violet);
 
-  /* Typography */
+  /* Typography — Geist across the board. `--font-prompter` is preserved as
+     an alias so existing callsites keep working, but points at Geist now. */
   --font-display: "Geist", "SF Pro Display", -apple-system, BlinkMacSystemFont,
     system-ui, sans-serif;
   --font-sans: "Geist", "SF Pro Text", -apple-system, BlinkMacSystemFont,
     system-ui, sans-serif;
   --font-mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, Consolas,
     monospace;
-  --font-prompter: "Fraunces", "Iowan Old Style", Georgia, "Times New Roman",
-    serif;
+  --font-prompter: "Geist", "SF Pro Display", -apple-system, BlinkMacSystemFont,
+    system-ui, sans-serif;
 
   /* Shape & motion */
   --gp-radius-sm: 8px;
@@ -1011,14 +1012,12 @@ input[type="color"] {
 
 .gp-prose {
   color: var(--gp-text, var(--color-gp-paper));
-  line-height: 1.82;
+  line-height: 1.68;
   word-wrap: break-word;
-  font-family: var(--font-prompter);
+  font-family: var(--font-sans);
   font-weight: 400;
-  font-size: 16.5px;
-  font-optical-sizing: auto;
-  font-variation-settings: "opsz" 14;
-  letter-spacing: -0.002em;
+  font-size: 14.5px;
+  letter-spacing: -0.006em;
 }
 .gp-prose > *:first-child {
   margin-top: 0;
@@ -1027,29 +1026,31 @@ input[type="color"] {
 .gp-prose h2,
 .gp-prose h3,
 .gp-prose h4 {
-  font-family: var(--font-prompter);
-  font-weight: 500;
-  line-height: 1.08;
-  letter-spacing: -0.024em;
-  margin-top: 1.9em;
+  font-family: var(--font-display);
+  font-weight: 600;
+  line-height: 1.12;
+  letter-spacing: -0.022em;
+  margin-top: 1.6em;
   margin-bottom: 0.55em;
   color: var(--color-gp-paper);
-  font-variation-settings: "opsz" 144;
 }
 .gp-prose h1 {
-  font-size: 2.1em;
-  font-weight: 500;
+  font-size: 1.78em;
+  font-weight: 600;
+  letter-spacing: -0.028em;
 }
 .gp-prose h2 {
-  font-size: 1.55em;
-  font-weight: 500;
+  font-size: 1.35em;
+  font-weight: 600;
+  letter-spacing: -0.022em;
 }
 .gp-prose h3 {
-  font-size: 1.22em;
-  font-weight: 500;
+  font-size: 1.12em;
+  font-weight: 600;
+  letter-spacing: -0.018em;
 }
 .gp-prose p {
-  margin: 0.95em 0;
+  margin: 0.85em 0;
   color: var(--color-gp-paper-dim);
 }
 .gp-prose strong {
@@ -1063,7 +1064,7 @@ input[type="color"] {
 .gp-prose ul,
 .gp-prose ol {
   padding-left: 1.4em;
-  margin: 0.9em 0;
+  margin: 0.8em 0;
   color: var(--color-gp-paper-dim);
 }
 .gp-prose ul > li::marker {
@@ -1136,15 +1137,14 @@ input[type="color"] {
   font-weight: 500;
 }
 
-/* Teleprompter stage prose: more air, lighter weight, softer color */
+/* Teleprompter stage prose: more air, display weight, softer color */
 .gp-prose--stage {
-  font-family: var(--font-prompter);
-  font-weight: 400;
+  font-family: var(--font-display);
+  font-weight: 500;
   line-height: inherit;
   color: inherit;
   font-size: inherit;
-  font-variation-settings: "opsz" 144;
-  letter-spacing: -0.012em;
+  letter-spacing: -0.022em;
 }
 .gp-prose--stage p,
 .gp-prose--stage ul,
@@ -1153,7 +1153,7 @@ input[type="color"] {
 }
 .gp-prose--stage strong {
   color: var(--color-gp-cerulean);
-  font-weight: 600;
+  font-weight: 700;
 }
 .gp-prose--stage em {
   font-style: italic;
@@ -1163,8 +1163,8 @@ input[type="color"] {
 .gp-prose--stage h2,
 .gp-prose--stage h3 {
   color: var(--color-gp-paper);
-  font-weight: 500;
-  letter-spacing: -0.025em;
+  font-weight: 600;
+  letter-spacing: -0.028em;
 }
 
 /* =========================================================================

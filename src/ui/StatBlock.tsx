@@ -13,6 +13,7 @@ export function StatBlock({ label, value, hint, className }: Props) {
         className="text-[10px] uppercase"
         style={{
           fontFamily: "var(--font-mono)",
+          fontWeight: 400,
           letterSpacing: "0.18em",
           color: "var(--color-gp-paper-dim-2)",
         }}
@@ -23,14 +24,13 @@ export function StatBlock({ label, value, hint, className }: Props) {
         data-gp-stat-value
         className="tabular-nums"
         style={{
-          fontFamily: "var(--font-prompter)",
-          fontVariationSettings: '"opsz" 144',
-          fontSize: 24,
-          fontWeight: 500,
+          fontFamily: "var(--font-display)",
+          fontSize: 19,
+          fontWeight: 600,
           letterSpacing: "-0.022em",
           color: "var(--color-gp-paper)",
           lineHeight: 1.05,
-          fontFeatureSettings: '"tnum", "lnum"',
+          fontFeatureSettings: '"tnum", "lnum", "ss01", "ss02"',
         }}
       >
         {value}
@@ -40,6 +40,7 @@ export function StatBlock({ label, value, hint, className }: Props) {
           className="text-[10px]"
           style={{
             fontFamily: "var(--font-mono)",
+            fontWeight: 400,
             color: "var(--color-gp-mute)",
             letterSpacing: "0.06em",
           }}
