@@ -32,6 +32,12 @@ mod tests {
         assert!(crate::platform::is_capture_hiding_supported());
     }
 
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn macos_reports_supported() {
+        assert!(crate::platform::is_capture_hiding_supported());
+    }
+
     #[cfg(not(any(target_os = "windows", target_os = "macos")))]
     #[test]
     fn unsupported_platforms_report_false() {
