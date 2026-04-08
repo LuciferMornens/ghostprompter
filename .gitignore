@@ -12,6 +12,7 @@ Thumbs.db
 *.njsproj
 *.sln
 *.sw?
+.agents/*
 
 # Logs & debug
 *.log
