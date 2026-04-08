@@ -4,6 +4,7 @@
 
 1. **TDD / green gate** — Tests define correctness. **Do not merge or treat work as done until `npm test` is green** (runs **Vitest** + **`cargo test`** in `src-tauri`). Add or update tests with behavior changes; fix failures before finishing. Rust toolchain on `PATH` required for the full gate.
 2. **Understand before editing** — Trace data flow (Zustand → `ipc` → Rust commands → platform), read callers and tests, then change code. No drive-by edits.
+3. **Production ready CODE** - You are not allowed to write code that would leave implementations partially done or incorrectly. End to end, fully, always. Your code must be above flawless and follow the best of guidelines.
 
 ## What this is
 

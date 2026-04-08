@@ -68,6 +68,20 @@ describe("ipc", () => {
     });
   });
 
+  describe("setOverlayRect", () => {
+    it("calls invoke('set_overlay_rect', { x, y, w, h })", async () => {
+      invokeMock.mockResolvedValueOnce(undefined);
+      await ipc.setOverlayRect({ x: 40, y: 60, w: 480, h: 320 });
+      expect(invokeMock).toHaveBeenCalledTimes(1);
+      expect(invokeMock).toHaveBeenCalledWith("set_overlay_rect", {
+        x: 40,
+        y: 60,
+        w: 480,
+        h: 320,
+      });
+    });
+  });
+
   describe("setEditMode", () => {
     it("calls invoke('set_edit_mode', { edit }) with true", async () => {
       invokeMock.mockResolvedValueOnce(undefined);

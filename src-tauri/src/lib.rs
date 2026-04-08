@@ -23,6 +23,7 @@ pub fn run() {
             commands::window_mode::set_capture_invisible,
             commands::window_mode::set_click_through,
             commands::window_mode::is_capture_invisible_supported,
+            commands::window_mode::set_overlay_rect,
             commands::hotkeys::register_hotkeys,
             commands::hotkeys::unregister_hotkeys,
         ])
