@@ -39,9 +39,9 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
       className="fixed inset-0 flex items-center justify-center z-50"
       onClick={onClose}
       style={{
-        background: "rgba(5,6,10,0.64)",
-        backdropFilter: "blur(18px) saturate(120%)",
-        WebkitBackdropFilter: "blur(18px) saturate(120%)",
+        background: "rgba(5,5,6,0.68)",
+        backdropFilter: "blur(12px) saturate(115%)",
+        WebkitBackdropFilter: "blur(12px) saturate(115%)",
       }}
     >
       <div
@@ -49,34 +49,32 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
         className="gp-glass gp-glass-sheen w-[880px] max-h-[86vh] flex flex-col overflow-hidden gp-scale-in"
         style={{
           borderRadius: 24,
-          background: "rgba(11, 13, 21, 0.74)",
+          background: "rgba(13, 13, 15, 0.78)",
         }}
       >
         {/* ========= Modal header ========= */}
         <header
           className="flex items-center justify-between px-8 h-16"
-          style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}
+          style={{ borderBottom: "1px solid rgba(241,237,228,0.07)" }}
         >
           <div className="flex items-center gap-3.5">
             <span
               aria-hidden
               style={{
                 display: "inline-block",
-                width: 6,
-                height: 6,
-                borderRadius: 999,
-                background:
-                  "linear-gradient(135deg, var(--color-gp-cerulean), var(--color-gp-violet))",
+                width: 5,
+                height: 5,
+                background: "var(--color-gp-bronze)",
                 boxShadow:
-                  "0 0 10px rgba(110,198,255,0.7), 0 0 18px rgba(180,138,255,0.5)",
+                  "0 0 9px rgba(199,138,74,0.65), 0 0 16px rgba(224,164,106,0.38)",
               }}
             />
             <span
               style={{
                 fontFamily: "var(--font-display)",
-                fontSize: 16,
+                fontSize: 15.5,
                 fontWeight: 600,
-                letterSpacing: "-0.018em",
+                letterSpacing: "-0.02em",
                 color: "var(--color-gp-paper)",
               }}
             >
@@ -109,7 +107,7 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
           {/* Tabs rail */}
           <nav
             className="w-60 p-4 flex flex-col gap-1"
-            style={{ borderRight: "1px solid rgba(255,255,255,0.06)" }}
+            style={{ borderRight: "1px solid rgba(241,237,228,0.06)" }}
           >
             {TABS.map(([id, label, hint]) => {
               const active = tab === id;
@@ -148,7 +146,7 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
             <div
               className="px-3 pt-3 mt-1 text-[10px]"
               style={{
-                borderTop: "1px solid rgba(255,255,255,0.06)",
+                borderTop: "1px solid rgba(241,237,228,0.06)",
                 fontFamily: "var(--font-mono)",
                 color: "var(--color-gp-mute)",
                 letterSpacing: "0.08em",
@@ -364,7 +362,7 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
                       border: "none",
                       cursor: "pointer",
                       textDecoration: "underline",
-                      textDecorationColor: "rgba(255,255,255,0.2)",
+                      textDecorationColor: "rgba(241,237,228,0.2)",
                       textUnderlineOffset: 3,
                     }}
                   >
@@ -412,15 +410,15 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
                       style={{
                         background:
                           captureSupported === null
-                            ? "rgba(255,255,255,0.25)"
+                            ? "rgba(241,237,228,0.22)"
                             : captureSupported
                               ? "var(--color-gp-mint)"
                               : "var(--color-gp-sunset)",
                         boxShadow:
                           captureSupported === true
-                            ? "0 0 10px rgba(134,242,201,0.8)"
+                            ? "0 0 9px rgba(138,184,146,0.7)"
                             : captureSupported === false
-                              ? "0 0 10px rgba(255,157,122,0.7)"
+                              ? "0 0 9px rgba(215,122,85,0.65)"
                               : "none",
                       }}
                     />
@@ -470,7 +468,7 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
                       border: "none",
                       cursor: "pointer",
                       textDecoration: "underline",
-                      textDecorationColor: "rgba(255,255,255,0.2)",
+                      textDecorationColor: "rgba(241,237,228,0.2)",
                       textUnderlineOffset: 3,
                     }}
                   >
@@ -513,7 +511,7 @@ function Section({
           style={{
             height: 1,
             background:
-              "linear-gradient(90deg, rgba(255,255,255,0.14), transparent)",
+              "linear-gradient(90deg, rgba(199,138,74,0.32), transparent)",
           }}
           aria-hidden
         />
@@ -563,10 +561,10 @@ function FieldInline({
     <label
       className="flex items-center justify-between gap-3 px-4 py-3.5"
       style={{
-        background: "rgba(255,255,255,0.028)",
-        border: "1px solid rgba(255,255,255,0.065)",
+        background: "rgba(241,237,228,0.024)",
+        border: "1px solid rgba(241,237,228,0.06)",
         borderRadius: 11,
-        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04)",
+        boxShadow: "inset 0 1px 0 rgba(255,240,220,0.035)",
       }}
     >
       <span
@@ -627,10 +625,10 @@ function HotkeyRow({
     <div
       className="flex items-center justify-between gap-4 px-4 py-3"
       style={{
-        background: "rgba(255,255,255,0.024)",
-        border: "1px solid rgba(255,255,255,0.065)",
+        background: "rgba(241,237,228,0.022)",
+        border: "1px solid rgba(241,237,228,0.06)",
         borderRadius: 11,
-        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04)",
+        boxShadow: "inset 0 1px 0 rgba(255,240,220,0.035)",
         transition: "border-color 200ms var(--gp-ease-swift)",
       }}
     >

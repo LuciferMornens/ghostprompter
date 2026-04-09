@@ -15,9 +15,9 @@ export function MarkdownEditor() {
         fontFamily: "var(--font-mono)",
         fontSize: 13.5,
         lineHeight: 1.92,
-        padding: "38px 44px",
+        padding: "36px 42px",
         color: "var(--color-gp-paper-dim)",
-        caretColor: "var(--color-gp-cerulean)",
+        caretColor: "var(--color-gp-bronze)",
         letterSpacing: "0.002em",
         tabSize: 2,
       }}

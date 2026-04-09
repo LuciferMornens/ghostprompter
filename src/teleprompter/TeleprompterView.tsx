@@ -464,7 +464,7 @@ export function TeleprompterView() {
                 style={{
                   width: 1,
                   background:
-                    "linear-gradient(180deg, transparent, rgba(255,255,255,0.18), transparent)",
+                    "linear-gradient(180deg, transparent, rgba(241,237,228,0.16), transparent)",
                 }}
                 aria-hidden
               />
@@ -577,13 +577,13 @@ export function TeleprompterView() {
             bottom: 14,
             transform: "translateX(-50%)",
             padding: "10px 12px",
-            background: "rgba(9, 11, 17, 0.78)",
-            backdropFilter: "blur(34px) saturate(170%)",
-            WebkitBackdropFilter: "blur(34px) saturate(170%)",
-            border: "1px solid rgba(255,255,255,0.14)",
+            background: "rgba(9, 9, 11, 0.78)",
+            backdropFilter: "blur(22px) saturate(118%)",
+            WebkitBackdropFilter: "blur(22px) saturate(118%)",
+            border: "1px solid rgba(241,237,228,0.12)",
             borderRadius: 18,
             boxShadow:
-              "inset 0 1px 0 rgba(255,255,255,0.22), inset 0 0 0 1px rgba(0,0,0,0.25), 0 24px 60px -14px rgba(0,0,0,0.72), 0 10px 30px -10px rgba(110,198,255,0.18), 0 0 0 1px rgba(110,198,255,0.08)",
+              "inset 0 1px 0 rgba(255,240,220,0.18), inset 0 0 0 1px rgba(0,0,0,0.28), 0 22px 56px -16px rgba(0,0,0,0.72), 0 10px 28px -12px rgba(199,138,74,0.2), 0 0 0 1px rgba(199,138,74,0.08)",
             pointerEvents: "auto",
             zIndex: 20,
           }}
@@ -781,7 +781,7 @@ function Separator() {
       style={{
         width: 1,
         background:
-          "linear-gradient(180deg, transparent, rgba(255,255,255,0.14), transparent)",
+          "linear-gradient(180deg, transparent, rgba(241,237,228,0.13), transparent)",
       }}
       aria-hidden
     />
