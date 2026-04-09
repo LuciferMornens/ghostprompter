@@ -59,8 +59,14 @@
   --color-ghost-accent: var(--color-gp-bronze);
   --color-ghost-accent-2: var(--color-gp-copper);
 
-  /* Typography — Geist across the board. `--font-prompter` is preserved as
-     an alias so existing callsites keep working, but points at Geist now. */
+  /* Typography
+     - `--font-serif` is the new editorial display face (Fraunces) used for
+       the wordmark, stat numerals, and big headlines. It gives the app a
+       distinctive, publication-grade voice that Geist alone can't reach.
+     - `--font-display` / `--font-sans` remain Geist for UI chrome.
+     - `--font-prompter` is kept as an alias so existing callsites keep
+       working, but points at Geist. */
+  --font-serif: "Fraunces", "Iowan Old Style", "Palatino", "Georgia", serif;
   --font-display: "Geist", "SF Pro Display", -apple-system, BlinkMacSystemFont,
     system-ui, sans-serif;
   --font-sans: "Geist", "SF Pro Text", -apple-system, BlinkMacSystemFont,
@@ -503,9 +509,9 @@ textarea,
   position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  height: 38px;
-  padding: 0 20px;
+  gap: 9px;
+  height: 34px;
+  padding: 0 18px;
   border-radius: 999px;
   border: 1px solid rgba(199, 138, 74, 0.42);
   background:
@@ -950,13 +956,16 @@ input[type="color"] {
    ========================================================================= */
 
 .gp-prose {
-  color: var(--gp-text, var(--color-gp-paper));
-  line-height: 1.68;
+  color: var(--color-gp-paper);
+  line-height: 1.72;
   word-wrap: break-word;
-  font-family: var(--font-sans);
+  font-family: var(--font-serif);
+  font-optical-sizing: auto;
   font-weight: 400;
-  font-size: 14.5px;
-  letter-spacing: -0.006em;
+  font-size: 17px;
+  letter-spacing: -0.008em;
+  font-feature-settings: "ss01", "onum", "kern";
+  max-width: 58ch;
 }
 .gp-prose > *:first-child {
   margin-top: 0;
@@ -965,31 +974,48 @@ input[type="color"] {
 .gp-prose h2,
 .gp-prose h3,
 .gp-prose h4 {
-  font-family: var(--font-display);
-  font-weight: 600;
-  line-height: 1.12;
-  letter-spacing: -0.022em;
-  margin-top: 1.6em;
-  margin-bottom: 0.55em;
+  font-family: var(--font-serif);
+  font-optical-sizing: auto;
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: -0.028em;
+  margin-top: 1.55em;
+  margin-bottom: 0.45em;
   color: var(--color-gp-paper);
+  font-feature-settings: "ss01", "lnum";
 }
 .gp-prose h1 {
-  font-size: 1.78em;
-  font-weight: 600;
-  letter-spacing: -0.028em;
+  font-size: 1.85em;
+  font-weight: 500;
+  letter-spacing: -0.032em;
+  margin-top: 0;
+  padding-bottom: 0.32em;
+  border-bottom: 1px solid rgba(199, 138, 74, 0.16);
 }
 .gp-prose h2 {
-  font-size: 1.35em;
-  font-weight: 600;
-  letter-spacing: -0.022em;
+  font-size: 1.32em;
+  font-weight: 500;
+  letter-spacing: -0.024em;
+}
+.gp-prose h2::before {
+  content: "";
+  display: inline-block;
+  width: 14px;
+  height: 1px;
+  background: var(--color-gp-copper);
+  vertical-align: 0.28em;
+  margin-right: 10px;
+  opacity: 0.72;
 }
 .gp-prose h3 {
-  font-size: 1.12em;
-  font-weight: 600;
+  font-size: 1.1em;
+  font-weight: 500;
+  font-style: italic;
   letter-spacing: -0.018em;
+  color: var(--color-gp-copper);
 }
 .gp-prose p {
-  margin: 0.85em 0;
+  margin: 0.78em 0;
   color: var(--color-gp-paper-dim);
 }
 .gp-prose strong {
@@ -998,23 +1024,48 @@ input[type="color"] {
 }
 .gp-prose em {
   font-style: italic;
-  color: var(--color-gp-paper);
+  color: var(--color-gp-copper);
 }
 .gp-prose ul,
 .gp-prose ol {
-  padding-left: 1.4em;
-  margin: 0.8em 0;
+  padding-left: 1.6em;
+  margin: 0.75em 0;
   color: var(--color-gp-paper-dim);
+  list-style: none;
 }
-.gp-prose ul > li::marker {
-  color: var(--color-gp-bronze);
+.gp-prose ul > li,
+.gp-prose ol > li {
+  position: relative;
+  margin: 0.28em 0;
+  padding-left: 0.2em;
 }
-.gp-prose ol > li::marker {
-  color: var(--color-gp-bronze);
+.gp-prose ul > li::before {
+  content: "";
+  position: absolute;
+  left: -0.9em;
+  top: 0.68em;
+  width: 5px;
+  height: 1px;
+  background: var(--color-gp-copper);
+  opacity: 0.75;
+}
+.gp-prose ol {
+  counter-reset: gp-prose-ol;
+}
+.gp-prose ol > li {
+  counter-increment: gp-prose-ol;
+}
+.gp-prose ol > li::before {
+  content: counter(gp-prose-ol, decimal-leading-zero);
+  position: absolute;
+  left: -1.8em;
+  top: 0.04em;
   font-family: var(--font-mono);
-}
-.gp-prose li {
-  margin: 0.3em 0;
+  font-size: 0.72em;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  color: var(--color-gp-copper);
+  opacity: 0.82;
 }
 .gp-prose blockquote {
   border-left: 1px solid rgba(199, 138, 74, 0.55);
@@ -1410,4 +1461,576 @@ input[type="color"] {
   color: var(--color-gp-copper);
   background: rgba(199, 138, 74, 0.14);
   border-color: rgba(199, 138, 74, 0.5);
+}
+
+/* =========================================================================
+   EDITORIAL REDESIGN — v2
+   A deliberate publication-grade shell. Serif wordmark, numbered panel
+   heads, oversized serif numerals in the status ribbon, and a two-tiered
+   top bar that gives every element room to breathe.
+   ========================================================================= */
+
+/* ---------- Shell layout ---------- */
+.gp-shell {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ---------- Top bar (single-row editorial masthead) ---------- */
+.gp-topbar {
+  position: relative;
+  padding: 14px 34px 14px 34px;
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  min-width: 0;
+  z-index: 2;
+}
+.gp-topbar::after {
+  content: "";
+  position: absolute;
+  left: 34px;
+  right: 34px;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(241, 237, 228, 0.07) 18%,
+    rgba(241, 237, 228, 0.14) 50%,
+    rgba(241, 237, 228, 0.07) 82%,
+    transparent
+  );
+  pointer-events: none;
+}
+
+.gp-topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  flex: 0 0 auto;
+}
+.gp-topbar-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+.gp-topbar-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  min-width: 0;
+  flex: 0 0 auto;
+}
+.gp-topbar-sep {
+  width: 1px;
+  height: 22px;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    rgba(241, 237, 228, 0.14),
+    transparent
+  );
+  flex: 0 0 auto;
+}
+
+/* ---------- Brand mark (refined crest) ---------- */
+.gp-brand-mark {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+  background:
+    radial-gradient(
+      120% 150% at 50% 0%,
+      rgba(224, 164, 106, 0.16),
+      transparent 60%
+    ),
+    linear-gradient(
+      155deg,
+      rgba(255, 240, 220, 0.1),
+      rgba(255, 240, 220, 0.018) 45%,
+      rgba(0, 0, 0, 0.22)
+    ),
+    #131114;
+  border: 1px solid rgba(199, 138, 74, 0.3);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 240, 220, 0.22),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.32),
+    0 10px 28px -14px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(0, 0, 0, 0.28);
+  flex: 0 0 auto;
+  transition:
+    border-color 320ms var(--gp-ease),
+    box-shadow 320ms var(--gp-ease);
+}
+.gp-brand-mark::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  border-radius: inherit;
+  background: radial-gradient(
+    100% 60% at 50% 0%,
+    rgba(255, 240, 220, 0.12),
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+/* ---------- Wordmark (serif editorial voice) ---------- */
+.gp-wordmark {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  line-height: 1;
+}
+.gp-wordmark-title {
+  font-family: var(--font-serif);
+  font-optical-sizing: auto;
+  font-size: 17px;
+  font-weight: 500;
+  letter-spacing: -0.028em;
+  color: var(--color-gp-paper);
+  line-height: 1;
+  font-feature-settings: "ss01", "ss02";
+}
+.gp-wordmark-title em {
+  font-style: italic;
+  font-weight: 400;
+  color: var(--color-gp-copper);
+}
+.gp-wordmark-kicker {
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  font-weight: 400;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--color-gp-paper-dim-2);
+  margin-top: 3px;
+}
+
+/* ---------- File crest (breadcrumb-style subject line) ---------- */
+.gp-filecrest {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 7px 18px;
+  background: rgba(241, 237, 228, 0.022);
+  border: 1px solid rgba(241, 237, 228, 0.05);
+  border-radius: 999px;
+  backdrop-filter: blur(14px) saturate(118%);
+  -webkit-backdrop-filter: blur(14px) saturate(118%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 240, 220, 0.05),
+    0 6px 18px -12px rgba(0, 0, 0, 0.55);
+  max-width: 460px;
+  min-width: 0;
+  transition:
+    border-color 260ms var(--gp-ease),
+    background 260ms var(--gp-ease);
+}
+.gp-filecrest:hover {
+  border-color: rgba(241, 237, 228, 0.1);
+  background: rgba(241, 237, 228, 0.035);
+}
+.gp-filecrest__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--color-gp-bronze);
+  box-shadow:
+    0 0 0 1px rgba(199, 138, 74, 0.32),
+    0 0 8px rgba(224, 164, 106, 0.5);
+  flex: 0 0 auto;
+  animation: gp-chip-pulse 3.6s var(--gp-ease) infinite;
+}
+.gp-filecrest__dot--dirty {
+  background: var(--color-gp-sunset);
+  box-shadow:
+    0 0 0 1px rgba(215, 122, 85, 0.35),
+    0 0 9px rgba(215, 122, 85, 0.68);
+  animation: gp-chip-pulse 2.4s var(--gp-ease) infinite;
+}
+.gp-filecrest__name {
+  font-family: var(--font-serif);
+  font-optical-sizing: auto;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: -0.012em;
+  color: var(--color-gp-paper);
+  line-height: 1.1;
+  min-width: 0;
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-feature-settings: "ss01";
+}
+.gp-filecrest__rule {
+  width: 1px;
+  height: 14px;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    rgba(241, 237, 228, 0.18),
+    transparent
+  );
+  flex: 0 0 auto;
+}
+.gp-filecrest__state {
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  font-weight: 400;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-gp-paper-dim-2);
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+.gp-filecrest__state--dirty {
+  color: var(--color-gp-sunset);
+}
+
+/* ---------- Toolbar groups ---------- */
+.gp-toolgroup {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  padding: 3px;
+  border-radius: 12px;
+  background: rgba(241, 237, 228, 0.018);
+  border: 1px solid rgba(241, 237, 228, 0.05);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 240, 220, 0.035),
+    0 1px 0 rgba(0, 0, 0, 0.22);
+}
+
+.gp-btn--ghost {
+  height: 28px;
+  padding: 0 12px;
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  color: var(--color-gp-paper-dim);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.005em;
+  border-radius: 9px;
+}
+.gp-btn--ghost:hover {
+  background: rgba(241, 237, 228, 0.048);
+  color: var(--color-gp-paper);
+  border-color: transparent;
+  transform: none;
+  box-shadow: inset 0 1px 0 rgba(255, 240, 220, 0.08);
+}
+.gp-btn--ghost:active {
+  background: rgba(241, 237, 228, 0.028);
+  transform: none;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.32);
+}
+
+/* ---------- Work area ---------- */
+.gp-workarea {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 22px;
+  padding: 18px 34px 18px 34px;
+  min-height: 0;
+  z-index: 1;
+}
+
+.gp-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  gap: 10px;
+}
+
+/* ---------- Panel heading (numbered, editorial) ---------- */
+.gp-panelhead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 0 6px;
+  min-height: 18px;
+}
+.gp-panelhead__lead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.gp-panelhead__numeral {
+  font-family: var(--font-serif);
+  font-optical-sizing: auto;
+  font-size: 13px;
+  font-weight: 400;
+  font-style: italic;
+  letter-spacing: -0.01em;
+  color: var(--color-gp-copper);
+  line-height: 1;
+  font-feature-settings: "lnum";
+  opacity: 0.82;
+}
+.gp-panelhead__rule {
+  width: 22px;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    rgba(199, 138, 74, 0.42),
+    rgba(199, 138, 74, 0.04)
+  );
+  flex: 0 0 auto;
+}
+.gp-panelhead__label {
+  font-family: var(--font-display);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-gp-paper-dim);
+}
+.gp-panelhead__meta {
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  font-weight: 400;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-gp-paper-dim-2);
+  white-space: nowrap;
+}
+
+/* =========================================================================
+   Frames — editor / preview panels
+   Flat, architectural surfaces. Two distinct materials:
+     - editor: graphite "code" surface, slightly recessed
+     - preview: paper-neutral "composed" surface, slightly elevated
+   Single thin hairline, no decorative sheens, no rounded-overhang drop.
+   ========================================================================= */
+
+.gp-frame {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  isolation: isolate;
+  transition:
+    border-color 280ms var(--gp-ease),
+    box-shadow 280ms var(--gp-ease);
+}
+.gp-frame::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  border: 1px solid rgba(241, 237, 228, 0.055);
+}
+.gp-frame:focus-within::after {
+  border-color: rgba(199, 138, 74, 0.26);
+}
+.gp-frame__scroll {
+  padding: 56px 68px 72px 68px;
+}
+
+/* ---- Editor surface: recessed graphite ---- */
+.gp-frame--editor {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.18),
+      rgba(0, 0, 0, 0) 35%
+    ),
+    #0a0a0c;
+  box-shadow:
+    inset 0 1px 0 rgba(0, 0, 0, 0.55),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.5),
+    0 1px 0 rgba(255, 240, 220, 0.025);
+}
+.gp-frame--editor::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(
+    180deg,
+    rgba(199, 138, 74, 0),
+    rgba(199, 138, 74, 0.38) 18%,
+    rgba(199, 138, 74, 0.38) 82%,
+    rgba(199, 138, 74, 0)
+  );
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 320ms var(--gp-ease);
+}
+.gp-frame--editor:focus-within::before {
+  opacity: 1;
+}
+
+/* ---- Preview surface: elevated paper ---- */
+.gp-frame--preview {
+  background:
+    radial-gradient(
+      120% 80% at 50% 0%,
+      rgba(255, 240, 220, 0.022),
+      transparent 55%
+    ),
+    #101013;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 240, 220, 0.045),
+    0 1px 0 rgba(0, 0, 0, 0.5),
+    0 18px 48px -28px rgba(0, 0, 0, 0.7);
+}
+
+/* ---------- Footer status rail (flat, editorial) ---------- */
+.gp-statusrail {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  padding: 12px 36px;
+  min-height: 44px;
+  z-index: 2;
+}
+.gp-statusrail::before {
+  content: "";
+  position: absolute;
+  left: 36px;
+  right: 36px;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(241, 237, 228, 0.07) 18%,
+    rgba(241, 237, 228, 0.14) 50%,
+    rgba(241, 237, 228, 0.07) 82%,
+    transparent
+  );
+  pointer-events: none;
+}
+.gp-statusrail__metrics {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 22px;
+  min-width: 0;
+}
+.gp-statusrail__spacer {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* ---------- Stat (inline KPI) ---------- */
+.gp-stat {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 9px;
+  min-width: 0;
+  white-space: nowrap;
+}
+.gp-stat__label {
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  font-weight: 400;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--color-gp-paper-dim-2);
+  line-height: 1;
+}
+.gp-stat__value {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  color: var(--color-gp-paper);
+  line-height: 1;
+  font-feature-settings: "tnum", "lnum";
+  font-variant-numeric: tabular-nums lining-nums;
+}
+.gp-stat__value--accent {
+  color: var(--color-gp-copper);
+}
+.gp-stat__hint {
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-gp-mute);
+  line-height: 1;
+}
+
+/* ---------- Hotkey hint cluster ---------- */
+.gp-hotcluster {
+  display: inline-flex;
+  align-items: center;
+  gap: 18px;
+}
+.gp-hothint {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  font-weight: 400;
+  letter-spacing: 0.22em;
+  color: var(--color-gp-paper-dim-2);
+  text-transform: uppercase;
+}
+.gp-hothint kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 18px;
+  padding: 0 5px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 500;
+  color: var(--color-gp-paper-dim);
+  background: rgba(241, 237, 228, 0.035);
+  border: 1px solid rgba(241, 237, 228, 0.09);
+  border-radius: 4px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 240, 220, 0.08),
+    0 1px 0 rgba(0, 0, 0, 0.3);
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+/* ---------- Typography tune-ups for the editor textarea ---------- */
+.gp-editor-surface {
+  font-family: var(--font-mono);
+  font-size: 14.5px;
+  line-height: 1.78;
+  letter-spacing: 0.002em;
+  color: var(--color-gp-paper);
+  font-weight: 400;
+  font-feature-settings: "ss01";
+}
+.gp-editor-surface::placeholder {
+  color: var(--color-gp-paper-dim-2);
+  font-style: italic;
+  opacity: 0.65;
+}
+.gp-editor-surface::selection {
+  background: rgba(199, 138, 74, 0.22);
+  color: var(--color-gp-paper);
 }
