@@ -21,6 +21,9 @@ pub async fn enter_teleprompter_mode(app: tauri::AppHandle) -> Result<()> {
         .get_webview_window("main")
         .ok_or("main window not found")?;
 
+    // Clear editor min size so `set_overlay_rect` can shrink below defaults.
+    window.set_min_size(None::<LogicalSize<f64>>)?;
+
     window.set_decorations(false)?;
     // Kill the OS drop-shadow that otherwise renders a ghostly border
     // around the transparent window in teleprompter mode.
@@ -52,6 +55,7 @@ pub async fn exit_teleprompter_mode(app: tauri::AppHandle) -> Result<()> {
     // so we don't leave the user with a tiny corner-glued editor.
     window.set_size(LogicalSize::new(EDITOR_DEFAULT_W, EDITOR_DEFAULT_H))?;
     let _ = window.center();
+    window.set_min_size(Some(LogicalSize::new(EDITOR_DEFAULT_W, EDITOR_DEFAULT_H)))?;
 
     emit_mode(&window, "editor", false);
     Ok(())
