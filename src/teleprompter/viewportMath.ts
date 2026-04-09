@@ -5,7 +5,7 @@
 // =========================================================================
 
 export type Rect = { x: number; y: number; w: number; h: number };
-export type ScreenSize = { w: number; h: number };
+export type ScreenSize = { x?: number; y?: number; w: number; h: number };
 
 export type Preset =
   | "tl"
@@ -35,12 +35,14 @@ export function clampRect(
   screen: ScreenSize,
   min: ScreenSize = MIN_SIZE,
 ): Rect {
+  const sx = screen.x ?? 0;
+  const sy = screen.y ?? 0;
   const w = Math.max(min.w, Math.min(screen.w, Math.round(r.w)));
   const h = Math.max(min.h, Math.min(screen.h, Math.round(r.h)));
-  const maxX = Math.max(0, screen.w - w);
-  const maxY = Math.max(0, screen.h - h);
-  const x = Math.max(0, Math.min(maxX, Math.round(r.x)));
-  const y = Math.max(0, Math.min(maxY, Math.round(r.y)));
+  const maxX = Math.max(sx, sx + screen.w - w);
+  const maxY = Math.max(sy, sy + screen.h - h);
+  const x = Math.max(sx, Math.min(maxX, Math.round(r.x)));
+  const y = Math.max(sy, Math.min(maxY, Math.round(r.y)));
   return { x, y, w, h };
 }
 
@@ -49,6 +51,8 @@ export function clampRect(
  * a fraction of the screen and sit flush against the chosen side.
  */
 export function presetRect(p: Preset, screen: ScreenSize): Rect {
+  const sx = screen.x ?? 0;
+  const sy = screen.y ?? 0;
   const sw = screen.w;
   const sh = screen.h;
 
@@ -72,19 +76,22 @@ export function presetRect(p: Preset, screen: ScreenSize): Rect {
 
   switch (p) {
     case "tl":
-      return clampRect({ x: 0, y: 0, w: cw, h: ch }, screen);
+      return clampRect({ x: sx, y: sy, w: cw, h: ch }, screen);
     case "tr":
-      return clampRect({ x: sw - cw, y: 0, w: cw, h: ch }, screen);
+      return clampRect({ x: sx + sw - cw, y: sy, w: cw, h: ch }, screen);
     case "bl":
-      return clampRect({ x: 0, y: sh - ch, w: cw, h: ch }, screen);
+      return clampRect({ x: sx, y: sy + sh - ch, w: cw, h: ch }, screen);
     case "br":
-      return clampRect({ x: sw - cw, y: sh - ch, w: cw, h: ch }, screen);
+      return clampRect(
+        { x: sx + sw - cw, y: sy + sh - ch, w: cw, h: ch },
+        screen,
+      );
 
     case "tc":
       return clampRect(
         {
-          x: Math.round((sw - edgeHW) / 2),
-          y: 0,
+          x: sx + Math.round((sw - edgeHW) / 2),
+          y: sy,
           w: edgeHW,
           h: edgeHH,
         },
@@ -93,8 +100,8 @@ export function presetRect(p: Preset, screen: ScreenSize): Rect {
     case "bc":
       return clampRect(
         {
-          x: Math.round((sw - edgeHW) / 2),
-          y: sh - edgeHH,
+          x: sx + Math.round((sw - edgeHW) / 2),
+          y: sy + sh - edgeHH,
           w: edgeHW,
           h: edgeHH,
         },
@@ -104,8 +111,8 @@ export function presetRect(p: Preset, screen: ScreenSize): Rect {
     case "ml":
       return clampRect(
         {
-          x: 0,
-          y: Math.round((sh - edgeVH) / 2),
+          x: sx,
+          y: sy + Math.round((sh - edgeVH) / 2),
           w: edgeVW,
           h: edgeVH,
         },
@@ -114,8 +121,8 @@ export function presetRect(p: Preset, screen: ScreenSize): Rect {
     case "mr":
       return clampRect(
         {
-          x: sw - edgeVW,
-          y: Math.round((sh - edgeVH) / 2),
+          x: sx + sw - edgeVW,
+          y: sy + Math.round((sh - edgeVH) / 2),
           w: edgeVW,
           h: edgeVH,
         },
@@ -125,8 +132,8 @@ export function presetRect(p: Preset, screen: ScreenSize): Rect {
     case "mc":
       return clampRect(
         {
-          x: Math.round((sw - mcW) / 2),
-          y: Math.round((sh - mcH) / 2),
+          x: sx + Math.round((sw - mcW) / 2),
+          y: sy + Math.round((sh - mcH) / 2),
           w: mcW,
           h: mcH,
         },
@@ -134,18 +141,18 @@ export function presetRect(p: Preset, screen: ScreenSize): Rect {
       );
 
     case "top-strip":
-      return clampRect({ x: 0, y: 0, w: sw, h: stripH }, screen);
+      return clampRect({ x: sx, y: sy, w: sw, h: stripH }, screen);
     case "bottom-strip":
-      return clampRect({ x: 0, y: sh - stripH, w: sw, h: stripH }, screen);
+      return clampRect({ x: sx, y: sy + sh - stripH, w: sw, h: stripH }, screen);
 
     case "left":
-      return clampRect({ x: 0, y: 0, w: edgeColW, h: sh }, screen);
+      return clampRect({ x: sx, y: sy, w: edgeColW, h: sh }, screen);
     case "right":
-      return clampRect({ x: sw - edgeColW, y: 0, w: edgeColW, h: sh }, screen);
+      return clampRect({ x: sx + sw - edgeColW, y: sy, w: edgeColW, h: sh }, screen);
 
     case "full":
     default:
-      return clampRect({ x: 0, y: 0, w: sw, h: sh }, screen);
+      return clampRect({ x: sx, y: sy, w: sw, h: sh }, screen);
   }
 }
 
@@ -154,11 +161,13 @@ export function presetRect(p: Preset, screen: ScreenSize): Rect {
  * 42% × 62% of the screen, capped so it doesn't go silly on huge displays.
  */
 export function defaultRect(screen: ScreenSize): Rect {
+  const sx = screen.x ?? 0;
+  const sy = screen.y ?? 0;
   const w = Math.min(720, Math.round(screen.w * 0.42));
   const h = Math.min(520, Math.round(screen.h * 0.62));
   const margin = 40;
-  const x = Math.max(0, screen.w - w - margin);
-  const y = Math.max(0, Math.round((screen.h - h) / 2));
+  const x = Math.max(sx, sx + screen.w - w - margin);
+  const y = Math.max(sy, sy + Math.round((screen.h - h) / 2));
   return clampRect({ x, y, w, h }, screen);
 }
 

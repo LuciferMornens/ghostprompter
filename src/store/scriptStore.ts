@@ -5,6 +5,7 @@ import type { Script } from "@/types";
 
 type ScriptStore = {
   script: Script;
+  setScript: (script: Script) => void;
   setContent: (content: string) => void;
   openFromDisk: () => Promise<void>;
   saveToDisk: () => Promise<void>;
@@ -22,6 +23,7 @@ const EMPTY: Script = {
 
 export const useScriptStore = create<ScriptStore>((set, get) => ({
   script: EMPTY,
+  setScript: (script) => set({ script }),
   setContent: (content) =>
     set((s) => ({
       script: { ...s.script, content, dirty: content !== s.script.content ? true : s.script.dirty },

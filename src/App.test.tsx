@@ -24,6 +24,7 @@ vi.mock("@tauri-apps/plugin-store", () => {
   return { LazyStore };
 });
 
+import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { LazyStore } from "@tauri-apps/plugin-store";
 import App from "./App";
@@ -32,6 +33,7 @@ import { useScriptStore } from "@/store/scriptStore";
 import { useSettingsStore } from "@/store/settingsStore";
 import { DEFAULT_SETTINGS } from "@/types";
 
+const invokeMock = invoke as unknown as ReturnType<typeof vi.fn>;
 const listenMock = listen as unknown as ReturnType<typeof vi.fn>;
 
 type Listener = (e: { payload: unknown }) => void;
@@ -39,12 +41,23 @@ const capturedListeners = new Map<string, Listener>();
 
 beforeEach(() => {
   capturedListeners.clear();
+  invokeMock.mockReset();
+  invokeMock.mockImplementation((cmd: string) => {
+    if (cmd === "get_live_script") {
+      return Promise.resolve({
+        path: null,
+        name: "Live.md",
+        content: "# Live",
+        dirty: true,
+      });
+    }
+    return Promise.resolve(undefined);
+  });
   listenMock.mockReset();
   listenMock.mockImplementation(async (event: string, cb: Listener) => {
     capturedListeners.set(event, cb);
     return () => {};
   });
-  // Reset stores
   useModeStore.setState({
     mode: "editor",
     editMode: false,
@@ -63,13 +76,20 @@ beforeEach(() => {
     settings: { ...DEFAULT_SETTINGS },
     loaded: false,
   });
+  (
+    window as typeof window & {
+      __TAURI_INTERNALS__?: { metadata?: { currentWindow?: { label?: string } } };
+    }
+  ).__TAURI_INTERNALS__ = {
+    metadata: {
+      currentWindow: { label: "main" },
+    },
+  };
   document.body.classList.remove("mode-editor", "mode-teleprompter");
 });
 
 async function renderApp() {
   const result = render(<App />);
-  // Flush all pending microtasks/effects so async state updates from
-  // settingsStore.load() and listen() are wrapped inside act().
   await act(async () => {
     await Promise.resolve();
     await Promise.resolve();
@@ -88,7 +108,9 @@ describe("<App />", () => {
     useModeStore.setState({ mode: "teleprompter" });
     await renderApp();
     expect(
-      screen.getByText("F6 edit · F7 play · Esc exit"),
+      screen.getByText((_, element) => {
+        return element?.textContent === "F6 edit · F7 play · Esc exit";
+      }),
     ).toBeInTheDocument();
   });
 
@@ -114,15 +136,74 @@ describe("<App />", () => {
     expect(LazyStore).toHaveBeenCalled();
   });
 
-  it("registers at least 7 event listeners on mount", async () => {
+  it("does not register live listeners in the editor window", async () => {
     await renderApp();
-    // 1 mode-changed + 7 hotkeys (play-pause, slower, faster, hide, edit-mode, stop)
-    // Spec says >= 7
+    expect(listenMock.mock.calls.length).toBe(0);
+  });
+
+  it("overlay window loads the live script and registers live listeners", async () => {
+    (
+      window as typeof window & {
+        __TAURI_INTERNALS__?: { metadata?: { currentWindow?: { label?: string } } };
+      }
+    ).__TAURI_INTERNALS__ = {
+      metadata: {
+        currentWindow: { label: "overlay" },
+      },
+    };
+
+    await renderApp();
+
+    await waitFor(() => {
+      expect(useScriptStore.getState().script.name).toBe("Live.md");
+    });
+    expect(invokeMock).toHaveBeenCalledWith("get_live_script");
     expect(listenMock.mock.calls.length).toBeGreaterThanOrEqual(7);
   });
 
-  it("hotkey://play-pause callback flips playing state via toggle", async () => {
+  it("overlay does not mount live UI until settings finish loading", async () => {
+    (
+      window as typeof window & {
+        __TAURI_INTERNALS__?: { metadata?: { currentWindow?: { label?: string } } };
+      }
+    ).__TAURI_INTERNALS__ = {
+      metadata: {
+        currentWindow: { label: "overlay" },
+      },
+    };
+
+    useSettingsStore.setState((state) => ({
+      ...state,
+      loaded: false,
+      load: async () => {},
+    }));
+
     await renderApp();
+
+    expect(screen.queryByText("Live.md")).toBeNull();
+    expect(listenMock.mock.calls.length).toBe(0);
+  });
+
+  it("overlay hotkey://play-pause callback flips playing state via toggle", async () => {
+    (
+      window as typeof window & {
+        __TAURI_INTERNALS__?: { metadata?: { currentWindow?: { label?: string } } };
+      }
+    ).__TAURI_INTERNALS__ = {
+      metadata: {
+        currentWindow: { label: "overlay" },
+      },
+    };
+    useSettingsStore.setState({
+      settings: { ...DEFAULT_SETTINGS },
+      loaded: true,
+      load: async () => {},
+    });
+
+    await renderApp();
+    await waitFor(() => {
+      expect(capturedListeners.get("hotkey://play-pause")).toBeDefined();
+    });
     const cb = capturedListeners.get("hotkey://play-pause");
     expect(cb).toBeDefined();
     expect(useModeStore.getState().playing).toBe(false);

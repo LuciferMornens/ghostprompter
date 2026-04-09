@@ -87,8 +87,9 @@ describe("<EditorView />", () => {
       },
     });
     render(<EditorView />);
-    // The dirty marker is rendered in the same span as the name with " •"
-    expect(screen.getByText("Untitled.md •")).toBeInTheDocument();
+    expect(
+      screen.getByLabelText("Script Untitled.md, unsaved changes"),
+    ).toBeInTheDocument();
   });
 
   it("renders preview column with gp-prose", () => {
@@ -100,29 +101,52 @@ describe("<EditorView />", () => {
     const user = userEvent.setup();
     render(<EditorView />);
     await user.click(screen.getByRole("button", { name: "Settings" }));
-    // The modal contains an h2 "Settings"
     expect(
       screen.getByRole("heading", { name: "Settings" }),
     ).toBeInTheDocument();
   });
 
-  it("clicking Go → calls invoke for enter_teleprompter_mode then register_hotkeys, then sets mode", async () => {
+  it("clicking Go launches the overlay command before registering hotkeys", async () => {
+    Object.defineProperty(window.screen, "availWidth", {
+      configurable: true,
+      value: 1920,
+    });
+    Object.defineProperty(window.screen, "availHeight", {
+      configurable: true,
+      value: 1080,
+    });
+
     const user = userEvent.setup();
     render(<EditorView />);
     await user.click(screen.getByRole("button", { name: /Go/ }));
 
     await waitFor(() => {
-      expect(useModeStore.getState().mode).toBe("teleprompter");
+      expect(invokeMock).toHaveBeenCalled();
     });
     expect(useModeStore.getState().playing).toBe(false);
+    expect(useModeStore.getState().mode).toBe("editor");
 
     const calls = invokeMock.mock.calls.map((c) => c[0]);
     expect(calls).toContain("enter_teleprompter_mode");
     expect(calls).toContain("register_hotkeys");
-    // Order: enter_teleprompter_mode before register_hotkeys
     const enterIdx = calls.indexOf("enter_teleprompter_mode");
     const regIdx = calls.indexOf("register_hotkeys");
     expect(enterIdx).toBeLessThan(regIdx);
+    expect(invokeMock).toHaveBeenCalledWith(
+      "enter_teleprompter_mode",
+      expect.objectContaining({
+        script: expect.objectContaining({
+          name: "Untitled.md",
+          content: "# Hello",
+        }),
+        rect: {
+          x: 1160,
+          y: 280,
+          w: 720,
+          h: 520,
+        },
+      }),
+    );
   });
 
   it("if enter_teleprompter_mode rejects, calls window.alert and stays in editor", async () => {
@@ -169,8 +193,6 @@ describe("<EditorView />", () => {
 
   it("renders the Ghostprompter wordmark/brand in the header", () => {
     const { container } = render(<EditorView />);
-    // Wordmark may be split across nested spans for italic treatment —
-    // assert on the combined header text.
     const header = container.querySelector("header");
     expect(header).not.toBeNull();
     expect(header!.textContent?.toLowerCase()).toContain("ghostprompter");

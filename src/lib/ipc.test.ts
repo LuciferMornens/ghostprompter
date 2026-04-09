@@ -51,11 +51,40 @@ describe("ipc", () => {
   });
 
   describe("enterTeleprompter", () => {
-    it("calls invoke('enter_teleprompter_mode')", async () => {
+    it("calls invoke('enter_teleprompter_mode', { script, rect })", async () => {
+      const script: Script = {
+        path: null,
+        name: "Live.md",
+        content: "# Hello",
+        dirty: true,
+      };
+      const rect = { x: 40, y: 60, w: 480, h: 320 };
+
       invokeMock.mockResolvedValueOnce(undefined);
-      await ipc.enterTeleprompter();
+      await ipc.enterTeleprompter(script, rect);
       expect(invokeMock).toHaveBeenCalledTimes(1);
-      expect(invokeMock).toHaveBeenCalledWith("enter_teleprompter_mode");
+      expect(invokeMock).toHaveBeenCalledWith("enter_teleprompter_mode", {
+        script,
+        rect,
+      });
+    });
+  });
+
+  describe("getLiveScript", () => {
+    it("calls invoke('get_live_script') and returns the script", async () => {
+      const script: Script = {
+        path: null,
+        name: "Live.md",
+        content: "# Hello",
+        dirty: true,
+      };
+      invokeMock.mockResolvedValueOnce(script);
+
+      const result = await ipc.getLiveScript();
+
+      expect(invokeMock).toHaveBeenCalledTimes(1);
+      expect(invokeMock).toHaveBeenCalledWith("get_live_script");
+      expect(result).toEqual(script);
     });
   });
 

@@ -4,10 +4,12 @@ import { useModeStore } from "@/store/modeStore";
 import { useSettingsStore } from "@/store/settingsStore";
 import { ipc } from "@/lib/ipc";
 import { scriptStats } from "@/lib/scriptStats";
+import { getDisplayBounds } from "@/lib/displayBounds";
 import { StatBlock } from "@/ui/StatBlock";
 import { MarkdownEditor } from "./MarkdownEditor";
 import { MarkdownPreview } from "./MarkdownPreview";
 import { SettingsModal } from "@/settings/SettingsModal";
+import { clampRect, defaultRect } from "@/teleprompter/viewportMath";
 
 export function EditorView() {
   const script = useScriptStore((s) => s.script);
@@ -15,19 +17,40 @@ export function EditorView() {
   const saveToDisk = useScriptStore((s) => s.saveToDisk);
   const saveAs = useScriptStore((s) => s.saveAs);
   const newScript = useScriptStore((s) => s.newScript);
-  const setMode = useModeStore((s) => s.setMode);
   const setPlaying = useModeStore((s) => s.setPlaying);
   const settings = useSettingsStore((s) => s.settings);
+  const updateSettings = useSettingsStore((s) => s.update);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   const stats = useMemo(() => scriptStats(script.content), [script.content]);
 
   const onGo = async () => {
+    const display = await getDisplayBounds();
+    const launchRect =
+      settings.overlayX === null || settings.overlayY === null
+        ? defaultRect(display)
+        : clampRect(
+            {
+              x: settings.overlayX,
+              y: settings.overlayY,
+              w: settings.overlayWidth,
+              h: settings.overlayHeight,
+            },
+            display,
+          );
+
     try {
-      await ipc.enterTeleprompter();
+      if (settings.overlayX === null || settings.overlayY === null) {
+        await updateSettings({
+          overlayX: launchRect.x,
+          overlayY: launchRect.y,
+          overlayWidth: launchRect.w,
+          overlayHeight: launchRect.h,
+        });
+      }
+      await ipc.enterTeleprompter(script, launchRect);
       await ipc.registerHotkeys(settings.hotkeys);
       setPlaying(false);
-      setMode("teleprompter");
     } catch (e) {
       console.error("enter teleprompter failed", e);
       alert(`Failed to enter teleprompter mode:\n${e}`);

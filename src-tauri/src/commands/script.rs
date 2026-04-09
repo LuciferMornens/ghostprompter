@@ -1,6 +1,8 @@
 use crate::error::Result;
+use crate::state::AppState;
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
+use tauri::Manager;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -16,6 +18,14 @@ pub(crate) fn display_name(path: &Path) -> String {
         .and_then(|n| n.to_str())
         .unwrap_or("Untitled")
         .to_string()
+}
+
+pub(crate) fn stored_live_script(state: &AppState) -> Result<Script> {
+    state
+        .live_script
+        .lock()
+        .clone()
+        .ok_or_else(|| "live script not set".into())
 }
 
 #[tauri::command]
@@ -42,9 +52,16 @@ pub async fn save_script(path: String, content: String) -> Result<String> {
     Ok(path)
 }
 
+#[tauri::command]
+pub async fn get_live_script(app: tauri::AppHandle) -> Result<Script> {
+    let state = app.state::<AppState>();
+    stored_live_script(&state)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::state::AppState;
     use tempfile::TempDir;
 
     #[test]
@@ -239,5 +256,31 @@ mod tests {
         assert_eq!(script.name, "unicode.txt");
         assert_eq!(script.path.as_deref(), Some(path_str.as_str()));
         assert!(!script.dirty);
+    }
+
+    #[test]
+    fn stored_live_script_returns_a_clone_of_state_value() {
+        let state = AppState::default();
+        {
+            let mut guard = state.live_script.lock();
+            *guard = Some(Script {
+                path: None,
+                name: "Live.md".into(),
+                content: "hello".into(),
+                dirty: true,
+            });
+        }
+
+        let live = stored_live_script(&state).unwrap();
+        assert_eq!(live.name, "Live.md");
+        assert_eq!(live.content, "hello");
+        assert!(live.dirty);
+    }
+
+    #[test]
+    fn stored_live_script_errors_when_not_initialized() {
+        let state = AppState::default();
+        let err = stored_live_script(&state).unwrap_err();
+        assert_eq!(err.to_string(), "live script not set");
     }
 }

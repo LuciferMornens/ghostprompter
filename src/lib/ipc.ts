@@ -1,12 +1,16 @@
 import { invoke } from "@tauri-apps/api/core";
 import type { Hotkeys, Script } from "@/types";
 
+type OverlayRect = { x: number; y: number; w: number; h: number };
+
 export const ipc = {
   readScript: (path: string) => invoke<Script>("read_script", { path }),
   saveScript: (path: string, content: string) =>
     invoke<string>("save_script", { path, content }),
 
-  enterTeleprompter: () => invoke<void>("enter_teleprompter_mode"),
+  getLiveScript: () => invoke<Script>("get_live_script"),
+  enterTeleprompter: (script: Script, rect: OverlayRect) =>
+    invoke<void>("enter_teleprompter_mode", { script, rect }),
   exitTeleprompter: () => invoke<void>("exit_teleprompter_mode"),
   setEditMode: (edit: boolean) => invoke<void>("set_edit_mode", { edit }),
   setOverlayRect: (rect: { x: number; y: number; w: number; h: number }) =>

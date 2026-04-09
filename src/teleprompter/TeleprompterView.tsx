@@ -1,15 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useScriptStore } from "@/store/scriptStore";
 import { useSettingsStore } from "@/store/settingsStore";
 import { useModeStore } from "@/store/modeStore";
 import { ipc } from "@/lib/ipc";
+import { getDisplayBounds, getFallbackDisplayBounds } from "@/lib/displayBounds";
 import { MarkdownPreview } from "@/editor/MarkdownPreview";
 import { RecDot } from "@/ui/RecDot";
 import { useAutoScroll } from "./useAutoScroll";
 import { ReadingLine } from "./ReadingLine";
 import {
-  applyMoveDelta,
-  applyResizeDelta,
   clampRect,
   defaultRect,
   presetRect,
@@ -17,13 +17,6 @@ import {
   type Rect,
   type ScreenSize,
 } from "./viewportMath";
-
-type DragState = {
-  kind: "move" | "resize";
-  startX: number;
-  startY: number;
-  startRect: Rect;
-};
 
 type SnapCell = { preset: Preset; label: string };
 const SNAP_GRID: SnapCell[][] = [
@@ -52,24 +45,40 @@ const SNAP_STRIPS: SnapCell[] = [
   { preset: "full", label: "Full screen" },
 ];
 
-function useScreenSize(): ScreenSize {
-  const [size, setSize] = useState<ScreenSize>(() => ({
-    w: typeof window !== "undefined" ? window.innerWidth : 1920,
-    h: typeof window !== "undefined" ? window.innerHeight : 1080,
-  }));
+function useScreenSize() {
+  const [size, setSize] = useState<ScreenSize>(() => getFallbackDisplayBounds());
+  const [ready, setReady] = useState(false);
+  const refreshRef = useRef<() => Promise<void>>(async () => {});
   useEffect(() => {
-    const onResize = () =>
-      setSize({ w: window.innerWidth, h: window.innerHeight });
+    let cancelled = false;
+    const refresh = async () => {
+      const next = await getDisplayBounds();
+        if (cancelled) return;
+        setSize(next);
+        setReady(true);
+    };
+    refreshRef.current = refresh;
+    refresh();
+    const onResize = () => {
+      void refresh();
+    };
     window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
+    return () => {
+      cancelled = true;
+      window.removeEventListener("resize", onResize);
+    };
   }, []);
-  return size;
+  return {
+    screen: { ...size, ready } as ScreenSize & { ready: boolean },
+    refresh: () => refreshRef.current(),
+  };
 }
 
 export function TeleprompterView() {
   const content = useScriptStore((s) => s.script.content);
   const scriptName = useScriptStore((s) => s.script.name);
   const settings = useSettingsStore((s) => s.settings);
+  const settingsLoaded = useSettingsStore((s) => s.loaded);
   const update = useSettingsStore((s) => s.update);
   const playing = useModeStore((s) => s.playing);
   const setPlaying = useModeStore((s) => s.setPlaying);
@@ -78,7 +87,15 @@ export function TeleprompterView() {
   const hidden = useModeStore((s) => s.hidden);
   const setMode = useModeStore((s) => s.setMode);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const screen = useScreenSize();
+  const { screen, refresh: refreshScreen } = useScreenSize();
+  const overlayWindowRef = useRef<ReturnType<typeof getCurrentWindow> | null>(null);
+  if (overlayWindowRef.current === null) {
+    try {
+      overlayWindowRef.current = getCurrentWindow();
+    } catch {
+      overlayWindowRef.current = null;
+    }
+  }
 
   // =========================================================================
   // Viewport rect: settings → persisted, transient local overrides for drag
@@ -111,17 +128,28 @@ export function TeleprompterView() {
     screen,
   ]);
 
-  const [dragRect, setDragRect] = useState<Rect | null>(null);
-  const rect = dragRect ?? persistedRect;
+  const [windowRect, setWindowRect] = useState<Rect | null>(null);
+  const initializedOverlayRef = useRef(false);
+  const rect = windowRect ?? persistedRect;
+  const rectRef = useRef(rect);
+  useEffect(() => {
+    rectRef.current = rect;
+  }, [rect]);
 
   // On mount: snap the OS window to the persisted rect (or, for first-run,
   // compute and persist the default rect). This is what actually kills the
   // full-screen ghost window with its drop-shadow.
   useEffect(() => {
+    if (!screen.ready || !settingsLoaded || initializedOverlayRef.current) {
+      return;
+    }
+    initializedOverlayRef.current = true;
     const target =
       settings.overlayX === null || settings.overlayY === null
         ? defaultRect(screen)
         : persistedRect;
+    setWindowRect(target);
+    rectRef.current = target;
     void ipc.setOverlayRect(target);
     if (settings.overlayX === null || settings.overlayY === null) {
       void update({
@@ -133,141 +161,103 @@ export function TeleprompterView() {
     }
     // Only on mount — drag/resize/snap pushes subsequent rects explicitly.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [persistedRect, screen, settings.overlayX, settings.overlayY, settingsLoaded, update]);
 
   useAutoScroll(scrollRef, settings.scrollSpeed, playing);
 
   // =========================================================================
-  // Drag / resize pointer handling
+  // Native window move / resize sync
   //
-  // We intentionally do NOT use setPointerCapture on the drag handle or
-  // resize grip. If we did, subsequent pointermove/pointerup events would be
-  // routed directly to the capture target (the small child element), and
-  // because those children have no handlers the parent viewport's
-  // onPointerMove/Up would never fire — drag would silently stop working.
-  //
-  // Instead we attach pointermove/pointerup listeners to window when the
-  // gesture begins, and tear them down on release. Window listeners also
-  // survive the pointer leaving the panel rect (fast drags, edge hits),
-  // which is the behavior users actually expect.
-  //
-  // Handler identity is critical: `addEventListener` + `removeEventListener`
-  // must receive the SAME function reference. If we used plain function
-  // declarations or inline arrows in the component body they'd be re-created
-  // on every render — `setDragRect` during a drag forces re-renders, so by
-  // the time `endDrag` ran, the references stored as listeners would be
-  // stale and `removeEventListener` would silently no-op. Listeners would
-  // accumulate across drags, leaking memory. To fix this we:
-  //   1. Keep the "latest" implementations in mutable refs updated each
-  //      render (so they always read current closures).
-  //   2. Expose stable dispatcher functions via `useRef(...).current` that
-  //      forward to the impl refs. These dispatcher identities never change
-  //      for the lifetime of the component, so add/remove always balance.
+  // The overlay is a real frameless Tauri window. If we only resized an
+  // inner DOM panel during pointermove, the pointer would get trapped inside
+  // the current small OS window and resize would feel "contained". The fix is
+  // to let the OS own the gesture via Tauri's native drag/resize APIs, then
+  // mirror the real window bounds back into React/settings from window events.
   // =========================================================================
-  const dragStateRef = useRef<DragState | null>(null);
-  const screenRef = useRef(screen);
-  useEffect(() => {
-    screenRef.current = screen;
-  }, [screen]);
-
-  const rectFromDragPointer = (
-    st: DragState,
-    clientX: number,
-    clientY: number,
-  ): Rect => {
-    const dx = clientX - st.startX;
-    const dy = clientY - st.startY;
-    const sz = screenRef.current;
-    return st.kind === "move"
-      ? applyMoveDelta(st.startRect, dx, dy, sz)
-      : applyResizeDelta(st.startRect, dx, dy, sz);
-  };
-
-  // Stable dispatchers (identity frozen on first render) + per-render impls.
-  const moveImplRef = useRef<(e: PointerEvent) => void>(() => {});
-  const upImplRef = useRef<(e: PointerEvent) => void>(() => {});
-  const handleWindowPointerMoveRef = useRef<(e: PointerEvent) => void>(
-    (e) => moveImplRef.current(e),
-  );
-  const handleWindowPointerUpRef = useRef<(e: PointerEvent) => void>(
-    (e) => upImplRef.current(e),
-  );
-  const handleWindowPointerMove = handleWindowPointerMoveRef.current;
-  const handleWindowPointerUp = handleWindowPointerUpRef.current;
-
-  const removeDragListeners = () => {
-    window.removeEventListener("pointermove", handleWindowPointerMove);
-    window.removeEventListener("pointerup", handleWindowPointerUp);
-    window.removeEventListener("pointercancel", handleWindowPointerUp);
-  };
-
-  const endDrag = (clientX: number, clientY: number) => {
-    const st = dragStateRef.current;
-    if (!st) return;
-    const finalRect = rectFromDragPointer(st, clientX, clientY);
-    dragStateRef.current = null;
-    setDragRect(null);
-    removeDragListeners();
-    void ipc.setOverlayRect(finalRect);
+  const syncNativeRect = (patch: Partial<Rect>) => {
+    const next = {
+      x: patch.x ?? rectRef.current.x,
+      y: patch.y ?? rectRef.current.y,
+      w: patch.w ?? rectRef.current.w,
+      h: patch.h ?? rectRef.current.h,
+    };
+    rectRef.current = next;
+    setWindowRect(next);
     void update({
-      overlayX: finalRect.x,
-      overlayY: finalRect.y,
-      overlayWidth: finalRect.w,
-      overlayHeight: finalRect.h,
+      overlayX: next.x,
+      overlayY: next.y,
+      overlayWidth: next.w,
+      overlayHeight: next.h,
     });
   };
 
-  // Refresh the impl refs each render so dispatchers always see current
-  // values (rectFromDragPointer / endDrag closures, current `update` action).
-  moveImplRef.current = (e: PointerEvent) => {
-    const st = dragStateRef.current;
-    if (!st) return;
-    setDragRect(rectFromDragPointer(st, e.clientX, e.clientY));
-  };
-  upImplRef.current = (e: PointerEvent) => {
-    endDrag(e.clientX, e.clientY);
-  };
-
-  // Tear down listeners if the component unmounts mid-drag
   useEffect(() => {
-    return () => {
-      if (dragStateRef.current) {
-        removeDragListeners();
-        dragStateRef.current = null;
-      }
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    const overlayWindow = overlayWindowRef.current;
+    if (!overlayWindow) return;
 
-  const beginDrag = (
-    kind: "move" | "resize",
-    clientX: number,
-    clientY: number,
-  ) => {
-    dragStateRef.current = {
-      kind,
-      startX: clientX,
-      startY: clientY,
-      startRect: rect,
+    const toLogicalPosition = (
+      value: { x: number; y: number; toLogical?: (scale: number) => { x: number; y: number } },
+      scaleFactor: number,
+    ) =>
+      typeof value.toLogical === "function"
+        ? value.toLogical(scaleFactor)
+        : { x: value.x / scaleFactor, y: value.y / scaleFactor };
+
+    const toLogicalSize = (
+      value: {
+        width: number;
+        height: number;
+        toLogical?: (scale: number) => { width: number; height: number };
+      },
+      scaleFactor: number,
+    ) =>
+      typeof value.toLogical === "function"
+        ? value.toLogical(scaleFactor)
+        : { width: value.width / scaleFactor, height: value.height / scaleFactor };
+
+    const syncScaleFactor = () => Math.max(window.devicePixelRatio || 1, 1);
+    const unlistens: Array<Promise<() => void>> = [];
+
+    unlistens.push(
+      overlayWindow
+        .onMoved(({ payload }) => {
+          const logical = toLogicalPosition(payload, syncScaleFactor());
+          syncNativeRect({ x: logical.x, y: logical.y });
+          void refreshScreen();
+        })
+        .catch(() => () => {}),
+    );
+    unlistens.push(
+      overlayWindow
+        .onResized(({ payload }) => {
+          const logical = toLogicalSize(payload, syncScaleFactor());
+          syncNativeRect({ w: logical.width, h: logical.height });
+          void refreshScreen();
+        })
+        .catch(() => () => {}),
+    );
+
+    return () => {
+      unlistens.forEach((p) => p.then((fn) => fn()).catch(() => {}));
     };
-    setDragRect(rect);
-    window.addEventListener("pointermove", handleWindowPointerMove);
-    window.addEventListener("pointerup", handleWindowPointerUp);
-    window.addEventListener("pointercancel", handleWindowPointerUp);
-  };
+  }, [refreshScreen, update]);
 
   const onDragHandlePointerDown = (e: React.PointerEvent) => {
     if (!editMode) return;
     e.preventDefault();
     e.stopPropagation();
-    beginDrag("move", e.clientX, e.clientY);
+    void overlayWindowRef.current?.startDragging().catch((error) => {
+      console.error("overlay drag failed", error);
+    });
   };
 
   const onResizeGripPointerDown = (e: React.PointerEvent) => {
     if (!editMode) return;
     e.preventDefault();
     e.stopPropagation();
-    beginDrag("resize", e.clientX, e.clientY);
+    void overlayWindowRef.current?.startResizeDragging("SouthEast").catch((error) => {
+      console.error("overlay resize failed", error);
+    });
   };
 
   // =========================================================================
@@ -296,6 +286,8 @@ export function TeleprompterView() {
   const applyPreset = (p: Preset) => {
     const r = presetRect(p, screen);
     setSnapOpen(false);
+    setWindowRect(r);
+    rectRef.current = r;
     void ipc.setOverlayRect(r);
     void update({
       overlayX: r.x,

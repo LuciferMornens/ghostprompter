@@ -129,6 +129,14 @@ describe("defaultRect", () => {
     expect(r.x + r.w).toBeLessThanOrEqual(SCREEN.w);
     expect(r.y + r.h).toBeLessThanOrEqual(SCREEN.h);
   });
+
+  it("preserves monitor origin for non-primary displays", () => {
+    const r = defaultRect({ x: -1920, y: 40, w: 1720, h: 1000 });
+    expect(r.x).toBeGreaterThanOrEqual(-1920);
+    expect(r.y).toBeGreaterThanOrEqual(40);
+    expect(r.x + r.w).toBeLessThanOrEqual(-1920 + 1720);
+    expect(r.y + r.h).toBeLessThanOrEqual(40 + 1000);
+  });
 });
 
 describe("applyMoveDelta", () => {

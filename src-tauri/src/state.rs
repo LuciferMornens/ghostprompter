@@ -1,8 +1,10 @@
+use crate::commands::script::Script;
 use parking_lot::Mutex;
 
 #[derive(Default)]
 pub struct AppState {
     pub registered_hotkey_shortcuts: Mutex<Vec<String>>,
+    pub live_script: Mutex<Option<Script>>,
 }
 
 #[cfg(test)]
@@ -14,6 +16,7 @@ mod tests {
         let state = AppState::default();
         let guard = state.registered_hotkey_shortcuts.lock();
         assert!(guard.is_empty());
+        assert!(state.live_script.lock().is_none());
     }
 
     #[test]
@@ -28,5 +31,25 @@ mod tests {
         assert_eq!(guard.len(), 2);
         assert_eq!(guard[0], "F7");
         assert_eq!(guard[1], "F8");
+    }
+
+    #[test]
+    fn live_script_can_be_stored_and_read_back() {
+        let state = AppState::default();
+        {
+            let mut guard = state.live_script.lock();
+            *guard = Some(Script {
+                path: None,
+                name: "Live.md".into(),
+                content: "# Live".into(),
+                dirty: true,
+            });
+        }
+
+        let guard = state.live_script.lock();
+        let script = guard.as_ref().expect("live script should be set");
+        assert_eq!(script.name, "Live.md");
+        assert_eq!(script.content, "# Live");
+        assert!(script.dirty);
     }
 }

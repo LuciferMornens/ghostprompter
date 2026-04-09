@@ -1,6 +1,7 @@
 use crate::error::{Error, Result};
 use crate::settings::Hotkeys;
 use crate::state::AppState;
+use crate::commands::window_mode::OVERLAY_WINDOW_LABEL;
 use tauri::{AppHandle, Emitter, Manager};
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut, ShortcutState};
 
@@ -19,11 +20,24 @@ fn register_one(app: &AppHandle, shortcut_str: &str, action: &'static str) -> Re
     app.global_shortcut()
         .on_shortcut(shortcut, move |_app, _sc, event| {
             if event.state() == ShortcutState::Pressed {
-                let _ = app_clone.emit(&action_event(action), ());
+                if let Some(window) = app_clone.get_webview_window(OVERLAY_WINDOW_LABEL) {
+                    let _ = window.emit(&action_event(action), ());
+                }
             }
         })
         .map_err(|e| Error::Other(format!("failed to register {action}: {e}")))?;
     Ok(shortcut_str.to_string())
+}
+
+pub(crate) fn unregister_all_hotkeys(app: &AppHandle, state: &AppState) {
+    let mut registered = state.registered_hotkey_shortcuts.lock();
+    let gs = app.global_shortcut();
+
+    for combo in registered.drain(..) {
+        if let Ok(sc) = combo.parse::<Shortcut>() {
+            let _ = gs.unregister(sc);
+        }
+    }
 }
 
 #[tauri::command]
@@ -61,14 +75,7 @@ pub async fn register_hotkeys(app: AppHandle, hotkeys: Hotkeys) -> Result<()> {
 #[tauri::command]
 pub async fn unregister_hotkeys(app: AppHandle) -> Result<()> {
     let state = app.state::<AppState>();
-    let mut registered = state.registered_hotkey_shortcuts.lock();
-
-    let gs = app.global_shortcut();
-    for combo in registered.drain(..) {
-        if let Ok(sc) = combo.parse::<Shortcut>() {
-            let _ = gs.unregister(sc);
-        }
-    }
+    unregister_all_hotkeys(&app, &state);
     Ok(())
 }
 

@@ -1,6 +1,20 @@
+use crate::commands::script::Script;
 use crate::error::Result;
 use crate::platform;
+use crate::state::AppState;
 use tauri::{Emitter, LogicalPosition, LogicalSize, Manager, WebviewWindow};
+
+pub const MAIN_WINDOW_LABEL: &str = "main";
+pub const OVERLAY_WINDOW_LABEL: &str = "overlay";
+
+#[derive(Debug, Clone, Copy, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OverlayRect {
+    pub x: f64,
+    pub y: f64,
+    pub w: f64,
+    pub h: f64,
+}
 
 pub(crate) fn mode_changed_payload(mode: &str, edit: bool) -> serde_json::Value {
     serde_json::json!({ "mode": mode, "edit": edit })
@@ -10,54 +24,94 @@ fn emit_mode(window: &WebviewWindow, mode: &str, edit: bool) {
     let _ = window.emit("mode-changed", mode_changed_payload(mode, edit));
 }
 
-// Editor window defaults, used when exiting teleprompter mode back to the
-// full-sized editor. Keep in sync with tauri.conf.json initial window size.
-const EDITOR_DEFAULT_W: f64 = 1100.0;
-const EDITOR_DEFAULT_H: f64 = 720.0;
+fn overlay_window_config(app: &tauri::AppHandle) -> Result<tauri::utils::config::WindowConfig> {
+    app.config()
+        .app
+        .windows
+        .iter()
+        .find(|config| config.label == OVERLAY_WINDOW_LABEL)
+        .cloned()
+        .ok_or_else(|| "overlay window config not found".into())
+}
+
+fn ensure_overlay_window(app: &tauri::AppHandle) -> Result<WebviewWindow> {
+    if let Some(window) = app.get_webview_window(OVERLAY_WINDOW_LABEL) {
+        return Ok(window);
+    }
+
+    let config = overlay_window_config(app)?;
+    tauri::WebviewWindowBuilder::from_config(app, &config)?
+        .build()
+        .map_err(Into::into)
+}
+
+fn main_window(app: &tauri::AppHandle) -> Result<WebviewWindow> {
+    app.get_webview_window(MAIN_WINDOW_LABEL)
+        .ok_or_else(|| "main window not found".into())
+}
+
+fn normalize_overlay_rect(rect: OverlayRect) -> OverlayRect {
+    OverlayRect {
+        x: rect.x,
+        y: rect.y,
+        w: rect.w.max(120.0),
+        h: rect.h.max(80.0),
+    }
+}
+
+fn apply_overlay_rect(window: &WebviewWindow, rect: OverlayRect) -> Result<()> {
+    let rect = normalize_overlay_rect(rect);
+    window.set_size(LogicalSize::new(rect.w, rect.h))?;
+    window.set_position(LogicalPosition::new(rect.x, rect.y))?;
+    let _ = window.set_shadow(false);
+    Ok(())
+}
+
+pub(crate) fn restore_main_window(app: &tauri::AppHandle) -> Result<()> {
+    let window = main_window(app)?;
+    window.show()?;
+    let _ = window.set_focus();
+    Ok(())
+}
 
 #[tauri::command]
-pub async fn enter_teleprompter_mode(app: tauri::AppHandle) -> Result<()> {
-    let window = app
-        .get_webview_window("main")
-        .ok_or("main window not found")?;
+pub async fn enter_teleprompter_mode(
+    app: tauri::AppHandle,
+    script: Script,
+    rect: OverlayRect,
+) -> Result<()> {
+    {
+        let state = app.state::<AppState>();
+        *state.live_script.lock() = Some(script);
+    }
 
-    // Clear editor min size so `set_overlay_rect` can shrink below defaults.
+    let main = main_window(&app)?;
+    let window = ensure_overlay_window(&app)?;
+
     window.set_min_size(None::<LogicalSize<f64>>)?;
-
     window.set_decorations(false)?;
-    // Kill the OS drop-shadow that otherwise renders a ghostly border
-    // around the transparent window in teleprompter mode.
-    let _ = window.set_shadow(false);
     window.set_always_on_top(true)?;
     window.set_skip_taskbar(true)?;
-    window.set_resizable(false)?;
-    window.set_ignore_cursor_events(true)?;
+    window.set_resizable(true)?;
+    window.set_ignore_cursor_events(false)?;
     platform::set_capture_hidden(&window, true)?;
+    apply_overlay_rect(&window, rect)?;
+    window.show()?;
+    let _ = window.set_focus();
+    main.hide()?;
 
-    emit_mode(&window, "teleprompter", false);
+    emit_mode(&window, "teleprompter", true);
     Ok(())
 }
 
 #[tauri::command]
 pub async fn exit_teleprompter_mode(app: tauri::AppHandle) -> Result<()> {
-    let window = app
-        .get_webview_window("main")
-        .ok_or("main window not found")?;
-
-    platform::set_capture_hidden(&window, false)?;
-    window.set_ignore_cursor_events(false)?;
-    window.set_skip_taskbar(false)?;
-    window.set_always_on_top(false)?;
-    window.set_resizable(true)?;
-    window.set_decorations(true)?;
-    let _ = window.set_shadow(true);
-    // Restore to a sensible editor size and re-center on the active monitor
-    // so we don't leave the user with a tiny corner-glued editor.
-    window.set_size(LogicalSize::new(EDITOR_DEFAULT_W, EDITOR_DEFAULT_H))?;
-    let _ = window.center();
-    window.set_min_size(Some(LogicalSize::new(EDITOR_DEFAULT_W, EDITOR_DEFAULT_H)))?;
-
-    emit_mode(&window, "editor", false);
+    if let Some(window) = app.get_webview_window(OVERLAY_WINDOW_LABEL) {
+        let _ = platform::set_capture_hidden(&window, false);
+        let _ = window.set_ignore_cursor_events(false);
+        let _ = window.close();
+    }
+    restore_main_window(&app)?;
     Ok(())
 }
 
@@ -75,24 +129,16 @@ pub async fn set_overlay_rect(
     h: f64,
 ) -> Result<()> {
     let window = app
-        .get_webview_window("main")
-        .ok_or("main window not found")?;
-
-    // Clamp width/height to something the OS will actually respect.
-    let w = w.max(120.0);
-    let h = h.max(80.0);
-
-    window.set_size(LogicalSize::new(w, h))?;
-    window.set_position(LogicalPosition::new(x, y))?;
-    let _ = window.set_shadow(false);
-    Ok(())
+        .get_webview_window(OVERLAY_WINDOW_LABEL)
+        .ok_or("overlay window not found")?;
+    apply_overlay_rect(&window, OverlayRect { x, y, w, h })
 }
 
 #[tauri::command]
 pub async fn set_edit_mode(app: tauri::AppHandle, edit: bool) -> Result<()> {
     let window = app
-        .get_webview_window("main")
-        .ok_or("main window not found")?;
+        .get_webview_window(OVERLAY_WINDOW_LABEL)
+        .ok_or("overlay window not found")?;
 
     window.set_ignore_cursor_events(!edit)?;
     emit_mode(&window, "teleprompter", edit);
@@ -102,8 +148,8 @@ pub async fn set_edit_mode(app: tauri::AppHandle, edit: bool) -> Result<()> {
 #[tauri::command]
 pub async fn set_capture_invisible(app: tauri::AppHandle, invisible: bool) -> Result<()> {
     let window = app
-        .get_webview_window("main")
-        .ok_or("main window not found")?;
+        .get_webview_window(OVERLAY_WINDOW_LABEL)
+        .ok_or("overlay window not found")?;
     platform::set_capture_hidden(&window, invisible)?;
     Ok(())
 }
@@ -111,8 +157,8 @@ pub async fn set_capture_invisible(app: tauri::AppHandle, invisible: bool) -> Re
 #[tauri::command]
 pub async fn set_click_through(app: tauri::AppHandle, enabled: bool) -> Result<()> {
     let window = app
-        .get_webview_window("main")
-        .ok_or("main window not found")?;
+        .get_webview_window(OVERLAY_WINDOW_LABEL)
+        .ok_or("overlay window not found")?;
     window.set_ignore_cursor_events(enabled)?;
     Ok(())
 }
@@ -157,5 +203,33 @@ mod tests {
     async fn is_capture_invisible_supported_matches_platform_value() {
         let supported = is_capture_invisible_supported().await.unwrap();
         assert_eq!(supported, platform::is_capture_hiding_supported());
+    }
+
+    #[test]
+    fn normalize_overlay_rect_clamps_minimum_size() {
+        let rect = normalize_overlay_rect(OverlayRect {
+            x: 10.0,
+            y: 20.0,
+            w: 40.0,
+            h: 50.0,
+        });
+
+        assert_eq!(rect.x, 10.0);
+        assert_eq!(rect.y, 20.0);
+        assert_eq!(rect.w, 120.0);
+        assert_eq!(rect.h, 80.0);
+    }
+
+    #[test]
+    fn normalize_overlay_rect_preserves_valid_size() {
+        let rect = normalize_overlay_rect(OverlayRect {
+            x: 10.0,
+            y: 20.0,
+            w: 480.0,
+            h: 320.0,
+        });
+
+        assert_eq!(rect.w, 480.0);
+        assert_eq!(rect.h, 320.0);
     }
 }

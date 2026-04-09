@@ -25,6 +25,20 @@
         "alwaysOnTop": false,
         "skipTaskbar": false,
         "center": true
+      },
+      {
+        "label": "overlay",
+        "title": "GhostPrompter Overlay",
+        "width": 720,
+        "height": 480,
+        "resizable": true,
+        "fullscreen": false,
+        "transparent": true,
+        "decorations": false,
+        "alwaysOnTop": true,
+        "skipTaskbar": true,
+        "visible": false,
+        "create": false
       }
     ],
     "security": {
