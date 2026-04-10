@@ -29,17 +29,23 @@ vi.mock("@tauri-apps/plugin-store", () => {
 });
 
 import { invoke } from "@tauri-apps/api/core";
+import { open as openDialog, save as saveDialog } from "@tauri-apps/plugin-dialog";
 import { EditorView } from "./EditorView";
 import { useScriptStore } from "@/store/scriptStore";
 import { useModeStore } from "@/store/modeStore";
 import { useSettingsStore } from "@/store/settingsStore";
 import { DEFAULT_SETTINGS } from "@/types";
+import type { Script } from "@/types";
 
 const invokeMock = invoke as unknown as ReturnType<typeof vi.fn>;
+const openDialogMock = openDialog as unknown as ReturnType<typeof vi.fn>;
+const saveDialogMock = saveDialog as unknown as ReturnType<typeof vi.fn>;
 
 beforeEach(() => {
   invokeMock.mockReset();
   invokeMock.mockResolvedValue(undefined);
+  openDialogMock.mockReset();
+  saveDialogMock.mockReset();
   useModeStore.setState({
     mode: "editor",
     editMode: false,
@@ -379,5 +385,282 @@ describe("<EditorView /> — Go Live CTA (VAL-EDIT-004)", () => {
     render(<EditorView />);
     const btn = screen.getByRole("button", { name: /go live/i });
     expect(btn.textContent).toContain("Go");
+  });
+});
+
+/* ============================================================
+   VAL-EDIT-005: Open button triggers file dialog and read_script IPC
+   ============================================================ */
+describe("<EditorView /> — Open file flow (VAL-EDIT-005)", () => {
+  it("clicking Open invokes the file open dialog", async () => {
+    openDialogMock.mockResolvedValueOnce(null);
+    const user = userEvent.setup();
+    render(<EditorView />);
+    await user.click(screen.getByRole("button", { name: "Open" }));
+    await waitFor(() => {
+      expect(openDialogMock).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  it("when a file is selected, invokes 'read_script' with chosen path", async () => {
+    const chosenPath = "/home/user/script.md";
+    const returned: Script = {
+      path: chosenPath,
+      name: "script.md",
+      content: "# loaded content",
+      dirty: false,
+    };
+    openDialogMock.mockResolvedValueOnce(chosenPath);
+    invokeMock.mockResolvedValueOnce(returned);
+
+    const user = userEvent.setup();
+    render(<EditorView />);
+    await user.click(screen.getByRole("button", { name: "Open" }));
+
+    await waitFor(() => {
+      expect(invokeMock).toHaveBeenCalledWith("read_script", { path: chosenPath });
+    });
+    // Script store updated with returned script
+    expect(useScriptStore.getState().script).toEqual(returned);
+  });
+
+  it("when dialog is cancelled (null), does not invoke read_script", async () => {
+    openDialogMock.mockResolvedValueOnce(null);
+    const user = userEvent.setup();
+    render(<EditorView />);
+    await user.click(screen.getByRole("button", { name: "Open" }));
+    await waitFor(() => {
+      expect(openDialogMock).toHaveBeenCalled();
+    });
+    expect(invokeMock).not.toHaveBeenCalledWith("read_script", expect.anything());
+  });
+});
+
+/* ============================================================
+   VAL-EDIT-006: Save button triggers save_script IPC
+   ============================================================ */
+describe("<EditorView /> — Save file flow (VAL-EDIT-006)", () => {
+  it("clicking Save with existing path calls save_script with correct payload", async () => {
+    useScriptStore.setState({
+      script: {
+        path: "/tmp/my-script.md",
+        name: "my-script.md",
+        content: "Hello world",
+        dirty: true,
+      },
+    });
+    invokeMock.mockResolvedValueOnce("/tmp/my-script.md");
+
+    const user = userEvent.setup();
+    render(<EditorView />);
+    await user.click(screen.getByRole("button", { name: "Save" }));
+
+    await waitFor(() => {
+      expect(invokeMock).toHaveBeenCalledWith("save_script", {
+        path: "/tmp/my-script.md",
+        content: "Hello world",
+      });
+    });
+  });
+
+  it("clicking Save with no path opens save dialog, then calls save_script", async () => {
+    useScriptStore.setState({
+      script: {
+        path: null,
+        name: "Untitled.md",
+        content: "new content",
+        dirty: true,
+      },
+    });
+    saveDialogMock.mockResolvedValueOnce("/tmp/saved.md");
+    invokeMock.mockResolvedValueOnce("/tmp/saved.md");
+
+    const user = userEvent.setup();
+    render(<EditorView />);
+    await user.click(screen.getByRole("button", { name: "Save" }));
+
+    await waitFor(() => {
+      expect(saveDialogMock).toHaveBeenCalledTimes(1);
+    });
+    await waitFor(() => {
+      expect(invokeMock).toHaveBeenCalledWith("save_script", {
+        path: "/tmp/saved.md",
+        content: "new content",
+      });
+    });
+  });
+
+  it("after save, script.dirty becomes false", async () => {
+    useScriptStore.setState({
+      script: {
+        path: "/tmp/my-script.md",
+        name: "my-script.md",
+        content: "content",
+        dirty: true,
+      },
+    });
+    invokeMock.mockResolvedValueOnce("/tmp/my-script.md");
+
+    const user = userEvent.setup();
+    render(<EditorView />);
+    await user.click(screen.getByRole("button", { name: "Save" }));
+
+    await waitFor(() => {
+      expect(useScriptStore.getState().script.dirty).toBe(false);
+    });
+  });
+});
+
+/* ============================================================
+   VAL-EDIT-013: Go Live triggers enter_teleprompter_mode IPC with script and rect
+   ============================================================ */
+describe("<EditorView /> — Go Live IPC payload (VAL-EDIT-013)", () => {
+  it("calls enter_teleprompter_mode with script {name, content} and rect {x, y, w, h}", async () => {
+    Object.defineProperty(window.screen, "availWidth", {
+      configurable: true,
+      value: 1920,
+    });
+    Object.defineProperty(window.screen, "availHeight", {
+      configurable: true,
+      value: 1080,
+    });
+    useScriptStore.setState({
+      script: {
+        path: "/scripts/demo.md",
+        name: "demo.md",
+        content: "# Demo script",
+        dirty: false,
+      },
+    });
+
+    const user = userEvent.setup();
+    render(<EditorView />);
+    await user.click(screen.getByRole("button", { name: /go live/i }));
+
+    await waitFor(() => {
+      expect(invokeMock).toHaveBeenCalledWith(
+        "enter_teleprompter_mode",
+        expect.objectContaining({
+          script: expect.objectContaining({
+            name: "demo.md",
+            content: "# Demo script",
+          }),
+          rect: expect.objectContaining({
+            x: expect.any(Number),
+            y: expect.any(Number),
+            w: expect.any(Number),
+            h: expect.any(Number),
+          }),
+        }),
+      );
+    });
+  });
+
+  it("on enter_teleprompter_mode failure, calls alert and mode stays editor", async () => {
+    const alertSpy = vi.fn();
+    vi.stubGlobal("alert", alertSpy);
+    invokeMock.mockImplementation((cmd: string) => {
+      if (cmd === "enter_teleprompter_mode")
+        return Promise.reject("test failure");
+      return Promise.resolve(undefined);
+    });
+    const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const user = userEvent.setup();
+    render(<EditorView />);
+    await user.click(screen.getByRole("button", { name: /go live/i }));
+
+    await waitFor(() => {
+      expect(alertSpy).toHaveBeenCalled();
+    });
+    expect(useModeStore.getState().mode).toBe("editor");
+    // register_hotkeys should NOT be called
+    expect(invokeMock).not.toHaveBeenCalledWith(
+      "register_hotkeys",
+      expect.anything(),
+    );
+
+    errSpy.mockRestore();
+    vi.unstubAllGlobals();
+  });
+});
+
+/* ============================================================
+   VAL-EDIT-014: register_hotkeys called AFTER enter_teleprompter_mode succeeds
+   ============================================================ */
+describe("<EditorView /> — hotkey registration order (VAL-EDIT-014)", () => {
+  it("register_hotkeys is called after enter_teleprompter_mode", async () => {
+    Object.defineProperty(window.screen, "availWidth", {
+      configurable: true,
+      value: 1920,
+    });
+    Object.defineProperty(window.screen, "availHeight", {
+      configurable: true,
+      value: 1080,
+    });
+
+    const user = userEvent.setup();
+    render(<EditorView />);
+    await user.click(screen.getByRole("button", { name: /go live/i }));
+
+    await waitFor(() => {
+      expect(invokeMock).toHaveBeenCalledWith(
+        "register_hotkeys",
+        expect.anything(),
+      );
+    });
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const calls = invokeMock.mock.calls.map((c: any[]) => c[0] as string);
+    const enterIdx = calls.indexOf("enter_teleprompter_mode");
+    const regIdx = calls.indexOf("register_hotkeys");
+    expect(enterIdx).toBeGreaterThanOrEqual(0);
+    expect(regIdx).toBeGreaterThan(enterIdx);
+  });
+
+  it("playing is set to false after successful Go Live", async () => {
+    Object.defineProperty(window.screen, "availWidth", {
+      configurable: true,
+      value: 1920,
+    });
+    Object.defineProperty(window.screen, "availHeight", {
+      configurable: true,
+      value: 1080,
+    });
+    // Start with playing=true to verify it gets set to false
+    useModeStore.setState({ playing: true });
+
+    const user = userEvent.setup();
+    render(<EditorView />);
+    await user.click(screen.getByRole("button", { name: /go live/i }));
+
+    await waitFor(() => {
+      expect(invokeMock).toHaveBeenCalledWith(
+        "register_hotkeys",
+        expect.anything(),
+      );
+    });
+    expect(useModeStore.getState().playing).toBe(false);
+  });
+
+  it("register_hotkeys receives the hotkeys from settings", async () => {
+    Object.defineProperty(window.screen, "availWidth", {
+      configurable: true,
+      value: 1920,
+    });
+    Object.defineProperty(window.screen, "availHeight", {
+      configurable: true,
+      value: 1080,
+    });
+
+    const user = userEvent.setup();
+    render(<EditorView />);
+    await user.click(screen.getByRole("button", { name: /go live/i }));
+
+    await waitFor(() => {
+      expect(invokeMock).toHaveBeenCalledWith("register_hotkeys", {
+        hotkeys: DEFAULT_SETTINGS.hotkeys,
+      });
+    });
   });
 });
