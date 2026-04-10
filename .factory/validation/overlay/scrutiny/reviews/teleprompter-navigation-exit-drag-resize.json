@@ -1,0 +1,33 @@
+{
+  "featureId": "teleprompter-navigation-exit-drag-resize",
+  "reviewedAt": "2026-04-10T18:18:27.2563744+02:00",
+  "commitId": "9c7e5c0",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "fail",
+  "codeReview": {
+    "summary": "The feature fixes the explicit arrow-key leak outside edit mode and the reviewed commit adds thorough happy-path coverage for VAL-TELE-012 through VAL-TELE-015, but the exit-flow implementation is still brittle: a hotkey-unregister failure prevents the teleprompter from exiting and leaves local mode state unchanged.",
+    "issues": [
+      {
+        "file": "src/teleprompter/TeleprompterView.tsx",
+        "line": 459,
+        "severity": "blocking",
+        "description": "The exit handler awaits `ipc.unregisterHotkeys()` before calling `ipc.exitTeleprompter()`, but both calls and the local state reset are wrapped in a single `try`. If hotkey cleanup rejects, the catch block runs and the function returns without attempting `exit_teleprompter_mode` or resetting `playing`, `editMode`, and `mode`. That leaves the overlay stuck in teleprompter mode on exactly the sort of cleanup failure the exit button should recover from."
+      }
+    ]
+  },
+  "sharedStateObservations": [
+    {
+      "area": "skills",
+      "observation": "The `frontend-redesign` skill procedure and the worker's `followedProcedure` reporting are out of sync for this feature review. The transcript skips required procedure steps, but the handoff still reports `followedProcedure: true` with no deviations.",
+      "evidence": "D:\\coding\\somewhat\\.factory\\skills\\frontend-redesign\\SKILL.md:21 requires invoking `frontend-design` at session start; line 31 requires reading `.factory/library/architecture.md`; lines 41-45 require a RED test-first phase. In C:\\Users\\mitte\\.factory\\missions\\fe650437-0d94-4ece-8085-ac6da736d0ec\\worker-transcripts.jsonl:21, the session starts with `mission-worker-base`, reads mission files plus `TeleprompterView.tsx`/`.test.tsx`, runs baseline tests, and only then invokes `frontend-redesign`; it never reads `architecture.md` and edits `TeleprompterView.tsx` before adding the new tests. The handoff file C:\\Users\\mitte\\.factory\\missions\\fe650437-0d94-4ece-8085-ac6da736d0ec\\handoffs\\2026-04-10T15-55-14-648Z__teleprompter-navigation-exit-drag-resize__8aa1e665-dfa1-46c0-8a61-16ece4e6e29b.json:112-113 still records `\"followedProcedure\": true` and an empty deviations list."
+    },
+    {
+      "area": "knowledge",
+      "observation": "Workers are still being pointed at `.factory/library/README.md`, but this repository has no such file, so they have to discover the actual library entry points ad hoc.",
+      "evidence": "The reviewed transcript skeleton at C:\\Users\\mitte\\.factory\\missions\\fe650437-0d94-4ece-8085-ac6da736d0ec\\worker-transcripts.jsonl:21 includes `Read D:\\coding\\somewhat\\.factory\\library\\README.md`. However, `D:\\coding\\somewhat\\.factory\\library` currently contains only `architecture.md`, `environment.md`, and `user-testing.md`."
+    }
+  ],
+  "addressesFailureFrom": null,
+  "summary": "Fail. Commit `9c7e5c0` correctly plugs the ArrowUp/ArrowDown edit-mode guard and adds strong coverage for the requested navigation, drag, and resize behaviors, but the reviewed exit-flow implementation still aborts the entire exit path when `unregister_hotkeys` fails, so the feature is not robustly correct."
+}

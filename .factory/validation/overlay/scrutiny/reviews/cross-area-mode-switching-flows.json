@@ -1,0 +1,26 @@
+{
+  "featureId": "cross-area-mode-switching-flows",
+  "reviewedAt": "2026-04-10T16:18:29.8842371Z",
+  "commitId": "8e59907",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "pass",
+  "codeReview": {
+    "summary": "Pass. Commit 8e59907 is narrowly scoped to cross-area coverage and it closes the previously missing assertions without regressing the underlying implementation: EditorView still alerts and avoids hotkey registration when `enter_teleprompter_mode` fails, App's stop handler still unregisters hotkeys before exiting and resetting local mode state, App still forwards `mode-changed` payloads into the mode store, and TeleprompterView still renders the shared MarkdownPreview inside the viewport with prose styling. I did not find any actionable blocking or non-blocking defects in the reviewed feature scope.",
+    "issues": []
+  },
+  "sharedStateObservations": [
+    {
+      "area": "skills",
+      "observation": "The `frontend-redesign` skill is overly prescriptive for validation-only features: it requires invoking `frontend-design` and mandates a RED-first failing test run even when the work is only to fill coverage gaps around already-implemented behavior.",
+      "evidence": "D:\\coding\\somewhat\\.factory\\skills\\frontend-redesign\\SKILL.md:21 requires invoking `frontend-design` at the start, and lines 41-45 require a RED-phase failing run. The transcript skeleton for worker session 41e2490d-42c3-46be-86e2-662ed16549fe shows a verification-oriented flow focused on existing tests/code and the resulting diff in commit 8e59907 only adds assertions in `src/App.test.tsx`, `src/editor/EditorView.test.tsx`, and `src/teleprompter/TeleprompterView.test.tsx`."
+    },
+    {
+      "area": "knowledge",
+      "observation": "The shared validation contract overstates `VAL-CROSS-006` as App route switching driven by `mode-changed`, but the implemented architecture is a two-window flow where the overlay App instance is forced into teleprompter mode and the backend emits `mode-changed` only to that overlay window. Reviewing this feature required reconciling the contract wording with the actual store-sync/edit-mode behavior.",
+      "evidence": "C:\\Users\\mitte\\.factory\\missions\\fe650437-0d94-4ece-8085-ac6da736d0ec\\validation-contract.md:429-430 says the event causes App mode switching and view re-render. In `D:\\coding\\somewhat\\src\\App.tsx:25`, `activeMode` is forced to `\"teleprompter\"` for the overlay window, and the listener is only registered once `activeMode === \"teleprompter\"` (`App.tsx:83-89`). In `D:\\coding\\somewhat\\src-tauri\\src\\commands\\window_mode.rs:24,105,114-116`, Rust emits `mode-changed` to the overlay window on entry/edit changes, while exit closes the overlay and restores the main window without emitting an editor-mode route event."
+    }
+  ],
+  "addressesFailureFrom": null,
+  "summary": "Reviewed the feature metadata, handoff, transcript skeleton, skill file, shared-state docs, and commit 8e59907. The feature passes: the diff adds the missing VAL-CROSS-004 to 007 coverage and I found no actionable correctness or regression issues in the reviewed scope."
+}

@@ -1,0 +1,21 @@
+{
+  "featureId": "teleprompter-viewport-reading-hud",
+  "reviewedAt": "2026-04-10T16:18:36.6672877Z",
+  "commitId": "5274199",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "pass",
+  "codeReview": {
+    "summary": "Pass. I reviewed the feature metadata, worker handoff, transcript skeleton, commit `5274199`, and the resulting overlay implementation. The feature satisfies VAL-TELE-001 through VAL-TELE-005: `TeleprompterView` keeps the viewport pinned at `(0,0)` with settings-driven dimensions and mount-time `set_overlay_rect` sync, `ReadingLine` stays viewport-scoped and `aria-hidden`, the HUD shows the correct Rolling/Standby state with `RecDot` plus speed and script name, hidden mode removes HUD chips while the root fades to `opacity: 0`, and the touched teleprompter glass/shadow styling was moved onto token-backed variables with matching manifest coverage in `src/ui/tokens.ts`.",
+    "issues": []
+  },
+  "sharedStateObservations": [
+    {
+      "area": "skills",
+      "observation": "The `frontend-redesign` skill procedure and the handoff's `followedProcedure` reporting are out of sync for this overlay feature. The skill requires invoking `frontend-design` at session start and reading `.factory/library/architecture.md`, but this transcript skeleton shows neither, while the handoff still reports `followedProcedure: true`.",
+      "evidence": "D:\\coding\\somewhat\\.factory\\skills\\frontend-redesign\\SKILL.md:21 requires `frontend-design` at the start, and line 31 requires reading `.factory/library/architecture.md`. The transcript skeleton at C:\\Users\\mitte\\.factory\\missions\\fe650437-0d94-4ece-8085-ac6da736d0ec\\worker-transcripts.jsonl:19 does not include either step, while the handoff at C:\\Users\\mitte\\.factory\\missions\\fe650437-0d94-4ece-8085-ac6da736d0ec\\handoffs\\2026-04-10T15-37-09-494Z__teleprompter-viewport-reading-hud__228103df-71b4-4a88-86b7-8eb3258c7241.json:93 still records `\"followedProcedure\": true`."
+    }
+  ],
+  "addressesFailureFrom": null,
+  "summary": "Pass. Commit `5274199` completes the teleprompter viewport / reading-line / HUD polish work and adds the expected HUD and hidden-state coverage; I found no blocking correctness or regression issues in the reviewed feature."
+}

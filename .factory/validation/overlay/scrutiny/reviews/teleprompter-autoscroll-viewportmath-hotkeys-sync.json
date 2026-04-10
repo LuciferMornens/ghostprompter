@@ -1,0 +1,26 @@
+{
+  "featureId": "teleprompter-autoscroll-viewportmath-hotkeys-sync",
+  "reviewedAt": "2026-04-10T18:18:24.2866581+02:00",
+  "commitId": "87f0a98",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "pass",
+  "codeReview": {
+    "summary": "Pass. I reviewed the feature metadata, handoff, transcript skeleton, and commit `87f0a98`. The diff is limited to `src/teleprompter/TeleprompterView.test.tsx`, where seven focused tests were added for the remaining hotkey-subscription and native-sync assertions. Those tests line up with the existing implementation in `src/teleprompter/TeleprompterView.tsx`, while the already-present `useAutoScroll` and `viewportMath` source/tests cover the auto-scroll and viewport-math requirements from VAL-TELE-016 through VAL-TELE-019. I did not find a correctness or regression issue in the reviewed feature scope.",
+    "issues": []
+  },
+  "sharedStateObservations": [
+    {
+      "area": "knowledge",
+      "observation": "Workers keep attempting to read `.factory/library/README.md`, but the shared library has no README/index file. That forces workers to discover the available library docs by listing the directory instead of having a single entry point.",
+      "evidence": "The transcript skeleton at `C:\\Users\\mitte\\.factory\\missions\\fe650437-0d94-4ece-8085-ac6da736d0ec\\worker-transcripts.jsonl:22` includes `Read D:\\coding\\somewhat\\.factory\\library\\README.md`, while `D:\\coding\\somewhat\\.factory\\library` currently contains only `architecture.md`, `environment.md`, and `user-testing.md`."
+    },
+    {
+      "area": "skills",
+      "observation": "The `frontend-redesign` skill procedure is out of sync with how this verification-heavy feature was actually executed and reported. The skill requires invoking `frontend-design` at session start and doing an explicit RED phase, but this worker transcript shows neither, while the handoff still reports `followedProcedure: true` and only notes the mismatch in suggested changes.",
+      "evidence": "`D:\\coding\\somewhat\\.factory\\skills\\frontend-redesign\\SKILL.md:21-21` requires `frontend-design` at the START, and `D:\\coding\\somewhat\\.factory\\skills\\frontend-redesign\\SKILL.md:41-43` requires a RED test-first phase. In `C:\\Users\\mitte\\.factory\\missions\\fe650437-0d94-4ece-8085-ac6da736d0ec\\worker-transcripts.jsonl:22`, the session shows `mission-worker-base`, later `frontend-redesign`, and baseline validation before the skill invocation, with no `frontend-design` invocation. The handoff at `C:\\Users\\mitte\\.factory\\missions\\fe650437-0d94-4ece-8085-ac6da736d0ec\\handoffs\\2026-04-10T16-03-01-293Z__teleprompter-autoscroll-viewportmath-hotkeys-sync__21669374-45fc-40ed-930c-09177965b850.json:93-97` still records `\"followedProcedure\": true` while also suggesting the RED-phase guidance should be relaxed for verification-focused features."
+    }
+  ],
+  "addressesFailureFrom": null,
+  "summary": "Pass: commit `87f0a98` adds the missing TeleprompterView coverage for hotkey subscription/cleanup and native move-sync coalescing, and the reviewed implementation satisfies the feature's auto-scroll, viewport-math, hotkey, and native-sync behavior."
+}

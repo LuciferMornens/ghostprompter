@@ -1,0 +1,44 @@
+{
+  "featureId": "teleprompter-controls-snap",
+  "reviewedAt": "2026-04-10T18:20:00Z",
+  "commitId": "5ab4717",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "fail",
+  "codeReview": {
+    "summary": "I reviewed the feature metadata, worker handoff, transcript skeleton, and commit `5ab4717`. The controls, snap popover, speed controls, and play/pause UI are present, but the TeleprompterView keyboard handler implements the global Space hotkey too broadly: it intercepts Space on focused toolbar buttons, prevents the button default action, and toggles playback instead. Because this feature is specifically about the teleprompter control cluster and play/pause behavior, that is a correctness/accessibility regression. The added tests also overstate VAL-TELE-009 coverage by checking only the preset's x/y coordinates, not the full persisted rect.",
+    "issues": [
+      {
+        "file": "src/teleprompter/TeleprompterView.tsx",
+        "line": 425,
+        "severity": "blocking",
+        "description": "The global keydown handler only exempts editable fields, then intercepts `Space` whenever `editMode` is true. If a user tabs to a control button such as Faster, Slower, Snap, Lock overlay, or Exit teleprompter and presses Space, this handler runs first, calls `preventDefault()`, and toggles `playing` instead of letting the focused button activate normally. That breaks keyboard access to the control cluster and makes the promised “spacebar toggles play/pause in edit mode only” behavior too broad."
+      },
+      {
+        "file": "src/teleprompter/TeleprompterView.test.tsx",
+        "line": 935,
+        "severity": "non_blocking",
+        "description": "The new VAL-TELE-009 test claims to verify the “correct rect”, but it only asserts `{ x: 0, y: 0 }` for the Top left preset and never checks width/height or compares against `presetRect(...)`. Since this commit only adds tests, the handoff's “full coverage” claim is overstated for snap-rect correctness."
+      }
+    ]
+  },
+  "sharedStateObservations": [
+    {
+      "area": "skills",
+      "observation": "The `frontend-redesign` skill requires companion skills and a RED-first testing step, but this worker session only invoked `frontend-redesign`, did not invoke the listed companion skills, and reported `skillFeedback.followedProcedure: true` anyway.",
+      "evidence": "D:\\coding\\somewhat\\.factory\\skills\\frontend-redesign\\SKILL.md:21-24 requires `frontend-design`, `vercel-react-best-practices`, `web-design-guidelines`, and `tauri-v2`; SKILL.md:41-42 requires a RED test step. The transcript skeleton in C:\\Users\\mitte\\.factory\\missions\\fe650437-0d94-4ece-8085-ac6da736d0ec\\worker-transcripts.jsonl:20 shows only `mission-worker-base` and `frontend-redesign`, plus a baseline `npm run test:frontend` before the test edits. The handoff file C:\\Users\\mitte\\.factory\\missions\\fe650437-0d94-4ece-8085-ac6da736d0ec\\handoffs\\2026-04-10T15-46-09-420Z__teleprompter-controls-snap__ea85b927-0ce3-4fce-801e-966f7f77e172.json:140 still says `followedProcedure: true`."
+    },
+    {
+      "area": "conventions",
+      "observation": "Repo-level completion guidance and the feature handoff verification gate are out of sync: root AGENTS.md says work is not done until `npm test` is green, but this feature handoff recorded only frontend tests, typecheck, and lint.",
+      "evidence": "D:\\coding\\somewhat\\AGENTS.md:5 and :56 require `npm test` as the gate. The handoff file C:\\Users\\mitte\\.factory\\missions\\fe650437-0d94-4ece-8085-ac6da736d0ec\\handoffs\\2026-04-10T15-46-09-420Z__teleprompter-controls-snap__ea85b927-0ce3-4fce-801e-966f7f77e172.json:16-27 lists only `npm run test:frontend`, `npm run typecheck`, and `npm run lint`."
+    },
+    {
+      "area": "knowledge",
+      "observation": "Worker/session bootstrapping still points to `.factory/library/README.md`, but this repository has no library README, so workers keep paying a failed-read tax instead of having a clear shared-knowledge entry point.",
+      "evidence": "The transcript skeleton in C:\\Users\\mitte\\.factory\\missions\\fe650437-0d94-4ece-8085-ac6da736d0ec\\worker-transcripts.jsonl:20 includes `Read D:\\coding\\somewhat\\.factory\\library\\README.md`. The actual library currently contains only `architecture.md`, `environment.md`, and `user-testing.md` under D:\\coding\\somewhat\\.factory\\library."
+    }
+  ],
+  "addressesFailureFrom": null,
+  "summary": "Fail. The feature's test additions improved coverage, but the underlying teleprompter controls still have a blocking keyboard bug: the global Space handler hijacks focused toolbar buttons and toggles playback instead of activating the selected control."
+}
