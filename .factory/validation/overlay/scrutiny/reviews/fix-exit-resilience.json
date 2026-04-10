@@ -1,0 +1,33 @@
+{
+  "featureId": "fix-exit-resilience",
+  "reviewedAt": "2026-04-10T18:34:35.4929803+02:00",
+  "commitId": "95ef80b",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "fail",
+  "codeReview": {
+    "summary": "The fix commit correctly makes `TeleprompterView.onExit` continue through `exitTeleprompter()` and local store cleanup when `unregisterHotkeys()` rejects, and it adds a focused regression test for that button path. But the overlay still has a second exit path through `hotkey://stop` in `App.tsx`, and that handler retains the original single-`try` failure mode, so an `unregisterHotkeys()` rejection can still abort exit and leave local teleprompter state stuck.",
+    "issues": [
+      {
+        "file": "src/App.tsx",
+        "line": 119,
+        "severity": "blocking",
+        "description": "The overlay `hotkey://stop` handler still awaits `ipc.unregisterHotkeys()`, `ipc.exitTeleprompter()`, and the local `playing/editMode/mode` reset inside one `try`. If `unregisterHotkeys()` rejects there, the catch runs before `exitTeleprompter()` or the state cleanup, reproducing the same stuck-exit failure that this fix removed from `TeleprompterView`. The reviewed diffs leave that exit path unchanged, so exit flow resilience is still incomplete."
+      }
+    ]
+  },
+  "sharedStateObservations": [
+    {
+      "area": "skills",
+      "observation": "The `frontend-redesign` skill procedure still does not match how small fix sessions are actually executed or reported.",
+      "evidence": "D:\\coding\\somewhat\\.factory\\skills\\frontend-redesign\\SKILL.md:21 requires invoking `frontend-design` at session start, line 31 requires reading `.factory/library/architecture.md`, and lines 41-45 require a RED test-first phase. But C:\\Users\\mitte\\.factory\\missions\\fe650437-0d94-4ece-8085-ac6da736d0ec\\worker-transcripts.jsonl:26 shows the fix session starting with `mission-worker-base`, reading mission files plus `.factory/library\\README.md`, editing `TeleprompterView.tsx`, and only afterward noting 'Now let me invoke the skill' without any actual `frontend-redesign` tool call. The handoff at C:\\Users\\mitte\\.factory\\missions\\fe650437-0d94-4ece-8085-ac6da736d0ec\\handoffs\\2026-04-10T16-30-47-484Z__fix-exit-resilience__1f56a7d1-aa34-47d2-9c7e-45e7e93c1f91.json:48-51 still records `\"followedProcedure\": true` while also saying the skill was not invoked."
+    },
+    {
+      "area": "knowledge",
+      "observation": "Workers are still being pointed at `.factory/library/README.md`, but this repository still has no such shared-library index file.",
+      "evidence": "C:\\Users\\mitte\\.factory\\missions\\fe650437-0d94-4ece-8085-ac6da736d0ec\\worker-transcripts.jsonl:26 includes `Read D:\\coding\\somewhat\\.factory\\library\\README.md`. However, `D:\\coding\\somewhat\\.factory\\library` currently contains only `architecture.md`, `environment.md`, and `user-testing.md`."
+    }
+  ],
+  "addressesFailureFrom": ".factory/validation/overlay/scrutiny/reviews/teleprompter-navigation-exit-drag-resize.json",
+  "summary": "Fail. Commit `95ef80b` fixes the original TeleprompterView exit-button bug and adds the expected regression test, but the overlay's `hotkey://stop` exit path in `src/App.tsx` still aborts on `unregisterHotkeys()` rejection, so exit flow resilience remains incomplete."
+}

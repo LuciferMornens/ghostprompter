@@ -1,0 +1,26 @@
+{
+  "featureId": "fix-space-hijack-toolbar",
+  "reviewedAt": "2026-04-10T18:45:00Z",
+  "commitId": "23b9893",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "pass",
+  "codeReview": {
+    "summary": "I reviewed the original failing feature commit `5ab4717`, the fix commit `23b9893`, the fix worker handoff and transcript skeleton, the current `TeleprompterView` implementation, and the added tests. The original blocking issue is addressed: the global Space handler now checks `document.activeElement` with `isInteractiveControl(...)` before toggling playback, so focused toolbar buttons and snap popover menuitems keep native Space activation instead of being hijacked. The fix also adds targeted regression coverage for both focused buttons and focused menuitems, while preserving the original edit-mode-only Space toggle behavior.",
+    "issues": []
+  },
+  "sharedStateObservations": [
+    {
+      "area": "skills",
+      "observation": "The `frontend-redesign` skill still does not match these small fix workflows: it requires companion skill invocations and a RED-first test step, but this fix session only invoked `frontend-redesign` after initial investigation and baseline tests, while the handoff still reported `followedProcedure: true` with no deviations.",
+      "evidence": "`D:/coding/somewhat/.factory/skills/frontend-redesign/SKILL.md:19-24,41-44` requires companion skills and RED-first testing. The fix transcript skeleton at `C:/Users/mitte/.factory/missions/fe650437-0d94-4ece-8085-ac6da736d0ec/worker-transcripts.jsonl:25` shows baseline investigation and `npm run test:frontend` before invoking `frontend-redesign`, and the handoff `C:/Users/mitte/.factory/missions/fe650437-0d94-4ece-8085-ac6da736d0ec/handoffs/2026-04-10T16-28-19-310Z__fix-space-hijack-toolbar__f130bca4-307f-44e3-9d00-d3a68843f7aa.json:52` still says `followedProcedure: true`."
+    },
+    {
+      "area": "knowledge",
+      "observation": "Worker bootstrap/transcript guidance still points sessions at `.factory/library/readme.md`, but this repository does not have that file, so fix workers keep paying a dead-end lookup before discovering the actual library files.",
+      "evidence": "The fix transcript skeleton at `C:/Users/mitte/.factory/missions/fe650437-0d94-4ece-8085-ac6da736d0ec/worker-transcripts.jsonl:25` includes `Read D:/coding/somewhat/.factory/library/readme.md`, while the actual library contents are documented in `D:/coding/somewhat/.factory/library/architecture.md` and `D:/coding/somewhat/.factory/library/environment.md`."
+    }
+  ],
+  "addressesFailureFrom": ".factory/validation/overlay/scrutiny/reviews/teleprompter-controls-snap.json",
+  "summary": "Pass. The rerun fix resolves the prior blocking keyboard/accessibility regression: Space no longer hijacks focused teleprompter controls, and the added tests cover both button and menuitem focus paths. No remaining blocking issues found in this fix review."
+}

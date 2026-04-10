@@ -1,0 +1,71 @@
+{
+  "milestone": "overlay",
+  "round": 1,
+  "status": "fail",
+  "validatorsRun": {
+    "test": {
+      "passed": true,
+      "command": "npm --prefix \"D:\\coding\\somewhat\" test",
+      "exitCode": 0
+    },
+    "typecheck": {
+      "passed": true,
+      "command": "npm --prefix \"D:\\coding\\somewhat\" run typecheck",
+      "exitCode": 0
+    },
+    "lint": {
+      "passed": true,
+      "command": "npm --prefix \"D:\\coding\\somewhat\" run lint",
+      "exitCode": 0
+    }
+  },
+  "reviewsSummary": {
+    "total": 5,
+    "passed": 3,
+    "failed": 2,
+    "failedFeatures": [
+      "teleprompter-controls-snap",
+      "teleprompter-navigation-exit-drag-resize"
+    ]
+  },
+  "blockingIssues": [
+    {
+      "featureId": "teleprompter-controls-snap",
+      "severity": "blocking",
+      "description": "The global Space hotkey in `src/teleprompter/TeleprompterView.tsx` hijacks Space on focused toolbar buttons in edit mode, prevents their default activation, and toggles playback instead. That breaks keyboard access to the teleprompter control cluster."
+    },
+    {
+      "featureId": "teleprompter-navigation-exit-drag-resize",
+      "severity": "blocking",
+      "description": "The exit handler wraps `unregisterHotkeys()`, `exitTeleprompter()`, and local mode reset in one `try`, so if hotkey cleanup rejects the overlay never exits and local state stays stuck in teleprompter mode."
+    }
+  ],
+  "appliedUpdates": [],
+  "suggestedGuidanceUpdates": [
+    {
+      "target": "frontend-redesign skill",
+      "suggestion": "Align the skill with accepted validation-heavy and small-fix workflows: either make companion-skill invocations / RED-first runs optional for test-only or verification-only sessions, or require workers to record explicit deviations and set `followedProcedure` accurately when they skip those steps.",
+      "evidence": "Overlay reviews for `teleprompter-viewport-reading-hud`, `teleprompter-controls-snap`, `teleprompter-navigation-exit-drag-resize`, `teleprompter-autoscroll-viewportmath-hotkeys-sync`, and `cross-area-mode-switching-flows` all reported the same mismatch between `frontend-redesign` procedure requirements and what workers actually did before still reporting `followedProcedure: true`.",
+      "isSystemic": true
+    },
+    {
+      "target": "worker bootstrap / shared-library guidance",
+      "suggestion": "Stop instructing workers to read `.factory/library/README.md` unless that file exists, or add a real library index file that points to the current shared knowledge documents.",
+      "evidence": "Overlay reviews for `teleprompter-controls-snap`, `teleprompter-navigation-exit-drag-resize`, and `teleprompter-autoscroll-viewportmath-hotkeys-sync` all observed transcript attempts to read `.factory/library/README.md`, but `D:\\coding\\somewhat\\.factory\\library` only contains `architecture.md`, `environment.md`, and `user-testing.md`.",
+      "isSystemic": true
+    },
+    {
+      "target": "validation-contract.md",
+      "suggestion": "Reword `VAL-CROSS-006` so it matches the app's two-window architecture: the backend `mode-changed` event updates overlay-window mode/edit state, rather than acting like a generic editor↔teleprompter route switch in a single App instance.",
+      "evidence": "The `cross-area-mode-switching-flows` review found the current contract wording misleading during review because `src/App.tsx` forces the overlay App instance into teleprompter mode while `src-tauri/src/commands/window_mode.rs` emits `mode-changed` only to the overlay window for entry/edit transitions.",
+      "isSystemic": false
+    }
+  ],
+  "rejectedObservations": [
+    {
+      "observation": "Repo-level completion guidance and the feature handoff verification gate are out of sync because one overlay feature handoff listed only frontend tests, typecheck, and lint instead of `npm test`.",
+      "reason": "already-documented"
+    }
+  ],
+  "previousRound": null
+}
