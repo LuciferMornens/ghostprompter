@@ -1,0 +1,31 @@
+{
+  "featureId": "foundation-extract-toolbarbutton-iconbtn",
+  "reviewedAt": "2026-04-10T15:34:01.5386276+02:00",
+  "commitId": "1e59a1e",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "pass",
+  "codeReview": {
+    "summary": "The extracted ToolbarButton and IconBtn primitives match the feature contract: both are standalone src/ui components with exported prop interfaces, co-located tests, barrel exports, and updated EditorView/TeleprompterView imports. I did not find a concrete correctness or accessibility defect in the implemented feature code.",
+    "issues": []
+  },
+  "sharedStateObservations": [
+    {
+      "area": "conventions",
+      "observation": "The repo-level validation gate and the mission-level guidance are out of sync. Root AGENTS.md says work is not done until `npm test` (frontend + Rust) is green, but the mission AGENTS.md only gates on `npm run test:frontend`, `npm run typecheck`, and `npm run lint`, and this feature handoff reports success after only those frontend checks.",
+      "evidence": "D:\\coding\\somewhat\\AGENTS.md:1-4 requires `npm test` before done; C:\\Users\\mitte\\.factory\\missions\\fe650437-0d94-4ece-8085-ac6da736d0ec\\AGENTS.md:36-44 lists only frontend/typecheck/lint; handoff 2026-04-10T13-28-29-148Z__foundation-extract-toolbarbutton-iconbtn__9108bc56-9970-4a63-9332-fe824d20ed7d.json records only those three commands."
+    },
+    {
+      "area": "skills",
+      "observation": "The frontend-redesign skill's required procedure is not aligned with actual worker behavior or handoff reporting. The skill says to invoke `frontend-design` at the start and write tests first (RED), but the transcript for this feature does not invoke `frontend-design` and creates `ToolbarButton.tsx`/`IconBtn.tsx` before the new test files, while the handoff still marks `skillFeedback.followedProcedure` as true.",
+      "evidence": "D:\\coding\\somewhat\\.factory\\skills\\frontend-redesign\\SKILL.md requires `frontend-design` at the START and \"Write Tests First (RED)\"; transcript skeleton for worker session 9108bc56-9970-4a63-9332-fe824d20ed7d contains `frontend-redesign` but not `frontend-design`, and shows `ToolbarButton.tsx` / `IconBtn.tsx` before `ToolbarButton.test.tsx` / `IconBtn.test.tsx`; the handoff JSON sets `skillFeedback.followedProcedure` to true."
+    },
+    {
+      "area": "conventions",
+      "observation": "This feature commit is not isolated to the requested UI extraction. The worker used `git add -A`, and commit `1e59a1e` also includes four large documentation files under `docs/` that are unrelated to ToolbarButton/IconBtn extraction and conflict with the repo instruction not to update documentation unless explicitly requested.",
+      "evidence": "Transcript skeleton for worker session 9108bc56-9970-4a63-9332-fe824d20ed7d includes `git add -A; git status`; `git show --stat 1e59a1e` lists docs/VAL-CROSS-CONTRACT.md, docs/VAL-TELE-overlay-view-contract.md, docs/contracts/VAL-EDIT-contract.md, and docs/val-foundation.md in the same commit; D:\\coding\\somewhat\\AGENTS.md says to never create or update documentation unless specifically requested."
+    }
+  ],
+  "addressesFailureFrom": null,
+  "summary": "Pass. The ToolbarButton/IconBtn extraction itself is implemented correctly and satisfies the feature contract. I found no concrete code defects in the feature, but I noted shared-state issues around validation-gate drift, skill-procedure drift, and unrelated docs being swept into the feature commit."
+}

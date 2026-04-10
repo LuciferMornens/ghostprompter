@@ -1,0 +1,34 @@
+{
+  "featureId": "foundation-extract-brandmark-panelheader",
+  "reviewedAt": "2026-04-10T15:33:09.5237444+02:00",
+  "commitId": "084d2ca",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "fail",
+  "codeReview": {
+    "summary": "PanelHeader was extracted cleanly, but BrandMark was only partially extracted: the new component renders just the ghost icon while the wordmark and tagline remain inline in EditorView.",
+    "issues": [
+      {
+        "file": "src/ui/BrandMark.tsx",
+        "line": 12,
+        "severity": "blocking",
+        "description": "`BrandMark` only renders the ghost SVG. The feature description requires the standalone component to render the full brand mark (ghost icon + wordmark + tagline), but `EditorView` still keeps the text cluster inline at `src/editor/EditorView.tsx:69-73`. The branding cluster therefore was not fully extracted into `src/ui/BrandMark.tsx`, and consumers of `@/ui` cannot reuse the complete brand mark."
+      },
+      {
+        "file": "src/ui/BrandMark.test.tsx",
+        "line": 6,
+        "severity": "non_blocking",
+        "description": "The new BrandMark tests only verify the SVG/icon, aria-hidden, and token usage. They never assert the required wordmark/tagline content or that the full brand cluster moved out of `EditorView`, which is why the incomplete extraction above passed unnoticed."
+      }
+    ]
+  },
+  "sharedStateObservations": [
+    {
+      "area": "skills",
+      "observation": "The `frontend-redesign` skill says workers must invoke `frontend-design` at the start of the session, but this worker only invoked `frontend-redesign`. The handoff still marks `followedProcedure` as true, so the skill instructions and review expectations are currently out of sync.",
+      "evidence": "`D:\\coding\\somewhat\\.factory\\skills\\frontend-redesign\\SKILL.md:21` says to invoke `frontend-design` at the START. The transcript skeleton for worker session `0b16c573-ffd2-4cfa-8a3c-9f913babcdc1` shows `Skill: mission-worker-base` and later `Skill: frontend-redesign`, with no `frontend-design` call, while the handoff JSON records `skillFeedback.followedProcedure: true`."
+    }
+  ],
+  "addressesFailureFrom": null,
+  "summary": "Fail. PanelHeader extraction looks correct, but BrandMark is incomplete: only the ghost icon moved to `src/ui`, while the wordmark/tagline remain inline in `EditorView`."
+}

@@ -1,0 +1,21 @@
+{
+  "featureId": "foundation-extract-statblock-recdot-kbdhint",
+  "reviewedAt": "2026-04-10T15:32:06.1425822+02:00",
+  "commitId": "dcfc06e",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "pass",
+  "codeReview": {
+    "summary": "Reviewed commit dcfc06e and the resulting component/test files for StatBlock, RecDot, and KbdHint. The implementation matches the feature description: KbdHint was extracted to src/ui, StatBlockProps and RecDotProps are exported, EditorView consumes KbdHint from the ui barrel, and the added tests cover the required rendering and prop-state behavior without revealing correctness issues in scope.",
+    "issues": []
+  },
+  "sharedStateObservations": [
+    {
+      "area": "skills",
+      "observation": "The frontend-redesign skill says workers must invoke frontend-design at the start of the session, but this worker transcript shows only mission-worker-base and frontend-redesign before implementation. Either the skill procedure is stricter than real practice for small extraction tasks, or the followedProcedure signal is not reliable enough to use as-is.",
+      "evidence": "D:\\coding\\somewhat\\.factory\\skills\\frontend-redesign\\SKILL.md: 'frontend-design: Invoke this skill at the START of your session.' The transcript entry for workerSessionId 2e69d35b-516c-4374-8dff-5def409a4609 in C:\\Users\\mitte\\.factory\\missions\\fe650437-0d94-4ece-8085-ac6da736d0ec\\worker-transcripts.jsonl shows Skill calls for mission-worker-base and frontend-redesign, but no frontend-design invocation."
+    }
+  ],
+  "addressesFailureFrom": null,
+  "summary": "Pass. The feature cleanly extracts KbdHint into src/ui, exports the StatBlock and RecDot prop interfaces, updates the barrel/import path usage, and adds sufficient focused tests for the requested behavior. No actionable code issues were found in the reviewed scope."
+}
