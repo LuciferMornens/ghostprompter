@@ -1,0 +1,21 @@
+{
+  "featureId": "fix-brandmark-full-cluster",
+  "reviewedAt": "2026-04-10T15:44:18.6692711+02:00",
+  "commitId": "1b716f3",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "pass",
+  "codeReview": {
+    "summary": "The fix fully resolves the prior blocking issue. Commit `1b716f3` moves the wordmark and tagline into `src/ui/BrandMark.tsx`, removes the inline brand text from `src/editor/EditorView.tsx`, and expands `src/ui/BrandMark.test.tsx` to cover the full branding cluster. The moved markup matches the prior inline structure, and the styling continues to rely on the existing `gp-wordmark-*` classes in `src/index.css`, which use design-token CSS variables for typography and color.",
+    "issues": []
+  },
+  "sharedStateObservations": [
+    {
+      "area": "skills",
+      "observation": "The `frontend-redesign` skill still says workers must invoke `frontend-design` at the start of the session, but this fix worker only invoked `frontend-redesign` and the handoff still marked `followedProcedure` as true. The documented procedure and review expectations remain out of sync.",
+      "evidence": "`D:\\coding\\somewhat\\.factory\\skills\\frontend-redesign\\SKILL.md` requires invoking `frontend-design` at the START. The transcript skeleton for worker session `8f50172c-e5bb-48f3-b5be-01ddb707199b` shows `mission-worker-base` and `frontend-redesign`, with no `frontend-design` invocation, while the handoff records `skillFeedback.followedProcedure: true`."
+    }
+  ],
+  "addressesFailureFrom": "D:\\coding\\somewhat\\.factory\\validation\\foundation\\scrutiny\\reviews\\foundation-extract-brandmark-panelheader.json",
+  "summary": "Pass. The re-review confirms the original BrandMark extraction bug is fixed: `BrandMark` now encapsulates the SVG, wordmark, and tagline; `EditorView` no longer carries inline brand text; and the updated BrandMark tests now cover the full cluster. No new blocking or non-blocking code issues were found."
+}

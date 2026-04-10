@@ -1,0 +1,69 @@
+{
+  "milestone": "foundation",
+  "round": 1,
+  "status": "fail",
+  "validatorsRun": {
+    "test": {
+      "passed": true,
+      "command": "npm --prefix \"D:\\coding\\somewhat\" test",
+      "exitCode": 0
+    },
+    "typecheck": {
+      "passed": true,
+      "command": "npm --prefix \"D:\\coding\\somewhat\" run typecheck",
+      "exitCode": 0
+    },
+    "lint": {
+      "passed": true,
+      "command": "npm --prefix \"D:\\coding\\somewhat\" run lint",
+      "exitCode": 0
+    }
+  },
+  "reviewsSummary": {
+    "total": 5,
+    "passed": 4,
+    "failed": 1,
+    "failedFeatures": [
+      "foundation-extract-brandmark-panelheader"
+    ]
+  },
+  "blockingIssues": [
+    {
+      "featureId": "foundation-extract-brandmark-panelheader",
+      "severity": "blocking",
+      "description": "`src/ui/BrandMark.tsx` only renders the ghost SVG, while the required wordmark and tagline remain inline in `src/editor/EditorView.tsx`. The feature did not fully extract the reusable brand mark into `@/ui`."
+    }
+  ],
+  "appliedUpdates": [],
+  "suggestedGuidanceUpdates": [
+    {
+      "target": "frontend-redesign skill",
+      "suggestion": "Clarify whether `frontend-design` invocation and RED-first test ordering are mandatory for every assigned task, and add an explicit exemption or alternate path for config-only, token-manifest, or small extraction work. Also avoid assigning this UI-focused skill to non-UI maintenance features like ESLint config.",
+      "evidence": "Reviews for foundation-design-tokens, fix-eslint-config, foundation-extract-brandmark-panelheader, foundation-extract-statblock-recdot-kbdhint, and foundation-extract-toolbarbutton-iconbtn all reported drift between the current frontend-redesign procedure and real worker behavior or feature assignment.",
+      "isSystemic": true
+    },
+    {
+      "target": "mission AGENTS.md",
+      "suggestion": "Align the mission validation gate with the repo root AGENTS guidance so workers and reviewers have one source of truth for completion. Either require `npm test` explicitly or document when frontend-only validation is acceptable.",
+      "evidence": "The toolbarbutton/iconbtn review noted that repo-root AGENTS.md requires `npm test`, while the mission AGENTS.md and corresponding handoff accepted only frontend tests, typecheck, and lint.",
+      "isSystemic": true
+    },
+    {
+      "target": "AGENTS.md",
+      "suggestion": "Add explicit commit-staging guidance to avoid `git add -A` for feature work and to forbid bundling unrelated documentation changes into implementation commits unless the task specifically requests docs.",
+      "evidence": "The foundation-extract-toolbarbutton-iconbtn review found unrelated `docs/` files included in commit `1e59a1e` after broad staging, despite the repo instruction not to update documentation unless requested.",
+      "isSystemic": false
+    }
+  ],
+  "rejectedObservations": [
+    {
+      "observation": "The token-manifest tests do not assert that `src/ui/tokens.ts` stays in sync with `src/index.css`.",
+      "reason": "Rejected as a shared-state update because it is a feature-specific test-gap observation, not a factual services/library addition or a clear AGENTS/skill guidance change."
+    },
+    {
+      "observation": "Multiple reviews noted that the frontend-redesign skill requires `frontend-design` at session start.",
+      "reason": "Duplicate observation merged into a single synthesized recommendation about frontend-redesign skill scope and procedure drift."
+    }
+  ],
+  "previousRound": null
+}
