@@ -278,7 +278,7 @@ textarea,
 }
 .gp-glass-whisper {
   background: var(--gp-glass-1);
-  border-color: rgba(255, 248, 236, 0.045);
+  border-color: var(--gp-glass-2);
 }
 
 /* Specular top highlight — single warm 1px sheen on the upper edge */
