@@ -1113,3 +1113,296 @@ describe("VAL-TELE-011: Play/Pause", () => {
     expect(useModeStore.getState().playing).toBe(false);
   });
 });
+
+// =========================================================================
+// VAL-TELE-012: Line up/down scrolls content and pauses playback
+// =========================================================================
+describe("VAL-TELE-012: Line navigation", () => {
+  it("Line down increases scrollTop by fontSize × lineHeight × 1.5 and pauses", async () => {
+    useModeStore.setState({ editMode: true, playing: false });
+    useSettingsStore.setState({
+      settings: { ...DEFAULT_SETTINGS, fontSize: 42, lineHeight: 1.6 },
+      loaded: true,
+    });
+    const user = userEvent.setup();
+    const { container } = render(<TeleprompterView />);
+    const scrollable = container.querySelector(".gp-no-scrollbar") as HTMLDivElement;
+    Object.defineProperty(scrollable, "scrollTop", {
+      value: 100,
+      writable: true,
+      configurable: true,
+    });
+
+    await user.click(screen.getByRole("button", { name: "Line down" }));
+
+    // fontSize(42) × lineHeight(1.6) × 1.5 = 100.8; 100 + 100.8 = 200.8
+    expect(scrollable.scrollTop).toBeCloseTo(200.8, 0);
+  });
+
+  it("Line up decreases scrollTop by fontSize × lineHeight × 1.5", async () => {
+    useModeStore.setState({ editMode: true, playing: false });
+    useSettingsStore.setState({
+      settings: { ...DEFAULT_SETTINGS, fontSize: 42, lineHeight: 1.6 },
+      loaded: true,
+    });
+    const user = userEvent.setup();
+    const { container } = render(<TeleprompterView />);
+    const scrollable = container.querySelector(".gp-no-scrollbar") as HTMLDivElement;
+    Object.defineProperty(scrollable, "scrollTop", {
+      value: 200,
+      writable: true,
+      configurable: true,
+    });
+
+    await user.click(screen.getByRole("button", { name: "Line up" }));
+
+    // 200 - 100.8 = 99.2
+    expect(scrollable.scrollTop).toBeCloseTo(99.2, 0);
+  });
+
+  it("Line down pauses playback when playing", async () => {
+    useModeStore.setState({ editMode: true, playing: true });
+    const user = userEvent.setup();
+    render(<TeleprompterView />);
+
+    await user.click(screen.getByRole("button", { name: "Line down" }));
+
+    expect(useModeStore.getState().playing).toBe(false);
+  });
+
+  it("ArrowDown scrolls in edit mode", () => {
+    useModeStore.setState({ editMode: true, playing: true });
+    useSettingsStore.setState({
+      settings: { ...DEFAULT_SETTINGS, fontSize: 42, lineHeight: 1.6 },
+      loaded: true,
+    });
+    const { container } = render(<TeleprompterView />);
+    const scrollable = container.querySelector(".gp-no-scrollbar") as HTMLDivElement;
+    Object.defineProperty(scrollable, "scrollTop", {
+      value: 50,
+      writable: true,
+      configurable: true,
+    });
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }));
+    });
+
+    expect(scrollable.scrollTop).toBeGreaterThan(50);
+    expect(useModeStore.getState().playing).toBe(false);
+  });
+
+  it("ArrowUp scrolls in edit mode", () => {
+    useModeStore.setState({ editMode: true, playing: true });
+    useSettingsStore.setState({
+      settings: { ...DEFAULT_SETTINGS, fontSize: 42, lineHeight: 1.6 },
+      loaded: true,
+    });
+    const { container } = render(<TeleprompterView />);
+    const scrollable = container.querySelector(".gp-no-scrollbar") as HTMLDivElement;
+    Object.defineProperty(scrollable, "scrollTop", {
+      value: 200,
+      writable: true,
+      configurable: true,
+    });
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowUp", bubbles: true }));
+    });
+
+    expect(scrollable.scrollTop).toBeLessThan(200);
+    expect(useModeStore.getState().playing).toBe(false);
+  });
+
+  it("arrow keys are ignored when not in edit mode", () => {
+    useModeStore.setState({ editMode: false, playing: true });
+    const { container } = render(<TeleprompterView />);
+    const scrollable = container.querySelector(".gp-no-scrollbar") as HTMLDivElement;
+    Object.defineProperty(scrollable, "scrollTop", {
+      value: 100,
+      writable: true,
+      configurable: true,
+    });
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }));
+    });
+
+    expect(scrollable.scrollTop).toBe(100);
+    expect(useModeStore.getState().playing).toBe(true);
+  });
+
+  it("arrow keys are ignored on editable elements (contentEditable, input, textarea, select)", () => {
+    useModeStore.setState({ editMode: true, playing: false });
+    const { container } = render(<TeleprompterView />);
+    const scrollable = container.querySelector(".gp-no-scrollbar") as HTMLDivElement;
+    Object.defineProperty(scrollable, "scrollTop", {
+      value: 100,
+      writable: true,
+      configurable: true,
+    });
+
+    // Simulate keydown event originating from an input element
+    const input = document.createElement("input");
+    document.body.appendChild(input);
+    act(() => {
+      input.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }),
+      );
+    });
+    expect(scrollable.scrollTop).toBe(100);
+
+    // Simulate keydown originating from a textarea
+    const textarea = document.createElement("textarea");
+    document.body.appendChild(textarea);
+    act(() => {
+      textarea.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }),
+      );
+    });
+    expect(scrollable.scrollTop).toBe(100);
+
+    document.body.removeChild(input);
+    document.body.removeChild(textarea);
+  });
+});
+
+// =========================================================================
+// VAL-TELE-013: Exit button unregisters hotkeys, exits mode, resets state
+// =========================================================================
+describe("VAL-TELE-013: Exit flow", () => {
+  it("exit calls unregister_hotkeys then exit_teleprompter_mode in order", async () => {
+    useModeStore.setState({ editMode: true, playing: true, mode: "teleprompter" });
+    const user = userEvent.setup();
+    render(<TeleprompterView />);
+
+    await user.click(screen.getByRole("button", { name: "Exit teleprompter" }));
+    await Promise.resolve();
+    await Promise.resolve();
+
+    const calls = invokeMock.mock.calls.map((call) => call[0]);
+    const unregIdx = calls.indexOf("unregister_hotkeys");
+    const exitIdx = calls.indexOf("exit_teleprompter_mode");
+    expect(unregIdx).toBeGreaterThanOrEqual(0);
+    expect(exitIdx).toBeGreaterThanOrEqual(0);
+    expect(unregIdx).toBeLessThan(exitIdx);
+  });
+
+  it("exit sets playing=false, editMode=false, mode=editor", async () => {
+    useModeStore.setState({ editMode: true, playing: true, mode: "teleprompter" });
+    const user = userEvent.setup();
+    render(<TeleprompterView />);
+
+    await user.click(screen.getByRole("button", { name: "Exit teleprompter" }));
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(useModeStore.getState().playing).toBe(false);
+    expect(useModeStore.getState().editMode).toBe(false);
+    expect(useModeStore.getState().mode).toBe("editor");
+  });
+});
+
+// =========================================================================
+// VAL-TELE-014: Drag handle calls startDragging in edit mode only
+// =========================================================================
+describe("VAL-TELE-014: Drag handle", () => {
+  it("calls startDragging on pointerdown in edit mode", () => {
+    useModeStore.setState({ editMode: true });
+    const { container } = render(<TeleprompterView />);
+    const handle = container.querySelector("[data-gp-drag-handle]") as HTMLElement;
+    pointerDown(handle, 120, 80);
+    expect(startDraggingMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("drag handle has aria-label='Drag to move', role=button, tabIndex=-1", () => {
+    useModeStore.setState({ editMode: true });
+    const { container } = render(<TeleprompterView />);
+    const handle = container.querySelector("[data-gp-drag-handle]") as HTMLElement;
+    expect(handle).toHaveAttribute("aria-label", "Drag to move");
+    expect(handle).toHaveAttribute("role", "button");
+    expect(handle.tabIndex).toBe(-1);
+  });
+
+  it("drag handle is not present when not in edit mode", () => {
+    useModeStore.setState({ editMode: false });
+    const { container } = render(<TeleprompterView />);
+    expect(container.querySelector("[data-gp-drag-handle]")).toBeNull();
+  });
+
+  it("startDragging is not called when not in edit mode (no handle rendered)", () => {
+    useModeStore.setState({ editMode: false });
+    render(<TeleprompterView />);
+    // Handle doesn't exist, so no click possible
+    expect(startDraggingMock).not.toHaveBeenCalled();
+  });
+});
+
+// =========================================================================
+// VAL-TELE-015: All 8 resize handles present in edit mode with correct directions
+// =========================================================================
+describe("VAL-TELE-015: Resize handles", () => {
+  it("renders 4 edge and 4 corner resize handles in edit mode", () => {
+    useModeStore.setState({ editMode: true });
+    const { container } = render(<TeleprompterView />);
+
+    // 4 edges: n, s, e, w
+    expect(container.querySelector(".gp-vp-edge--n")).not.toBeNull();
+    expect(container.querySelector(".gp-vp-edge--s")).not.toBeNull();
+    expect(container.querySelector(".gp-vp-edge--e")).not.toBeNull();
+    expect(container.querySelector(".gp-vp-edge--w")).not.toBeNull();
+
+    // 4 corners: nw, ne, sw, se
+    expect(container.querySelector(".gp-vp-corner--nw")).not.toBeNull();
+    expect(container.querySelector(".gp-vp-corner--ne")).not.toBeNull();
+    expect(container.querySelector(".gp-vp-corner--sw")).not.toBeNull();
+    expect(container.querySelector(".gp-vp-corner--se")).not.toBeNull();
+  });
+
+  it("each edge/corner calls startResizeDragging with the correct direction", () => {
+    useModeStore.setState({ editMode: true });
+    const { container } = render(<TeleprompterView />);
+
+    const edgeMap: Array<[string, string]> = [
+      [".gp-vp-edge--n", "North"],
+      [".gp-vp-edge--s", "South"],
+      [".gp-vp-edge--e", "East"],
+      [".gp-vp-edge--w", "West"],
+    ];
+    const cornerMap: Array<[string, string]> = [
+      [".gp-vp-corner--nw", "NorthWest"],
+      [".gp-vp-corner--ne", "NorthEast"],
+      [".gp-vp-corner--sw", "SouthWest"],
+      [".gp-vp-corner--se", "SouthEast"],
+    ];
+
+    for (const [selector, direction] of [...edgeMap, ...cornerMap]) {
+      startResizeDraggingMock.mockClear();
+      const el = container.querySelector(selector) as HTMLElement;
+      pointerDown(el);
+      expect(startResizeDraggingMock).toHaveBeenCalledWith(direction);
+    }
+  });
+
+  it("SE grip has aria-label='Resize'", () => {
+    useModeStore.setState({ editMode: true });
+    const { container } = render(<TeleprompterView />);
+    const grip = container.querySelector("[data-gp-resize-grip]") as HTMLElement;
+    expect(grip).toHaveAttribute("aria-label", "Resize");
+  });
+
+  it("resize handles are absent when not in edit mode", () => {
+    useModeStore.setState({ editMode: false });
+    const { container } = render(<TeleprompterView />);
+
+    expect(container.querySelector(".gp-vp-edge--n")).toBeNull();
+    expect(container.querySelector(".gp-vp-edge--s")).toBeNull();
+    expect(container.querySelector(".gp-vp-edge--e")).toBeNull();
+    expect(container.querySelector(".gp-vp-edge--w")).toBeNull();
+    expect(container.querySelector(".gp-vp-corner--nw")).toBeNull();
+    expect(container.querySelector(".gp-vp-corner--ne")).toBeNull();
+    expect(container.querySelector(".gp-vp-corner--sw")).toBeNull();
+    expect(container.querySelector(".gp-vp-corner--se")).toBeNull();
+    expect(container.querySelector("[data-gp-resize-grip]")).toBeNull();
+  });
+});

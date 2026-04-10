@@ -429,12 +429,12 @@ export function TeleprompterView() {
         return;
       }
       if (e.altKey || e.ctrlKey || e.metaKey) return;
-      if (e.key === "ArrowUp") {
+      if (editMode && e.key === "ArrowUp") {
         e.preventDefault();
         jumpLines(-1);
         return;
       }
-      if (e.key === "ArrowDown") {
+      if (editMode && e.key === "ArrowDown") {
         e.preventDefault();
         jumpLines(1);
       }
