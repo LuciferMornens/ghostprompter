@@ -1,0 +1,34 @@
+{
+  "featureId": "editor-topbar-redesign",
+  "reviewedAt": "2026-04-10T14:33:23.5457653Z",
+  "commitId": "1a40c32",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "fail",
+  "codeReview": {
+    "summary": "I reviewed the handoff, transcript skeleton, commit `1a40c32`, and the resulting editor top-bar implementation. The feature does satisfy the structural and accessibility parts of the contract: `EditorView.tsx` renders `BrandMark` from `@/ui`, the required file action buttons, Settings, a `Go Live` CTA with an accessible name, and the dirty indicator now exposes `aria-label=\"unsaved changes\"` when dirty. However, the feature still misses a stated styling requirement: the top-bar UI is not design-token-only, because the relevant header CSS continues to hardcode multiple `rgba(...)` color values instead of using token variables.",
+    "issues": [
+      {
+        "file": "src/index.css",
+        "line": 508,
+        "severity": "blocking",
+        "description": "The Go Live CTA styling still hardcodes color values in the top-bar redesign. `.gp-btn-live` and its related selectors use raw `rgba(...)` literals for the border, glow, hover border, and box shadows (for example lines 516, 548, 556-561, and 573-574) instead of token variables. That violates the feature contract in `features.json` (`All elements use design tokens, no hardcoded colors`) and the mission styling guidance that frontend visuals should use design-token CSS variables."
+      },
+      {
+        "file": "src/index.css",
+        "line": 2005,
+        "severity": "blocking",
+        "description": "The file indicator portion of the redesigned header also keeps hardcoded colors. `.gp-filecrest`, `.gp-filecrest:hover`, `.gp-filecrest__dot`, and `.gp-filecrest__dot--dirty` use raw `rgba(...)` values for background, border, and glow/shadow styling (for example lines 2010-2017, 2025-2026, and 2034-2043) rather than design-token variables. Because the feature explicitly requires the header to use design tokens with no hardcoded colors, this is a contract miss."
+      }
+    ]
+  },
+  "sharedStateObservations": [
+    {
+      "area": "skills",
+      "observation": "The `frontend-redesign` skill and the worker handoff disagree with the actual procedure used here. The skill says workers should invoke `frontend-design` at the start and do a RED-first test cycle, but this session's transcript skeleton shows only `mission-worker-base` and `frontend-redesign`, and the first `npm run test:frontend` run was a green baseline before edits. The handoff still marked `followedProcedure: true`, so either the skill is too strict for this kind of feature or the handoff reporting rubric is overstating adherence.",
+      "evidence": "D:\\coding\\somewhat\\.factory\\skills\\frontend-redesign\\SKILL.md:21 requires invoking `frontend-design` at session start, and lines 41-45 require writing tests first and running a failing RED-phase frontend test. The transcript skeleton at C:\\Users\\mitte\\.factory\\missions\\fe650437-0d94-4ece-8085-ac6da736d0ec\\worker-transcripts.jsonl:10 shows `Skill mission-worker-base`, later `Skill frontend-redesign`, a green baseline `npm run test:frontend`, then edits; the handoff file C:\\Users\\mitte\\.factory\\missions\\fe650437-0d94-4ece-8085-ac6da736d0ec\\handoffs\\2026-04-10T14-03-00-611Z__editor-topbar-redesign__23399e40-ffe6-416a-96b4-2f5b4ba0ff74.json reports `skillFeedback.followedProcedure: true`."
+    }
+  ],
+  "addressesFailureFrom": null,
+  "summary": "Fail. The feature's accessibility and structure updates are in place, but the redesigned editor top bar still uses hardcoded RGBA colors in `src/index.css`, so it does not satisfy the design-token-only styling requirement."
+}

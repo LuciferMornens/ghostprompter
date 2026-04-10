@@ -1,0 +1,39 @@
+{
+  "featureId": "editor-statusrail-settings-modularity",
+  "reviewedAt": "2026-04-10T14:35:11.2535864Z",
+  "commitId": "e84a765",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "fail",
+  "codeReview": {
+    "summary": "I reviewed the feature metadata, worker handoff, transcript skeleton, commit `e84a765`, and the resulting editor/status/settings implementation. The status rail, SettingsModal tabs, LazyStore-backed settings store, and IPC command names are all present, and most of the contract is covered by existing code plus the added tests. However, the HotkeyRecorder does not actually normalize all key types into backend-valid shortcut strings: for shifted digit/punctuation combos it emits printable symbols from `KeyboardEvent.key` (for example `Shift+!`) instead of a parser-compatible base key, so those shortcuts fail when the Rust backend later parses them. That misses a core promised behavior of this feature.",
+    "issues": [
+      {
+        "file": "src/settings/HotkeyRecorder.tsx",
+        "line": 63,
+        "severity": "blocking",
+        "description": "The recorder treats any single-character `KeyboardEvent.key` as the canonical shortcut token before consulting `event.code`. That works for plain letters, but it breaks shifted digit/punctuation shortcuts: pressing `Shift+1` records `Shift+!`, `Shift+/` records `Shift+?`, etc. `register_hotkeys` later passes those strings through the Rust shortcut parser (`src-tauri/src/commands/hotkeys.rs:8-18`), which expects base key names such as `1`, `/`, `Digit1`, `Slash`, etc., not shifted symbol variants. So a user can record shortcuts that the backend cannot register, contradicting the feature requirement that HotkeyRecorder capture and normalize all key types correctly."
+      },
+      {
+        "file": "src/editor/EditorView.tsx",
+        "line": 163,
+        "severity": "non_blocking",
+        "description": "The footer keyboard hints are hardcoded to `F7`, `F6`, and `Esc` instead of reflecting `settings.hotkeys.playPause`, `settings.hotkeys.toggleEditMode`, and `settings.hotkeys.stop`. After a user customizes hotkeys in SettingsModal, the status rail continues showing the old defaults, so the UI becomes misleading."
+      }
+    ]
+  },
+  "sharedStateObservations": [
+    {
+      "area": "skills",
+      "observation": "The `frontend-redesign` skill requires additional companion skills (`frontend-design` at session start, plus `vercel-react-best-practices`, `web-design-guidelines`, and `tauri-v2` when relevant), but this worker session only invoked `frontend-redesign` and still reported `skillFeedback.followedProcedure: true`.",
+      "evidence": "D:\\coding\\somewhat\\.factory\\skills\\frontend-redesign\\SKILL.md:19-24 lists the required supporting skills. The transcript skeleton at C:\\Users\\mitte\\.factory\\missions\\fe650437-0d94-4ece-8085-ac6da736d0ec\\worker-transcripts.jsonl:13 shows `mission-worker-base` and later `frontend-redesign`, but no `frontend-design`, `vercel-react-best-practices`, `web-design-guidelines`, or `tauri-v2` invocations; the handoff file C:\\Users\\mitte\\.factory\\missions\\fe650437-0d94-4ece-8085-ac6da736d0ec\\handoffs\\2026-04-10T14-28-07-540Z__editor-statusrail-settings-modularity__6b03ce28-4a43-4a76-a7dd-2272441094d3.json says `skillFeedback.followedProcedure: true`."
+    },
+    {
+      "area": "knowledge",
+      "observation": "Worker/session bootstrapping still points people at `.factory/library/README.md`, but this repository has no library README. That leads to repeated failed reads instead of a clear indexed entry point for shared project knowledge.",
+      "evidence": "The transcript skeleton at C:\\Users\\mitte\\.factory\\missions\\fe650437-0d94-4ece-8085-ac6da736d0ec\\worker-transcripts.jsonl:13 includes `Read D:\\coding\\somewhat\\.factory\\library\\README.md`. The actual library contents are only `architecture.md`, `environment.md`, and `user-testing.md` under D:\\coding\\somewhat\\.factory\\library."
+    }
+  ],
+  "addressesFailureFrom": null,
+  "summary": "Fail. The feature is mostly in place, but `HotkeyRecorder` can emit backend-invalid shortcuts for shifted symbol/digit combinations, so it does not satisfy the promised “all key types” normalization behavior."
+}
