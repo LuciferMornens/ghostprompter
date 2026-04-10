@@ -1,0 +1,79 @@
+{
+  "groupId": "components-b",
+  "surface": "vitest",
+  "assertionResults": [
+    {
+      "id": "VAL-FOUND-008",
+      "status": "pass",
+      "reason": "ToolbarButton targeted tests confirmed child label rendering, one-click handler behavior, ghost styling, and className passthrough.",
+      "evidence": [
+        "Command passed: npm --prefix \"D:\\coding\\somewhat\" run test:frontend -- src/ui/BrandMark.test.tsx src/ui/StatBlock.test.tsx src/ui/RecDot.test.tsx src/ui/KbdHint.test.tsx src/ui/ToolbarButton.test.tsx src/ui/PanelHeader.test.tsx src/ui/IconBtn.test.tsx",
+        "src/ui/ToolbarButton.test.tsx includes assertions for getByRole('button', { name: 'Save' }), onClick called once, gp-btn + gp-btn--ghost classes, and custom className passthrough.",
+        "Evidence note: C:\\Users\\mitte\\.factory\\missions\\fe650437-0d94-4ece-8085-ac6da736d0ec\\evidence\\foundation\\components-b\\validation-notes.md"
+      ]
+    },
+    {
+      "id": "VAL-FOUND-010",
+      "status": "pass",
+      "reason": "IconBtn targeted tests confirmed accessible labeling, click behavior, hot/compact/disabled states, and className passthrough.",
+      "evidence": [
+        "The targeted vitest command exited 0 with src/ui/IconBtn.test.tsx passing all 16 tests.",
+        "src/ui/IconBtn.test.tsx verifies semantic button rendering, aria-label/title accessibility, gp-icn-hot and gp-icn--compact classes, disabled preventing clicks, and custom className support.",
+        "Evidence note: C:\\Users\\mitte\\.factory\\missions\\fe650437-0d94-4ece-8085-ac6da736d0ec\\evidence\\foundation\\components-b\\validation-notes.md"
+      ]
+    },
+    {
+      "id": "VAL-FOUND-012",
+      "status": "pass",
+      "reason": "Static analysis shows the barrel file re-exports all seven shared primitives and each primitive lives in its own src/ui module.",
+      "evidence": [
+        "src/ui/index.ts re-exports BrandMark, StatBlock, RecDot, KbdHint, ToolbarButton, PanelHeader, and IconBtn.",
+        "src/ui directory contains BrandMark.tsx, StatBlock.tsx, RecDot.tsx, KbdHint.tsx, ToolbarButton.tsx, PanelHeader.tsx, and IconBtn.tsx, each with a colocated .test.tsx file.",
+        "The targeted vitest run passed barrel-import smoke tests already present for KbdHint, ToolbarButton, and IconBtn."
+      ]
+    },
+    {
+      "id": "VAL-FOUND-013",
+      "status": "pass",
+      "reason": "Both consumer views import shared primitives from the @/ui barrel and static grep found no local shared primitive definitions in those view files.",
+      "evidence": [
+        "src/editor/EditorView.tsx:8 imports { BrandMark, KbdHint, PanelHeader, StatBlock, ToolbarButton } from \"@/ui\".",
+        "src/teleprompter/TeleprompterView.tsx:10 imports { RecDot, IconBtn } from \"@/ui\".",
+        "Static grep for local function/const definitions of BrandMark, KbdHint, ToolbarButton, PanelHeader, IconBtn, StatBlock, and RecDot returned no matches in either view file."
+      ]
+    },
+    {
+      "id": "VAL-FOUND-014",
+      "status": "pass",
+      "reason": "Interactive primitive tests confirm semantic button elements with accessible names, and supporting shared-component tests confirm decorative aria-hidden behavior.",
+      "evidence": [
+        "src/ui/ToolbarButton.test.tsx checks tagName === 'BUTTON' and resolves the button by accessible name from its children.",
+        "src/ui/IconBtn.test.tsx checks tagName === 'BUTTON' and resolves the button by accessible name from ariaLabel/title.",
+        "Supporting shared-component tests passed for decorative aria-hidden behavior in src/ui/BrandMark.test.tsx and src/ui/PanelHeader.test.tsx."
+      ]
+    },
+    {
+      "id": "VAL-FOUND-015",
+      "status": "pass",
+      "reason": "All seven shared primitives have colocated test files and the focused shared-component vitest run completed with zero failures.",
+      "evidence": [
+        "src/ui contains 7 shared primitive test files: BrandMark.test.tsx, StatBlock.test.tsx, RecDot.test.tsx, KbdHint.test.tsx, ToolbarButton.test.tsx, PanelHeader.test.tsx, IconBtn.test.tsx.",
+        "Focused vitest result: 7 passed test files, 80 passed tests, 0 failures.",
+        "Evidence note: C:\\Users\\mitte\\.factory\\missions\\fe650437-0d94-4ece-8085-ac6da736d0ec\\evidence\\foundation\\components-b\\validation-notes.md"
+      ]
+    }
+  ],
+  "toolsUsed": [
+    "vitest",
+    "static-analysis"
+  ],
+  "commands": [
+    {
+      "command": "npm --prefix \"D:\\coding\\somewhat\" run test:frontend -- src/ui/BrandMark.test.tsx src/ui/StatBlock.test.tsx src/ui/RecDot.test.tsx src/ui/KbdHint.test.tsx src/ui/ToolbarButton.test.tsx src/ui/PanelHeader.test.tsx src/ui/IconBtn.test.tsx",
+      "exitCode": 0,
+      "observation": "Vitest ran the 7 shared-component suites and all passed: 7 files, 80 tests, 0 failures."
+    }
+  ],
+  "frictions": [],
+  "blockers": []
+}

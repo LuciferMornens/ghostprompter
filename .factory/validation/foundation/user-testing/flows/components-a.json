@@ -1,0 +1,74 @@
+{
+  "groupId": "components-a",
+  "surface": "vitest",
+  "assertionResults": [
+    {
+      "id": "VAL-FOUND-004",
+      "status": "pass",
+      "reason": "BrandMark renders an SVG, marks the root aria-hidden, is exported from the @/ui barrel, and its targeted tests passed.",
+      "evidence": [
+        "Vitest command passed: BrandMark.test.tsx was included in a targeted run with 55/55 tests green overall.",
+        "Static analysis: src/ui/BrandMark.tsx line 16 sets aria-hidden=\"true\" and line 18 renders <svg>.",
+        "Static analysis: src/ui/index.ts line 1 exports BrandMark.",
+        "Evidence notes: C:/Users/mitte/.factory/missions/fe650437-0d94-4ece-8085-ac6da736d0ec/evidence/foundation/components-a/components-a-notes.txt"
+      ]
+    },
+    {
+      "id": "VAL-FOUND-005",
+      "status": "pass",
+      "reason": "StatBlock renders label/value plus optional hint and accent, and its prop interface declares required versus optional fields as specified.",
+      "evidence": [
+        "Vitest command passed: StatBlock.test.tsx was included in a targeted run with 55/55 tests green overall.",
+        "Static analysis: src/ui/StatBlock.tsx lines 2-4 and 6 define label/value as required and hint/accent as optional.",
+        "Existing tests cover label/value rendering, optional hint rendering, accent class behavior, and StatBlockProps export.",
+        "Evidence notes: C:/Users/mitte/.factory/missions/fe650437-0d94-4ece-8085-ac6da736d0ec/evidence/foundation/components-a/components-a-notes.txt"
+      ]
+    },
+    {
+      "id": "VAL-FOUND-006",
+      "status": "pass",
+      "reason": "RecDot toggles the idle modifier class correctly and exposes distinct aria-labels for active and idle states; targeted tests passed.",
+      "evidence": [
+        "Vitest command passed: RecDot.test.tsx was included in a targeted run with 55/55 tests green overall.",
+        "Static analysis: src/ui/RecDot.tsx line 8 applies gp-rec-dot--idle only when active is false.",
+        "Static analysis: src/ui/RecDot.tsx line 9 sets distinct active vs idle aria-label values.",
+        "Evidence notes: C:/Users/mitte/.factory/missions/fe650437-0d94-4ece-8085-ac6da736d0ec/evidence/foundation/components-a/components-a-notes.txt"
+      ]
+    },
+    {
+      "id": "VAL-FOUND-007",
+      "status": "pass",
+      "reason": "KbdHint renders one <kbd> per key and visible label text, including the single-key case, and its targeted tests passed.",
+      "evidence": [
+        "Vitest command passed: KbdHint.test.tsx was included in a targeted run with 55/55 tests green overall.",
+        "Static analysis: src/ui/KbdHint.tsx line 10 maps each key to a <kbd> element and line 12 renders the label.",
+        "Existing tests verify two-key and single-key counts and visible label text.",
+        "Evidence notes: C:/Users/mitte/.factory/missions/fe650437-0d94-4ece-8085-ac6da736d0ec/evidence/foundation/components-a/components-a-notes.txt"
+      ]
+    },
+    {
+      "id": "VAL-FOUND-009",
+      "status": "pass",
+      "reason": "PanelHeader renders numeral, label, and meta, with aria-hidden on decorative numeral and rule; targeted tests passed.",
+      "evidence": [
+        "Vitest command passed: PanelHeader.test.tsx was included in a targeted run with 55/55 tests green overall.",
+        "Static analysis: src/ui/PanelHeader.tsx lines 22 and 25 mark the numeral and rule aria-hidden.",
+        "Static analysis: src/ui/PanelHeader.tsx lines 26 and 28 render the label and meta text.",
+        "Evidence notes: C:/Users/mitte/.factory/missions/fe650437-0d94-4ece-8085-ac6da736d0ec/evidence/foundation/components-a/components-a-notes.txt"
+      ]
+    }
+  ],
+  "toolsUsed": [
+    "vitest",
+    "static-analysis"
+  ],
+  "commands": [
+    {
+      "command": "cmd /c \"cd /d D:\\coding\\somewhat && npm exec vitest run -- src/ui/BrandMark.test.tsx src/ui/StatBlock.test.tsx src/ui/RecDot.test.tsx src/ui/KbdHint.test.tsx src/ui/PanelHeader.test.tsx\"",
+      "exitCode": 0,
+      "observation": "Vitest passed 5 targeted component suites and 55 total tests."
+    }
+  ],
+  "frictions": [],
+  "blockers": []
+}

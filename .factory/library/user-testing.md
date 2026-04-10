@@ -25,3 +25,10 @@ There is NO browser-based testing surface. The app cannot be tested via agent-br
 - Vitest setup file: `src/test/setup.ts` (provides jest-dom, TAURI_INTERNALS mock, matchMedia)
 - CSS is disabled in Vitest (jsdom doesn't render CSS). Style assertions check inline styles and class names, not computed styles.
 - Tests use `@testing-library/user-event` for interaction simulation
+
+## Flow Validator Guidance: vitest
+- Stay within the repository at `D:\coding\somewhat`; do not create extra copies of the app or modify production source files during validation.
+- Use focused validation for assigned assertions first (targeted Vitest files, static source reads, and type-safe import checks) so multiple validators can run concurrently without stepping on each other.
+- Do not run full-suite commands in every subagent. Reserve full gate commands (`npm run test:frontend`, `npm run typecheck`, `npm run lint`, `npm run test:rust`) for the parent validator synthesis step.
+- Evidence should be written only under the assigned flow report path and mission evidence directory.
+- Treat shared repo state as read-mostly: avoid commands that rewrite lockfiles, install packages, or mutate generated outputs.
