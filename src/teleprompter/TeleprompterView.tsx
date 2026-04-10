@@ -183,7 +183,6 @@ export function TeleprompterView() {
       });
     }
     // Only on mount — drag/resize/snap pushes subsequent rects explicitly.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [persistedRect, screen, settings.overlayX, settings.overlayY, settingsLoaded, update]);
 
   const setPaused = useCallback(() => {

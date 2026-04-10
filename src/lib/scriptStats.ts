@@ -33,7 +33,7 @@ export function countChars(text: string): number {
   if (text.length === 0) return 0;
   // Use the iterator to count by Unicode codepoint, not UTF-16 code unit.
   let n = 0;
-  for (const _ of text) n++;
+  for (const _ of text) n++; // eslint-disable-line @typescript-eslint/no-unused-vars
   return n;
 }
 
