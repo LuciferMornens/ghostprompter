@@ -79,7 +79,9 @@ export function EditorView() {
               className={`gp-filecrest__dot ${
                 script.dirty ? "gp-filecrest__dot--dirty" : ""
               }`.trim()}
-              aria-hidden
+              {...(script.dirty
+                ? { "aria-label": "unsaved changes" }
+                : { "aria-hidden": true })}
             />
             <span className="gp-filecrest__name">
               {script.name}

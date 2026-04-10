@@ -254,3 +254,130 @@ describe("<EditorView />", () => {
     expect(btn).toBeInTheDocument();
   });
 });
+
+/* ============================================================
+   VAL-EDIT-001: structural elements (header, main > 2 sections, footer)
+   ============================================================ */
+describe("<EditorView /> — top bar structure (VAL-EDIT-001)", () => {
+  it("renders a <header>, a <main> with ≥ 2 <section> children, and a <footer>", () => {
+    const { container } = render(<EditorView />);
+    expect(container.querySelector("header")).not.toBeNull();
+    const main = container.querySelector("main");
+    expect(main).not.toBeNull();
+    const sections = main!.querySelectorAll(":scope > section");
+    expect(sections.length).toBeGreaterThanOrEqual(2);
+    expect(container.querySelector("footer")).not.toBeNull();
+  });
+});
+
+/* ============================================================
+   VAL-EDIT-002: header contains BrandMark SVG, script name, toolbar buttons
+   ============================================================ */
+describe("<EditorView /> — top bar content (VAL-EDIT-002)", () => {
+  it("header contains an SVG element (ghost icon)", () => {
+    const { container } = render(<EditorView />);
+    const header = container.querySelector("header");
+    expect(header!.querySelector("svg")).not.toBeNull();
+  });
+
+  it("header shows the 'Ghostprompter' wordmark with tagline", () => {
+    const { container } = render(<EditorView />);
+    const header = container.querySelector("header");
+    const text = header!.textContent!.toLowerCase();
+    expect(text).toContain("ghostprompter");
+    expect(text).toContain("a quiet teleprompter");
+  });
+
+  it("header shows the script name from scriptStore", () => {
+    useScriptStore.setState({
+      script: {
+        path: "/test/demo.md",
+        name: "demo.md",
+        content: "",
+        dirty: false,
+      },
+    });
+    render(<EditorView />);
+    expect(screen.getByText("demo.md")).toBeInTheDocument();
+  });
+
+  it("header has buttons: New, Open, Save, Save As, Settings via getByRole", () => {
+    render(<EditorView />);
+    for (const name of ["New", "Open", "Save", "Save As", "Settings"]) {
+      expect(
+        screen.getByRole("button", { name }),
+      ).toBeInTheDocument();
+    }
+  });
+});
+
+/* ============================================================
+   VAL-EDIT-003: file indicator dirty/clean states
+   ============================================================ */
+describe("<EditorView /> — file indicator (VAL-EDIT-003)", () => {
+  it("shows 'Draft' badge when dirty=true", () => {
+    useScriptStore.setState({
+      script: {
+        path: null,
+        name: "Untitled.md",
+        content: "changed",
+        dirty: true,
+      },
+    });
+    render(<EditorView />);
+    expect(screen.getByText("Draft")).toBeInTheDocument();
+  });
+
+  it("shows 'Saved' badge when dirty=false", () => {
+    useScriptStore.setState({
+      script: {
+        path: null,
+        name: "Untitled.md",
+        content: "",
+        dirty: false,
+      },
+    });
+    render(<EditorView />);
+    expect(screen.getByText("Saved")).toBeInTheDocument();
+  });
+
+  it("dirty dot has aria-label containing 'unsaved changes' when dirty=true", () => {
+    useScriptStore.setState({
+      script: {
+        path: null,
+        name: "Untitled.md",
+        content: "dirty content",
+        dirty: true,
+      },
+    });
+    const { container } = render(<EditorView />);
+    const dot = container.querySelector(".gp-filecrest__dot");
+    expect(dot).not.toBeNull();
+    expect(dot!.getAttribute("aria-label")).toMatch(/unsaved changes/i);
+  });
+
+  it("dirty dot is aria-hidden when dirty=false", () => {
+    const { container } = render(<EditorView />);
+    const dot = container.querySelector(".gp-filecrest__dot");
+    expect(dot).not.toBeNull();
+    expect(dot!.getAttribute("aria-hidden")).toBe("true");
+  });
+});
+
+/* ============================================================
+   VAL-EDIT-004: Go Live CTA has aria-label and visible text
+   ============================================================ */
+describe("<EditorView /> — Go Live CTA (VAL-EDIT-004)", () => {
+  it("Go Live button resolves via getByRole('button', { name: /go live/i })", () => {
+    render(<EditorView />);
+    expect(
+      screen.getByRole("button", { name: /go live/i }),
+    ).toBeInTheDocument();
+  });
+
+  it("Go Live button has visible text containing 'Go'", () => {
+    render(<EditorView />);
+    const btn = screen.getByRole("button", { name: /go live/i });
+    expect(btn.textContent).toContain("Go");
+  });
+});
