@@ -1,0 +1,111 @@
+﻿{
+    "groupId":  "editor-workspace-settings",
+    "surface":  "vitest",
+    "testedAt":  "2026-04-10T17:17:08.3189381+02:00",
+    "assertions":  [
+                       {
+                           "id":  "VAL-EDIT-007",
+                           "status":  "pass",
+                           "reason":  "EditorView tests confirm the first panel renders \u002701 Script\u0027 with \u0027draft · markdown\u0027 and the second renders \u002702 Preview\u0027 with \u0027live render\u0027.",
+                           "evidence":  [
+                                            "editor/editor-workspace-settings/targeted-vitest-summary.json",
+                                            "editor/editor-workspace-settings/targeted-vitest-utf8.txt"
+                                        ]
+                       },
+                       {
+                           "id":  "VAL-EDIT-008",
+                           "status":  "pass",
+                           "reason":  "MarkdownEditor unit tests verify textarea value mirrors scriptStore content, typing updates the store, the placeholder mentions markdown, and spellcheck is enabled.",
+                           "evidence":  [
+                                            "editor/editor-workspace-settings/targeted-vitest-summary.json",
+                                            "editor/editor-workspace-settings/targeted-vitest-utf8.txt"
+                                        ]
+                       },
+                       {
+                           "id":  "VAL-EDIT-009",
+                           "status":  "pass",
+                           "reason":  "MarkdownPreview unit tests cover plain text, h1, strong, em, unordered lists, GFM strikethrough, raw HTML, gp-prose wrapper, and custom className support.",
+                           "evidence":  [
+                                            "editor/editor-workspace-settings/targeted-vitest-summary.json",
+                                            "editor/editor-workspace-settings/targeted-vitest-utf8.txt"
+                                        ]
+                       },
+                       {
+                           "id":  "VAL-EDIT-010",
+                           "status":  "pass",
+                           "reason":  "EditorView tests verify Words, Chars, and Read time stat blocks render, update when content changes, and show F7 Play, F6 Edit, and Esc Exit keyboard hints.",
+                           "evidence":  [
+                                            "editor/editor-workspace-settings/targeted-vitest-summary.json",
+                                            "editor/editor-workspace-settings/targeted-vitest-utf8.txt"
+                                        ]
+                       },
+                       {
+                           "id":  "VAL-EDIT-011",
+                           "status":  "pass",
+                           "reason":  "SettingsModal tests verify opening the modal, defaulting to Appearance, rendering all four tabs, and closing via X or backdrop while ignoring clicks inside the modal body.",
+                           "evidence":  [
+                                            "editor/editor-workspace-settings/targeted-vitest-summary.json",
+                                            "editor/editor-workspace-settings/targeted-vitest-utf8.txt"
+                                        ]
+                       },
+                       {
+                           "id":  "VAL-EDIT-012",
+                           "status":  "pass",
+                           "reason":  "HotkeyRecorder tests confirm display/record toggling plus normalization for F-keys, compound modifiers, uppercase letters, arrows, Space, Escape, shifted digits/punctuation, and modifier-only guards.",
+                           "evidence":  [
+                                            "editor/editor-workspace-settings/targeted-vitest-summary.json",
+                                            "editor/editor-workspace-settings/targeted-vitest-utf8.txt",
+                                            "editor/editor-workspace-settings/static-analysis.json"
+                                        ]
+                       },
+                       {
+                           "id":  "VAL-EDIT-015",
+                           "status":  "pass",
+                           "reason":  "Static analysis confirms EditorView imports MarkdownEditor, MarkdownPreview, and SettingsModal from separate modules, and all five required source/test files exist as standalone files.",
+                           "evidence":  [
+                                            "editor/editor-workspace-settings/static-analysis.json",
+                                            "editor/editor-workspace-settings/targeted-vitest-summary.json"
+                                        ]
+                       },
+                       {
+                           "id":  "VAL-EDIT-016",
+                           "status":  "pass",
+                           "reason":  "Static analysis plus IPC contract tests confirm frontend command strings match Rust invoke registrations, and settings persistence uses LazyStore from @tauri-apps/plugin-store rather than custom IPC.",
+                           "evidence":  [
+                                            "editor/editor-workspace-settings/static-analysis.json",
+                                            "editor/editor-workspace-settings/targeted-vitest-summary.json"
+                                        ]
+                       }
+                   ],
+    "commandsRun":  [
+                        {
+                            "command":  "npm run test:frontend -- src/editor/EditorView.test.tsx src/editor/MarkdownEditor.test.tsx src/editor/MarkdownPreview.test.tsx src/settings/SettingsModal.test.tsx src/settings/HotkeyRecorder.test.tsx",
+                            "exitCode":  0,
+                            "observation":  "Targeted Vitest run passed: 5 selected files, 100 tests total, 0 failures. React act(...) warnings appeared during the VAL-EDIT-010 reactive stats test but did not fail the run."
+                        },
+                        {
+                            "command":  "PowerShell static analysis over EditorView.tsx, settingsStore.ts, ipc.ts, src-tauri/src/lib.rs, and HotkeyRecorder.tsx to emit mission evidence JSON",
+                            "exitCode":  0,
+                            "observation":  "Confirmed module/test-file existence, EditorView imports, LazyStore usage, frontend IPC strings, matching Rust invoke registrations, and hotkey normalization helpers."
+                        }
+                    ],
+    "toolsUsed":  [
+                      "Read",
+                      "Grep",
+                      "Glob",
+                      "Execute"
+                  ],
+    "frictions":  [
+                      {
+                          "description":  "The targeted Vitest run emitted React act(...) warnings for the VAL-EDIT-010 content-change rerender assertion in EditorView.test.tsx.",
+                          "resolved":  true,
+                          "resolution":  "No workaround was required because the warning did not affect the pass/fail result; recorded in evidence for synthesis.",
+                          "affectedAssertions":  [
+                                                     "VAL-EDIT-010"
+                                                 ]
+                      }
+                  ],
+    "blockers":  [
+
+                 ]
+}

@@ -1,0 +1,100 @@
+{
+  "groupId": "editor-header-ops",
+  "surface": "vitest",
+  "assertions": [
+    {
+      "id": "VAL-EDIT-001",
+      "title": "EditorView renders header, dual-panel main, and footer",
+      "status": "pass",
+      "reason": "Targeted EditorView tests confirmed one render includes header, main with at least two direct section children, and footer.",
+      "evidence": [
+        "editor/editor-header-ops/vitest-summary.txt"
+      ]
+    },
+    {
+      "id": "VAL-EDIT-002",
+      "title": "Top bar shows BrandMark SVG, script name, and all toolbar buttons",
+      "status": "pass",
+      "reason": "Focused tests verified the header contains an SVG brand mark, Ghostprompter wordmark/tagline, current script name, and buttons New/Open/Save/Save As/Settings.",
+      "evidence": [
+        "editor/editor-header-ops/vitest-summary.txt"
+      ]
+    },
+    {
+      "id": "VAL-EDIT-003",
+      "title": "File indicator shows dirty/clean state",
+      "status": "pass",
+      "reason": "Tests covered both dirty and clean states, including Draft/Saved badges and the unsaved-changes aria-label on the dirty dot.",
+      "evidence": [
+        "editor/editor-header-ops/vitest-summary.txt"
+      ]
+    },
+    {
+      "id": "VAL-EDIT-004",
+      "title": "Go Live CTA button present with accessible label",
+      "status": "pass",
+      "reason": "Tests resolved the header CTA via getByRole using the accessible name 'Go Live', and static analysis confirmed aria-label=\"Go Live\" in EditorView.",
+      "evidence": [
+        "editor/editor-header-ops/vitest-summary.txt",
+        "editor/editor-header-ops/static-analysis.txt"
+      ]
+    },
+    {
+      "id": "VAL-EDIT-005",
+      "title": "Open button triggers file dialog and read_script IPC",
+      "status": "pass",
+      "reason": "Targeted tests verified the Open button triggers the Tauri open dialog and calls invoke('read_script', { path }) when a file is selected; store wiring matches the static implementation.",
+      "evidence": [
+        "editor/editor-header-ops/vitest-summary.txt",
+        "editor/editor-header-ops/static-analysis.txt"
+      ]
+    },
+    {
+      "id": "VAL-EDIT-006",
+      "title": "Save button triggers save_script IPC",
+      "status": "pass",
+      "reason": "Tests confirmed Save calls invoke('save_script', { path, content }) for existing paths and via the save dialog flow for pathless scripts; the script dirty flag also resets false after save.",
+      "evidence": [
+        "editor/editor-header-ops/vitest-summary.txt",
+        "editor/editor-header-ops/static-analysis.txt"
+      ]
+    },
+    {
+      "id": "VAL-EDIT-013",
+      "title": "Go Live triggers enter_teleprompter_mode IPC with script and rect",
+      "status": "pass",
+      "reason": "Focused Go Live tests verified invoke('enter_teleprompter_mode') receives script name/content plus numeric rect coordinates, and failure handling alerts while keeping editor mode.",
+      "evidence": [
+        "editor/editor-header-ops/vitest-summary.txt",
+        "editor/editor-header-ops/static-analysis.txt"
+      ]
+    },
+    {
+      "id": "VAL-EDIT-014",
+      "title": "Go Live registers hotkeys after teleprompter mode entry",
+      "status": "pass",
+      "reason": "Tests verified register_hotkeys occurs after enter_teleprompter_mode succeeds, receives settings hotkeys, and leaves playing=false after completion.",
+      "evidence": [
+        "editor/editor-header-ops/vitest-summary.txt",
+        "editor/editor-header-ops/static-analysis.txt"
+      ]
+    }
+  ],
+  "commandsRun": [
+    {
+      "command": "npm run test:frontend -- src/editor/EditorView.test.tsx --reporter=verbose -t VAL-EDIT-001|VAL-EDIT-002|VAL-EDIT-003|VAL-EDIT-004|VAL-EDIT-005|VAL-EDIT-006|VAL-EDIT-013|VAL-EDIT-014",
+      "exitCode": 0,
+      "observation": "Focused Vitest run passed: 1 file passed, 22 targeted tests passed, 37 non-matching tests in the file were skipped by the filter."
+    }
+  ],
+  "toolsUsed": [
+    "LS",
+    "Glob",
+    "Read",
+    "Grep",
+    "Execute",
+    "ApplyPatch"
+  ],
+  "frictions": [],
+  "blockers": []
+}

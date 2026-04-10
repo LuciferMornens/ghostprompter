@@ -1,0 +1,33 @@
+{
+  "milestone": "editor",
+  "round": 1,
+  "status": "pass",
+  "assertionsSummary": {
+    "total": 16,
+    "passed": 16,
+    "failed": 0,
+    "blocked": 0
+  },
+  "passedAssertions": [
+    "VAL-EDIT-001",
+    "VAL-EDIT-002",
+    "VAL-EDIT-003",
+    "VAL-EDIT-004",
+    "VAL-EDIT-005",
+    "VAL-EDIT-006",
+    "VAL-EDIT-007",
+    "VAL-EDIT-008",
+    "VAL-EDIT-009",
+    "VAL-EDIT-010",
+    "VAL-EDIT-011",
+    "VAL-EDIT-012",
+    "VAL-EDIT-013",
+    "VAL-EDIT-014",
+    "VAL-EDIT-015",
+    "VAL-EDIT-016"
+  ],
+  "failedAssertions": [],
+  "blockedAssertions": [],
+  "appliedUpdates": [],
+  "previousRound": null
+}
