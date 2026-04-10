@@ -597,7 +597,7 @@ export function TeleprompterView() {
                 style={{
                   width: 1,
                   background:
-                    "linear-gradient(180deg, transparent, rgba(241,237,228,0.16), transparent)",
+                    "linear-gradient(180deg, transparent, var(--gp-hairline-strong), transparent)",
                 }}
                 aria-hidden
               />

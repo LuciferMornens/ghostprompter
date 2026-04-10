@@ -289,6 +289,60 @@ describe("<TeleprompterView />", () => {
     const scrollable = container.querySelector(".gp-no-scrollbar") as HTMLElement;
     expect(scrollable.style.transform).toContain("scaleX(-1)");
   });
+
+  it("viewport has data-gp-viewport attribute and gp-vp class", () => {
+    const { container } = render(<TeleprompterView />);
+    const viewport = container.querySelector("[data-gp-viewport]") as HTMLElement;
+    expect(viewport).not.toBeNull();
+    expect(viewport.classList.contains("gp-vp")).toBe(true);
+  });
+
+  it("HUD shows Rolling with active RecDot when playing", () => {
+    useModeStore.setState({ playing: true });
+    const { container } = render(<TeleprompterView />);
+    expect(screen.getByText("Rolling")).toBeInTheDocument();
+    const dot = container.querySelector(".gp-rec-dot") as HTMLElement;
+    expect(dot).not.toBeNull();
+    expect(dot.classList.contains("gp-rec-dot--idle")).toBe(false);
+  });
+
+  it("HUD shows Standby with idle RecDot when not playing", () => {
+    useModeStore.setState({ playing: false });
+    const { container } = render(<TeleprompterView />);
+    expect(screen.getByText("Standby")).toBeInTheDocument();
+    const dot = container.querySelector(".gp-rec-dot") as HTMLElement;
+    expect(dot).not.toBeNull();
+    expect(dot.classList.contains("gp-rec-dot--idle")).toBe(true);
+  });
+
+  it("HUD shows speed readout with px/s unit", () => {
+    useSettingsStore.setState({
+      settings: { ...DEFAULT_SETTINGS, scrollSpeed: 60 },
+      loaded: true,
+    });
+    render(<TeleprompterView />);
+    expect(screen.getByText("60")).toBeInTheDocument();
+    expect(screen.getByText("px/s")).toBeInTheDocument();
+  });
+
+  it("HUD shows script name", () => {
+    useScriptStore.setState({
+      script: {
+        path: null,
+        name: "my-script.md",
+        content: "test",
+        dirty: false,
+      },
+    });
+    render(<TeleprompterView />);
+    expect(screen.getByText("my-script.md")).toBeInTheDocument();
+  });
+
+  it("does not render HUD elements when hidden=true", () => {
+    useModeStore.setState({ hidden: true });
+    const { container } = render(<TeleprompterView />);
+    expect(container.querySelector(".gp-vp-hud")).toBeNull();
+  });
 });
 
 describe("<TeleprompterView /> movable viewport", () => {

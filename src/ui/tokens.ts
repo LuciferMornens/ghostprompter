@@ -73,6 +73,10 @@ const glassKeys = [
   "surfaceLive",
   "surfaceEditor",
   "surfacePreview",
+  "surfaceHud",
+  "surfaceCluster",
+  "vpShadow",
+  "vpShadowSoft",
 ] as const;
 
 type GlassKey = (typeof glassKeys)[number];
@@ -88,6 +92,10 @@ const glass: TokenRecord<GlassKey> = {
   surfaceLive: "var(--gp-surface-live)",
   surfaceEditor: "var(--gp-surface-editor)",
   surfacePreview: "var(--gp-surface-preview)",
+  surfaceHud: "var(--gp-surface-hud)",
+  surfaceCluster: "var(--gp-surface-cluster)",
+  vpShadow: "var(--gp-vp-shadow)",
+  vpShadowSoft: "var(--gp-vp-shadow-soft)",
 } as const;
 
 /* -----------------------------------------------------------------------

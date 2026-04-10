@@ -53,10 +53,16 @@
   --gp-hairline-strong: rgba(255, 248, 236, 0.13);
   --gp-highlight: rgba(255, 240, 220, 0.42);
 
-  /* Surface tokens u2014 specific panel/component base colors */
+  /* Surface tokens — specific panel/component base colors */
   --gp-surface-live: #14110d;
   --gp-surface-editor: #0a0a0c;
   --gp-surface-preview: #101013;
+
+  /* Overlay surface tokens — teleprompter HUD & cluster over transparent bg */
+  --gp-surface-hud: rgba(10, 10, 12, 0.62);
+  --gp-surface-cluster: rgba(9, 9, 11, 0.78);
+  --gp-vp-shadow: rgba(0, 0, 0, 0.72);
+  --gp-vp-shadow-soft: rgba(0, 0, 0, 0.52);
 
   /* Legacy names preserved so existing tests & styles keep matching */
   --color-ghost-bg: var(--color-gp-ink);
@@ -407,16 +413,16 @@ textarea,
   align-items: center;
   gap: 10px;
   padding: 9px 15px;
-  background: rgba(10, 10, 12, 0.64);
+  background: var(--gp-surface-hud);
   backdrop-filter: blur(18px) saturate(118%);
   -webkit-backdrop-filter: blur(18px) saturate(118%);
-  border: 1px solid rgba(241, 237, 228, 0.12);
+  border: 1px solid var(--gp-hairline-strong);
   border-radius: 999px;
   box-shadow:
-    inset 0 1px 0 rgba(255, 240, 220, 0.12),
-    inset 0 0 0 1px rgba(0, 0, 0, 0.32),
-    0 12px 32px -12px rgba(0, 0, 0, 0.64),
-    0 4px 14px -6px rgba(0, 0, 0, 0.5);
+    inset 0 1px 0 color-mix(in srgb, var(--color-gp-glow) 12%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, var(--color-gp-shadow) 32%, transparent),
+    0 12px 32px -12px color-mix(in srgb, var(--color-gp-shadow) 64%, transparent),
+    0 4px 14px -6px color-mix(in srgb, var(--color-gp-shadow) 50%, transparent);
 }
 
 /* Small keycap */
@@ -1179,15 +1185,15 @@ input[type="color"] {
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(199, 138, 74, 0.6) 22%,
-    rgba(255, 240, 220, 0.9) 50%,
-    rgba(199, 138, 74, 0.6) 78%,
+    color-mix(in srgb, var(--color-gp-bronze) 60%, transparent) 22%,
+    color-mix(in srgb, var(--color-gp-glow) 90%, transparent) 50%,
+    color-mix(in srgb, var(--color-gp-bronze) 60%, transparent) 78%,
     transparent
   );
   box-shadow:
-    0 0 12px rgba(224, 164, 106, 0.38),
-    0 0 28px rgba(199, 138, 74, 0.18),
-    0 0 60px rgba(199, 138, 74, 0.06);
+    0 0 12px color-mix(in srgb, var(--color-gp-copper) 38%, transparent),
+    0 0 28px color-mix(in srgb, var(--color-gp-bronze) 18%, transparent),
+    0 0 60px color-mix(in srgb, var(--color-gp-bronze) 6%, transparent);
 }
 .gp-reading-line::before,
 .gp-reading-line::after {
@@ -1200,9 +1206,9 @@ input[type="color"] {
   border-radius: 999px;
   background: var(--color-gp-paper);
   box-shadow:
-    0 0 0 1px rgba(199, 138, 74, 0.6),
-    0 0 9px rgba(224, 164, 106, 0.82),
-    0 0 16px rgba(242, 182, 115, 0.3);
+    0 0 0 1px color-mix(in srgb, var(--color-gp-bronze) 60%, transparent),
+    0 0 9px color-mix(in srgb, var(--color-gp-copper) 82%, transparent),
+    0 0 16px color-mix(in srgb, var(--color-gp-amber) 30%, transparent);
 }
 .gp-reading-line::before {
   left: 32px;
@@ -1226,12 +1232,12 @@ input[type="color"] {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  border: 1px solid rgba(199, 138, 74, 0.4);
+  border: 1px solid color-mix(in srgb, var(--color-gp-bronze) 40%, transparent);
   border-radius: inherit;
   box-shadow:
-    inset 0 0 0 1px rgba(199, 138, 74, 0.1),
-    inset 0 0 0 2px rgba(199, 138, 74, 0.04),
-    0 0 0 1px rgba(199, 138, 74, 0.22);
+    inset 0 0 0 1px color-mix(in srgb, var(--color-gp-bronze) 10%, transparent),
+    inset 0 0 0 2px color-mix(in srgb, var(--color-gp-bronze) 4%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--color-gp-bronze) 22%, transparent);
   z-index: 3;
 }
 .gp-edit-mode-border::after {
@@ -1239,7 +1245,7 @@ input[type="color"] {
   position: absolute;
   inset: -1px;
   border-radius: inherit;
-  border: 1px solid rgba(224, 164, 106, 0.32);
+  border: 1px solid color-mix(in srgb, var(--color-gp-copper) 32%, transparent);
   opacity: 0.55;
   pointer-events: none;
   animation: gp-edit-border-pulse 4.8s var(--gp-ease) infinite;
@@ -1287,10 +1293,10 @@ input[type="color"] {
 .gp-vp {
   border-radius: var(--gp-radius-lg);
   box-shadow:
-    0 0 0 1px rgba(0, 0, 0, 0.32) inset,
-    0 1px 0 rgba(255, 240, 220, 0.08) inset,
-    0 30px 80px -28px rgba(0, 0, 0, 0.72),
-    0 12px 32px -18px rgba(0, 0, 0, 0.52);
+    0 0 0 1px color-mix(in srgb, var(--color-gp-shadow) 32%, transparent) inset,
+    0 1px 0 color-mix(in srgb, var(--color-gp-glow) 8%, transparent) inset,
+    0 30px 80px -28px var(--gp-vp-shadow),
+    0 12px 32px -18px var(--gp-vp-shadow-soft);
   isolation: isolate;
   /* Drives container queries used by the HUD + control cluster so they
      respond to the overlay's own width, not the whole window. */
@@ -1306,8 +1312,8 @@ input[type="color"] {
    Everything cross-fades back when the gesture ends. */
 .gp-vp--gesturing {
   box-shadow:
-    0 0 0 1px rgba(0, 0, 0, 0.32) inset,
-    0 12px 28px -16px rgba(0, 0, 0, 0.5);
+    0 0 0 1px color-mix(in srgb, var(--color-gp-shadow) 32%, transparent) inset,
+    0 12px 28px -16px color-mix(in srgb, var(--color-gp-shadow) 50%, transparent);
 }
 .gp-vp--gesturing .gp-vp-hud,
 .gp-vp--gesturing ~ * .gp-snap-popover {
@@ -1317,7 +1323,7 @@ input[type="color"] {
 .gp-vp--gesturing .gp-edit-mode-border {
   animation: none !important;
   box-shadow:
-    inset 0 0 0 1px rgba(199, 138, 74, 0.22) !important;
+    inset 0 0 0 1px color-mix(in srgb, var(--color-gp-bronze) 22%, transparent) !important;
 }
 .gp-vp--gesturing .gp-vp-handle,
 .gp-vp--gesturing .gp-vp-grip {
@@ -1329,7 +1335,7 @@ input[type="color"] {
   cursor: grab;
   background: linear-gradient(
     180deg,
-    rgba(255, 240, 220, 0.028),
+    color-mix(in srgb, var(--color-gp-glow) 2.8%, transparent),
     transparent 88%
   );
   border-top-left-radius: inherit;
@@ -1349,7 +1355,7 @@ input[type="color"] {
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(241, 237, 228, 0.12),
+    var(--gp-hairline-strong),
     transparent
   );
   opacity: 0;
@@ -1359,7 +1365,7 @@ input[type="color"] {
 .gp-vp-handle:hover {
   background: linear-gradient(
     180deg,
-    rgba(199, 138, 74, 0.1),
+    color-mix(in srgb, var(--color-gp-bronze) 10%, transparent),
     transparent 85%
   );
 }
@@ -1374,16 +1380,16 @@ input[type="color"] {
   width: 40px;
   height: 3px;
   border-radius: 999px;
-  background: rgba(241, 237, 228, 0.16);
+  background: color-mix(in srgb, var(--color-gp-paper) 16%, transparent);
   box-shadow:
-    inset 0 1px 0 rgba(255, 240, 220, 0.28),
-    0 0 0 1px rgba(0, 0, 0, 0.32);
+    inset 0 1px 0 color-mix(in srgb, var(--color-gp-glow) 28%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--color-gp-shadow) 32%, transparent);
   transition:
     background-color 240ms var(--gp-ease-swift),
     width 260ms var(--gp-spring-soft);
 }
 .gp-vp-handle:hover .gp-vp-handle-grip {
-  background: rgba(224, 164, 106, 0.52);
+  background: color-mix(in srgb, var(--color-gp-copper) 52%, transparent);
   width: 52px;
 }
 
@@ -1392,14 +1398,14 @@ input[type="color"] {
   height: 22px;
   display: grid;
   place-items: center;
-  color: rgba(241, 237, 228, 0.55);
+  color: color-mix(in srgb, var(--color-gp-paper) 55%, transparent);
   cursor: nwse-resize;
   border-bottom-right-radius: inherit;
   background: linear-gradient(
     135deg,
     transparent 50%,
-    rgba(241, 237, 228, 0.06) 50%,
-    rgba(241, 237, 228, 0.16)
+    color-mix(in srgb, var(--color-gp-paper) 6%, transparent) 50%,
+    color-mix(in srgb, var(--color-gp-paper) 16%, transparent)
   );
   transition:
     color 200ms var(--gp-ease-swift),
@@ -1410,8 +1416,8 @@ input[type="color"] {
   background: linear-gradient(
     135deg,
     transparent 50%,
-    rgba(199, 138, 74, 0.18) 50%,
-    rgba(224, 164, 106, 0.32)
+    color-mix(in srgb, var(--color-gp-bronze) 18%, transparent) 50%,
+    color-mix(in srgb, var(--color-gp-copper) 32%, transparent)
   );
 }
 
@@ -1481,13 +1487,13 @@ input[type="color"] {
 .gp-vp-hud {
   padding: 6px 11px;
   border-radius: 999px;
-  background: rgba(10, 10, 12, 0.62);
+  background: var(--gp-surface-hud);
   backdrop-filter: blur(16px) saturate(118%);
   -webkit-backdrop-filter: blur(16px) saturate(118%);
-  border: 1px solid rgba(241, 237, 228, 0.12);
+  border: 1px solid var(--gp-hairline-strong);
   box-shadow:
-    inset 0 1px 0 rgba(255, 240, 220, 0.12),
-    0 8px 22px -10px rgba(0, 0, 0, 0.58);
+    inset 0 1px 0 color-mix(in srgb, var(--color-gp-glow) 12%, transparent),
+    0 8px 22px -10px color-mix(in srgb, var(--color-gp-shadow) 58%, transparent);
   gap: 8px;
   display: inline-flex;
   align-items: center;
@@ -1516,17 +1522,17 @@ input[type="color"] {
   row-gap: 6px;
   column-gap: 6px;
   padding: 8px 10px;
-  background: rgba(9, 9, 11, 0.78);
+  background: var(--gp-surface-cluster);
   backdrop-filter: blur(22px) saturate(118%);
   -webkit-backdrop-filter: blur(22px) saturate(118%);
-  border: 1px solid rgba(241, 237, 228, 0.12);
+  border: 1px solid var(--gp-hairline-strong);
   border-radius: 16px;
   box-shadow:
-    inset 0 1px 0 rgba(255, 240, 220, 0.18),
-    inset 0 0 0 1px rgba(0, 0, 0, 0.28),
-    0 22px 56px -16px rgba(0, 0, 0, 0.72),
-    0 10px 28px -12px rgba(199, 138, 74, 0.2),
-    0 0 0 1px rgba(199, 138, 74, 0.08);
+    inset 0 1px 0 color-mix(in srgb, var(--color-gp-glow) 18%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, var(--color-gp-shadow) 28%, transparent),
+    0 22px 56px -16px var(--gp-vp-shadow),
+    0 10px 28px -12px color-mix(in srgb, var(--color-gp-bronze) 20%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--color-gp-bronze) 8%, transparent);
   max-width: calc(100cqw - 20px);
   min-width: 0;
   isolation: isolate;
@@ -1535,8 +1541,8 @@ input[type="color"] {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   box-shadow:
-    inset 0 0 0 1px rgba(0, 0, 0, 0.36),
-    0 10px 26px -14px rgba(0, 0, 0, 0.6) !important;
+    inset 0 0 0 1px color-mix(in srgb, var(--color-gp-shadow) 36%, transparent),
+    0 10px 26px -14px color-mix(in srgb, var(--color-gp-shadow) 60%, transparent) !important;
 }
 .gp-vp-cluster-group {
   display: inline-flex;
@@ -1552,7 +1558,7 @@ input[type="color"] {
   background: linear-gradient(
     180deg,
     transparent,
-    rgba(241, 237, 228, 0.14),
+    color-mix(in srgb, var(--color-gp-paper) 14%, transparent),
     transparent
   );
   flex-shrink: 0;
@@ -1568,8 +1574,8 @@ input[type="color"] {
   min-width: 46px;
   line-height: 1;
   border-radius: 8px;
-  background: rgba(255, 240, 220, 0.025);
-  border: 1px solid rgba(255, 240, 220, 0.05);
+  background: color-mix(in srgb, var(--color-gp-glow) 2.5%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-gp-glow) 5%, transparent);
 }
 .gp-vp-speed-label {
   font-family: var(--font-mono);
@@ -1618,12 +1624,12 @@ input[type="color"] {
   padding: 0 12px;
 }
 .gp-vp-cluster .gp-icn--danger:hover {
-  color: #f0b9a3;
-  border-color: rgba(220, 110, 80, 0.55);
-  background: rgba(220, 110, 80, 0.1);
+  color: color-mix(in srgb, var(--color-gp-sunset) 80%, var(--color-gp-paper));
+  border-color: color-mix(in srgb, var(--color-gp-sunset) 55%, transparent);
+  background: color-mix(in srgb, var(--color-gp-sunset) 10%, transparent);
   box-shadow:
-    inset 0 1px 0 rgba(255, 240, 220, 0.1),
-    0 8px 22px -12px rgba(220, 110, 80, 0.55);
+    inset 0 1px 0 color-mix(in srgb, var(--color-gp-glow) 10%, transparent),
+    0 8px 22px -12px color-mix(in srgb, var(--color-gp-sunset) 55%, transparent);
 }
 .gp-icn-symbol {
   display: inline-flex;
@@ -1756,15 +1762,15 @@ input[type="color"] {
 
 .gp-snap-popover {
   padding: 14px;
-  background: rgba(9, 9, 11, 0.9);
+  background: color-mix(in srgb, var(--color-gp-ink) 90%, transparent);
   backdrop-filter: blur(24px) saturate(118%);
   -webkit-backdrop-filter: blur(24px) saturate(118%);
-  border: 1px solid rgba(241, 237, 228, 0.12);
+  border: 1px solid var(--gp-hairline-strong);
   border-radius: 16px;
   box-shadow:
-    inset 0 1px 0 rgba(255, 240, 220, 0.13),
-    0 28px 68px -14px rgba(0, 0, 0, 0.74),
-    0 0 0 1px rgba(199, 138, 74, 0.1);
+    inset 0 1px 0 color-mix(in srgb, var(--color-gp-glow) 13%, transparent),
+    0 28px 68px -14px color-mix(in srgb, var(--color-gp-shadow) 74%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--color-gp-bronze) 10%, transparent);
   width: 220px;
   animation: gp-scale-in 220ms var(--gp-spring-soft) both;
 }
@@ -1776,13 +1782,13 @@ input[type="color"] {
   aspect-ratio: 16 / 9;
   padding: 4px;
   border-radius: 10px;
-  background: rgba(241, 237, 228, 0.024);
-  border: 1px solid rgba(241, 237, 228, 0.05);
+  background: var(--gp-glass-1);
+  border: 1px solid color-mix(in srgb, var(--color-gp-paper) 5%, transparent);
 }
 .gp-snap-cell {
   position: relative;
-  background: rgba(241, 237, 228, 0.035);
-  border: 1px solid rgba(241, 237, 228, 0.07);
+  background: color-mix(in srgb, var(--color-gp-paper) 3.5%, transparent);
+  border: 1px solid var(--gp-hairline);
   border-radius: 6px;
   cursor: pointer;
   transition:
@@ -1791,16 +1797,16 @@ input[type="color"] {
     transform 220ms var(--gp-spring-soft);
 }
 .gp-snap-cell:hover {
-  background: rgba(199, 138, 74, 0.14);
-  border-color: rgba(199, 138, 74, 0.5);
+  background: color-mix(in srgb, var(--color-gp-bronze) 14%, transparent);
+  border-color: color-mix(in srgb, var(--color-gp-bronze) 50%, transparent);
   transform: scale(1.02);
 }
 .gp-snap-cell--active {
-  background: rgba(199, 138, 74, 0.22);
-  border-color: rgba(224, 164, 106, 0.75);
+  background: color-mix(in srgb, var(--color-gp-bronze) 22%, transparent);
+  border-color: color-mix(in srgb, var(--color-gp-copper) 75%, transparent);
   box-shadow:
-    inset 0 0 0 1px rgba(199, 138, 74, 0.4),
-    0 0 16px -3px rgba(199, 138, 74, 0.45);
+    inset 0 0 0 1px color-mix(in srgb, var(--color-gp-bronze) 40%, transparent),
+    0 0 16px -3px color-mix(in srgb, var(--color-gp-bronze) 45%, transparent);
 }
 .gp-snap-cell-dot {
   position: absolute;
@@ -1809,11 +1815,11 @@ input[type="color"] {
   width: 4px;
   height: 4px;
   border-radius: 999px;
-  background: rgba(241, 237, 228, 0.3);
+  background: color-mix(in srgb, var(--color-gp-paper) 30%, transparent);
 }
 .gp-snap-cell--active .gp-snap-cell-dot {
   background: var(--color-gp-paper);
-  box-shadow: 0 0 6px rgba(255, 240, 220, 0.85);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--color-gp-glow) 85%, transparent);
 }
 .gp-snap-strips {
   margin-top: 10px;
@@ -1831,8 +1837,8 @@ input[type="color"] {
   font-weight: 500;
   letter-spacing: -0.004em;
   color: var(--color-gp-paper-dim);
-  background: rgba(241, 237, 228, 0.03);
-  border: 1px solid rgba(241, 237, 228, 0.07);
+  background: color-mix(in srgb, var(--color-gp-paper) 3%, transparent);
+  border: 1px solid var(--gp-hairline);
   border-radius: 8px;
   cursor: pointer;
   text-align: left;
@@ -1843,13 +1849,13 @@ input[type="color"] {
 }
 .gp-snap-strip:hover {
   color: var(--color-gp-paper);
-  background: rgba(241, 237, 228, 0.06);
-  border-color: rgba(241, 237, 228, 0.16);
+  background: color-mix(in srgb, var(--color-gp-paper) 6%, transparent);
+  border-color: color-mix(in srgb, var(--color-gp-paper) 16%, transparent);
 }
 .gp-snap-strip--active {
   color: var(--color-gp-copper);
-  background: rgba(199, 138, 74, 0.14);
-  border-color: rgba(199, 138, 74, 0.5);
+  background: color-mix(in srgb, var(--color-gp-bronze) 14%, transparent);
+  border-color: color-mix(in srgb, var(--color-gp-bronze) 50%, transparent);
 }
 
 /* =========================================================================

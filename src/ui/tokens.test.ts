@@ -18,9 +18,9 @@ describe("Design token manifest", () => {
     expect(colorKeys).toHaveLength(18);
   });
 
-  it("defines exactly 10 glass surface tokens", () => {
-    expect(Object.keys(tokens.glass)).toHaveLength(10);
-    expect(glassKeys).toHaveLength(10);
+  it("defines exactly 14 glass surface tokens", () => {
+    expect(Object.keys(tokens.glass)).toHaveLength(14);
+    expect(glassKeys).toHaveLength(14);
   });
 
   it("defines exactly 5 font tokens", () => {
@@ -117,13 +117,13 @@ describe("Design token manifest", () => {
    * Total token count across all categories
    * ------------------------------------------------------------------ */
 
-  it("manifest covers 42 tokens total (18+10+5+4+5)", () => {
+  it("manifest covers 46 tokens total (18+14+5+4+5)", () => {
     const total =
       Object.keys(tokens.colors).length +
       Object.keys(tokens.glass).length +
       Object.keys(tokens.fonts).length +
       Object.keys(tokens.radii).length +
       Object.keys(tokens.easings).length;
-    expect(total).toBe(42);
+    expect(total).toBe(46);
   });
 });
