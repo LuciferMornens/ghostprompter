@@ -1406,3 +1406,202 @@ describe("VAL-TELE-015: Resize handles", () => {
     expect(container.querySelector("[data-gp-resize-grip]")).toBeNull();
   });
 });
+
+// =========================================================================
+// VAL-TELE-020: Hotkey events subscribed and cleaned up on unmount
+// =========================================================================
+describe("VAL-TELE-020: Hotkey event subscriptions", () => {
+  it("subscribes to line-up, line-down, jump-start, jump-end hotkeys", async () => {
+    render(<TeleprompterView />);
+    await waitFor(() => {
+      expect(hotkeyListeners.get("hotkey://line-up")).toBeDefined();
+      expect(hotkeyListeners.get("hotkey://line-down")).toBeDefined();
+      expect(hotkeyListeners.get("hotkey://jump-start")).toBeDefined();
+      expect(hotkeyListeners.get("hotkey://jump-end")).toBeDefined();
+    });
+  });
+
+  it("line-up hotkey pauses playback and scrolls backward", async () => {
+    useModeStore.setState({ editMode: false, playing: true });
+    const { container } = render(<TeleprompterView />);
+    const scrollable = container.querySelector(".gp-no-scrollbar") as HTMLDivElement;
+    Object.defineProperty(scrollable, "scrollTop", {
+      value: 200,
+      writable: true,
+      configurable: true,
+    });
+
+    await waitFor(() => {
+      expect(hotkeyListeners.get("hotkey://line-up")).toBeDefined();
+    });
+
+    act(() => {
+      hotkeyListeners.get("hotkey://line-up")?.({ payload: undefined });
+    });
+
+    expect(useModeStore.getState().playing).toBe(false);
+    expect(scrollable.scrollTop).toBeLessThan(200);
+  });
+
+  it("jump-end hotkey pauses playback and seeks to the bottom", async () => {
+    useModeStore.setState({ editMode: false, playing: true });
+    const { container } = render(<TeleprompterView />);
+    const scrollable = container.querySelector(".gp-no-scrollbar") as HTMLDivElement;
+    Object.defineProperty(scrollable, "scrollHeight", {
+      value: 2000,
+      writable: false,
+      configurable: true,
+    });
+    Object.defineProperty(scrollable, "scrollTop", {
+      value: 40,
+      writable: true,
+      configurable: true,
+    });
+
+    await waitFor(() => {
+      expect(hotkeyListeners.get("hotkey://jump-end")).toBeDefined();
+    });
+
+    act(() => {
+      hotkeyListeners.get("hotkey://jump-end")?.({ payload: undefined });
+    });
+
+    expect(useModeStore.getState().playing).toBe(false);
+    expect(scrollable.scrollTop).toBe(2000);
+  });
+
+  it("all hotkey listeners are unregistered on unmount", async () => {
+    const { unmount } = render(<TeleprompterView />);
+
+    await waitFor(() => {
+      expect(hotkeyListeners.get("hotkey://line-up")).toBeDefined();
+      expect(hotkeyListeners.get("hotkey://line-down")).toBeDefined();
+      expect(hotkeyListeners.get("hotkey://jump-start")).toBeDefined();
+      expect(hotkeyListeners.get("hotkey://jump-end")).toBeDefined();
+    });
+
+    unmount();
+
+    // Cleanup is async (promises resolve after unmount)
+    await waitFor(() => {
+      expect(hotkeyListeners.get("hotkey://line-up")).toBeUndefined();
+      expect(hotkeyListeners.get("hotkey://line-down")).toBeUndefined();
+      expect(hotkeyListeners.get("hotkey://jump-start")).toBeUndefined();
+      expect(hotkeyListeners.get("hotkey://jump-end")).toBeUndefined();
+    });
+  });
+});
+
+// =========================================================================
+// VAL-TELE-021: Native move/resize events sync to settings with coalescing
+// =========================================================================
+describe("VAL-TELE-021: Native sync with coalescing", () => {
+  it("onMoved updates overlayX/Y in settings", async () => {
+    useModeStore.setState({ editMode: true });
+    useSettingsStore.setState({
+      settings: {
+        ...DEFAULT_SETTINGS,
+        overlayX: 80,
+        overlayY: 60,
+        overlayWidth: 360,
+        overlayHeight: 240,
+      },
+      loaded: true,
+    });
+    render(<TeleprompterView />);
+
+    act(() => {
+      emitMoved({
+        x: 600,
+        y: 400,
+        toLogical: () => ({ x: 300, y: 200 }),
+      });
+    });
+
+    await waitFor(() => {
+      expect(useSettingsStore.getState().settings.overlayX).toBe(300);
+    });
+    expect(useSettingsStore.getState().settings.overlayY).toBe(200);
+  });
+
+  it("onResized updates overlayWidth/Height in settings", async () => {
+    useModeStore.setState({ editMode: true });
+    useSettingsStore.setState({
+      settings: {
+        ...DEFAULT_SETTINGS,
+        overlayX: 100,
+        overlayY: 100,
+        overlayWidth: 320,
+        overlayHeight: 220,
+      },
+      loaded: true,
+    });
+    const { container } = render(<TeleprompterView />);
+
+    act(() => {
+      emitResized({
+        width: 1200,
+        height: 900,
+        toLogical: () => ({ width: 600, height: 450 }),
+      });
+    });
+
+    await waitFor(() => {
+      expect(useSettingsStore.getState().settings.overlayWidth).toBe(600);
+    });
+    expect(useSettingsStore.getState().settings.overlayHeight).toBe(450);
+    const viewport = container.querySelector("[data-gp-viewport]") as HTMLElement;
+    expect(viewport.style.width).toBe("600px");
+    expect(viewport.style.height).toBe("450px");
+  });
+
+  it("coalesces a burst of move events into one settings write", async () => {
+    const realUpdate = useSettingsStore.getState().update;
+    const updateSpy = vi.fn(
+      async (patch: Partial<typeof DEFAULT_SETTINGS>) => {
+        await realUpdate(patch);
+      },
+    );
+    useModeStore.setState({ editMode: true });
+    useSettingsStore.setState({
+      settings: {
+        ...DEFAULT_SETTINGS,
+        overlayX: 100,
+        overlayY: 100,
+        overlayWidth: 400,
+        overlayHeight: 300,
+      },
+      loaded: true,
+      update: updateSpy,
+    });
+    render(<TeleprompterView />);
+
+    act(() => {
+      for (let i = 1; i <= 10; i++) {
+        emitMoved({
+          x: 100 + i * 10,
+          y: 100 + i * 5,
+          toLogical: () => ({ x: 100 + i * 10, y: 100 + i * 5 }),
+        });
+      }
+    });
+
+    await waitFor(() => {
+      expect(useSettingsStore.getState().settings.overlayX).toBe(200);
+    });
+    expect(useSettingsStore.getState().settings.overlayY).toBe(150);
+
+    // Only one trailing rect write, not one per event
+    const rectWrites = updateSpy.mock.calls.filter((call) => {
+      const patch = call[0] as Partial<typeof DEFAULT_SETTINGS>;
+      return (
+        "overlayX" in patch &&
+        "overlayY" in patch &&
+        "overlayWidth" in patch &&
+        "overlayHeight" in patch
+      );
+    });
+    expect(rectWrites).toHaveLength(1);
+    useSettingsStore.setState({ update: realUpdate });
+  });
+});
