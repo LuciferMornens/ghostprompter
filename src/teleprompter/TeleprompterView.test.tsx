@@ -770,3 +770,346 @@ describe("<TeleprompterView /> movable viewport", () => {
     expect(scrollable.scrollTop).toBe(0);
   });
 });
+
+// =========================================================================
+// VAL-TELE-006: Control cluster renders all buttons in edit mode with toolbar role
+// =========================================================================
+describe("VAL-TELE-006: Control cluster", () => {
+  it("renders all 8 control buttons in edit mode", () => {
+    useModeStore.setState({ editMode: true });
+    render(<TeleprompterView />);
+    expect(screen.getByRole("button", { name: "Slower" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Faster" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Play" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Line up" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Line down" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Snap" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Lock overlay" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Exit teleprompter" })).toBeInTheDocument();
+  });
+
+  it("control cluster container has role=toolbar with aria-label", () => {
+    useModeStore.setState({ editMode: true });
+    render(<TeleprompterView />);
+    const toolbar = screen.getByRole("toolbar");
+    expect(toolbar).toBeInTheDocument();
+    expect(toolbar).toHaveAttribute("aria-label", "Teleprompter controls");
+  });
+
+  it("drag region element is present in edit mode", () => {
+    useModeStore.setState({ editMode: true });
+    const { container } = render(<TeleprompterView />);
+    expect(container.querySelector("[data-tauri-drag-region]")).not.toBeNull();
+  });
+
+  it("control cluster has gp-vp-cluster class", () => {
+    useModeStore.setState({ editMode: true });
+    render(<TeleprompterView />);
+    const toolbar = screen.getByRole("toolbar");
+    expect(toolbar.classList.contains("gp-vp-cluster")).toBe(true);
+  });
+});
+
+// =========================================================================
+// VAL-TELE-007: Controls hidden when not in edit mode
+// =========================================================================
+describe("VAL-TELE-007: Controls hidden when not editing", () => {
+  it("no control buttons render when editMode is false", () => {
+    useModeStore.setState({ editMode: false });
+    render(<TeleprompterView />);
+    expect(screen.queryByRole("button", { name: "Slower" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Faster" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Play" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Line up" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Line down" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Snap" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Lock overlay" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Exit teleprompter" })).toBeNull();
+    expect(screen.queryByRole("toolbar")).toBeNull();
+  });
+
+  it("root has pointerEvents none while viewport has auto when not editing", () => {
+    useModeStore.setState({ editMode: false });
+    const { container } = render(<TeleprompterView />);
+    expect((container.firstChild as HTMLElement).style.pointerEvents).toBe("none");
+    expect(
+      (container.querySelector("[data-gp-viewport]") as HTMLElement).style.pointerEvents,
+    ).toBe("auto");
+  });
+
+  it("hotkey hint F6 edit is shown when not editing and not hidden", () => {
+    useModeStore.setState({ editMode: false, hidden: false });
+    render(<TeleprompterView />);
+    expect(screen.getAllByText(/F6 edit/i).length).toBeGreaterThan(0);
+  });
+});
+
+// =========================================================================
+// VAL-TELE-008: Snap popover opens/closes with grid cells and strip presets
+// =========================================================================
+describe("VAL-TELE-008: Snap popover", () => {
+  it("snap popover is initially closed on mount", () => {
+    useModeStore.setState({ editMode: true });
+    const { container } = render(<TeleprompterView />);
+    expect(container.querySelector("[data-gp-snap-popover]")).toBeNull();
+  });
+
+  it("snap popover opens with 9 grid cells and 5 strip presets", async () => {
+    useModeStore.setState({ editMode: true });
+    const user = userEvent.setup();
+    const { container } = render(<TeleprompterView />);
+    await user.click(screen.getByRole("button", { name: "Snap" }));
+
+    const popover = container.querySelector("[data-gp-snap-popover]") as HTMLElement;
+    expect(popover).not.toBeNull();
+
+    // 9 grid cells
+    const gridCells = popover.querySelectorAll(".gp-snap-cell");
+    expect(gridCells).toHaveLength(9);
+
+    // 5 strip presets
+    const strips = popover.querySelectorAll(".gp-snap-strip");
+    expect(strips).toHaveLength(5);
+  });
+
+  it("snap popover has role=menu with aria-label", async () => {
+    useModeStore.setState({ editMode: true });
+    const user = userEvent.setup();
+    render(<TeleprompterView />);
+    await user.click(screen.getByRole("button", { name: "Snap" }));
+
+    const menu = screen.getByRole("menu");
+    expect(menu).toBeInTheDocument();
+    expect(menu).toHaveAttribute("aria-label", "Snap presets");
+  });
+
+  it("snap popover has gp-snap-popover class", async () => {
+    useModeStore.setState({ editMode: true });
+    const user = userEvent.setup();
+    render(<TeleprompterView />);
+    await user.click(screen.getByRole("button", { name: "Snap" }));
+
+    const menu = screen.getByRole("menu");
+    expect(menu.classList.contains("gp-snap-popover")).toBe(true);
+  });
+
+  it("snap popover closes on Escape", async () => {
+    useModeStore.setState({ editMode: true });
+    const user = userEvent.setup();
+    const { container } = render(<TeleprompterView />);
+    await user.click(screen.getByRole("button", { name: "Snap" }));
+    expect(container.querySelector("[data-gp-snap-popover]")).not.toBeNull();
+
+    await user.keyboard("{Escape}");
+    expect(container.querySelector("[data-gp-snap-popover]")).toBeNull();
+  });
+
+  it("snap popover closes on outside click", async () => {
+    useModeStore.setState({ editMode: true });
+    const user = userEvent.setup();
+    const { container } = render(<TeleprompterView />);
+    await user.click(screen.getByRole("button", { name: "Snap" }));
+    expect(container.querySelector("[data-gp-snap-popover]")).not.toBeNull();
+
+    // Click outside the popover
+    act(() => {
+      document.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
+    });
+    expect(container.querySelector("[data-gp-snap-popover]")).toBeNull();
+  });
+});
+
+// =========================================================================
+// VAL-TELE-009: Snap presets persist correct rect and call IPC
+// =========================================================================
+describe("VAL-TELE-009: Snap preset IPC and active state", () => {
+  it("selecting a preset stores the rect in settings and calls set_overlay_rect", async () => {
+    useModeStore.setState({ editMode: true });
+    useSettingsStore.setState({
+      settings: {
+        ...DEFAULT_SETTINGS,
+        overlayX: 200,
+        overlayY: 200,
+        overlayWidth: 400,
+        overlayHeight: 300,
+      },
+      loaded: true,
+    });
+    const user = userEvent.setup();
+    render(<TeleprompterView />);
+    await waitFor(() => {
+      expect(invokeMock.mock.calls.find((c) => c[0] === "set_overlay_rect")).toBeDefined();
+    });
+    invokeMock.mockClear();
+
+    await user.click(screen.getByRole("button", { name: "Snap" }));
+    await user.click(screen.getByRole("menuitem", { name: "Top left" }));
+    await Promise.resolve();
+    await Promise.resolve();
+
+    const settings = useSettingsStore.getState().settings;
+    expect(settings.overlayX).toBe(0);
+    expect(settings.overlayY).toBe(0);
+
+    const ipcCall = invokeMock.mock.calls.find((c) => c[0] === "set_overlay_rect");
+    expect(ipcCall).toBeDefined();
+    expect(ipcCall?.[1]).toMatchObject({ x: 0, y: 0 });
+  });
+
+  it("active preset cell gets --active modifier class", async () => {
+    useModeStore.setState({ editMode: true });
+    // Set the overlay to full screen so "Full screen" is active
+    useSettingsStore.setState({
+      settings: {
+        ...DEFAULT_SETTINGS,
+        overlayX: 0,
+        overlayY: 0,
+        overlayWidth: window.innerWidth,
+        overlayHeight: window.innerHeight,
+      },
+      loaded: true,
+    });
+    const user = userEvent.setup();
+    render(<TeleprompterView />);
+    await user.click(screen.getByRole("button", { name: "Snap" }));
+
+    // The "Full screen" strip preset should be active
+    const fullScreenStrip = screen.getByRole("menuitem", { name: "Full screen" });
+    expect(fullScreenStrip.classList.contains("gp-snap-strip--active")).toBe(true);
+  });
+});
+
+// =========================================================================
+// VAL-TELE-010: Speed controls increment/decrement by 5, clamped [5,500]
+// =========================================================================
+describe("VAL-TELE-010: Speed controls", () => {
+  it("Faster adds 5 to scrollSpeed", async () => {
+    useModeStore.setState({ editMode: true });
+    useSettingsStore.setState({
+      settings: { ...DEFAULT_SETTINGS, scrollSpeed: 100 },
+      loaded: true,
+    });
+    const user = userEvent.setup();
+    render(<TeleprompterView />);
+    await user.click(screen.getByRole("button", { name: "Faster" }));
+    await Promise.resolve();
+    expect(useSettingsStore.getState().settings.scrollSpeed).toBe(105);
+  });
+
+  it("Slower subtracts 5 from scrollSpeed", async () => {
+    useModeStore.setState({ editMode: true });
+    useSettingsStore.setState({
+      settings: { ...DEFAULT_SETTINGS, scrollSpeed: 100 },
+      loaded: true,
+    });
+    const user = userEvent.setup();
+    render(<TeleprompterView />);
+    await user.click(screen.getByRole("button", { name: "Slower" }));
+    await Promise.resolve();
+    expect(useSettingsStore.getState().settings.scrollSpeed).toBe(95);
+  });
+
+  it("speed does not go below 5", async () => {
+    useModeStore.setState({ editMode: true });
+    useSettingsStore.setState({
+      settings: { ...DEFAULT_SETTINGS, scrollSpeed: 5 },
+      loaded: true,
+    });
+    const user = userEvent.setup();
+    render(<TeleprompterView />);
+    await user.click(screen.getByRole("button", { name: "Slower" }));
+    await Promise.resolve();
+    expect(useSettingsStore.getState().settings.scrollSpeed).toBe(5);
+  });
+
+  it("speed does not exceed 500", async () => {
+    useModeStore.setState({ editMode: true });
+    useSettingsStore.setState({
+      settings: { ...DEFAULT_SETTINGS, scrollSpeed: 500 },
+      loaded: true,
+    });
+    const user = userEvent.setup();
+    render(<TeleprompterView />);
+    await user.click(screen.getByRole("button", { name: "Faster" }));
+    await Promise.resolve();
+    expect(useSettingsStore.getState().settings.scrollSpeed).toBe(500);
+  });
+
+  it("speed readout updates live after clicking Faster", async () => {
+    useModeStore.setState({ editMode: true });
+    useSettingsStore.setState({
+      settings: { ...DEFAULT_SETTINGS, scrollSpeed: 40 },
+      loaded: true,
+    });
+    const user = userEvent.setup();
+    render(<TeleprompterView />);
+
+    // Cluster speed readout initially shows 40
+    const speedValue = screen.getAllByText("40");
+    expect(speedValue.length).toBeGreaterThan(0);
+
+    await user.click(screen.getByRole("button", { name: "Faster" }));
+    await Promise.resolve();
+
+    // Now shows 45
+    expect(screen.getAllByText("45").length).toBeGreaterThan(0);
+  });
+});
+
+// =========================================================================
+// VAL-TELE-011: Play/Pause toggle with icon swap, spacebar in edit mode only
+// =========================================================================
+describe("VAL-TELE-011: Play/Pause", () => {
+  it("play button toggles modeStore.playing", async () => {
+    useModeStore.setState({ editMode: true, playing: false });
+    const user = userEvent.setup();
+    render(<TeleprompterView />);
+    await user.click(screen.getByRole("button", { name: "Play" }));
+    expect(useModeStore.getState().playing).toBe(true);
+  });
+
+  it("shows ▶ when paused and ⏸ when playing", () => {
+    useModeStore.setState({ editMode: true, playing: false });
+    const { rerender } = render(<TeleprompterView />);
+    // When paused: Play button with ▶
+    const playBtn = screen.getByRole("button", { name: "Play" });
+    expect(playBtn.textContent).toContain("▶");
+
+    useModeStore.setState({ playing: true });
+    rerender(<TeleprompterView />);
+    // When playing: Pause button with ⏸
+    const pauseBtn = screen.getByRole("button", { name: "Pause" });
+    expect(pauseBtn.textContent).toContain("⏸");
+  });
+
+  it("spacebar toggles playing in edit mode", () => {
+    useModeStore.setState({ editMode: true, playing: false });
+    render(<TeleprompterView />);
+
+    act(() => {
+      window.dispatchEvent(
+        new KeyboardEvent("keydown", { key: " ", bubbles: true }),
+      );
+    });
+    expect(useModeStore.getState().playing).toBe(true);
+
+    act(() => {
+      window.dispatchEvent(
+        new KeyboardEvent("keydown", { key: " ", bubbles: true }),
+      );
+    });
+    expect(useModeStore.getState().playing).toBe(false);
+  });
+
+  it("spacebar does not toggle playing when not in edit mode", () => {
+    useModeStore.setState({ editMode: false, playing: false });
+    render(<TeleprompterView />);
+
+    act(() => {
+      window.dispatchEvent(
+        new KeyboardEvent("keydown", { key: " ", bubbles: true }),
+      );
+    });
+    expect(useModeStore.getState().playing).toBe(false);
+  });
+});
