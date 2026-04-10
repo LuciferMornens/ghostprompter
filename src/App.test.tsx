@@ -184,6 +184,90 @@ describe("<App />", () => {
     expect(listenMock.mock.calls.length).toBe(0);
   });
 
+  // VAL-CROSS-005: Exit flow via hotkey://stop unregisters hotkeys, exits teleprompter, resets mode
+  it("overlay hotkey://stop calls unregister then exit and resets state to editor", async () => {
+    (
+      window as typeof window & {
+        __TAURI_INTERNALS__?: { metadata?: { currentWindow?: { label?: string } } };
+      }
+    ).__TAURI_INTERNALS__ = {
+      metadata: {
+        currentWindow: { label: "overlay" },
+      },
+    };
+    useSettingsStore.setState({
+      settings: { ...DEFAULT_SETTINGS },
+      loaded: true,
+      load: async () => {},
+    });
+    useModeStore.setState({
+      mode: "teleprompter",
+      editMode: true,
+      playing: true,
+      hidden: false,
+    });
+
+    await renderApp();
+    await waitFor(() => {
+      expect(capturedListeners.get("hotkey://stop")).toBeDefined();
+    });
+
+    invokeMock.mockClear();
+    const cb = capturedListeners.get("hotkey://stop")!;
+    await act(async () => {
+      cb({ payload: undefined });
+      // Wait for the async handler
+      await new Promise((r) => setTimeout(r, 10));
+    });
+
+    const calls = invokeMock.mock.calls.map((c: string[]) => c[0]);
+    expect(calls).toContain("unregister_hotkeys");
+    expect(calls).toContain("exit_teleprompter_mode");
+    const unregIdx = calls.indexOf("unregister_hotkeys");
+    const exitIdx = calls.indexOf("exit_teleprompter_mode");
+    expect(unregIdx).toBeLessThan(exitIdx);
+
+    expect(useModeStore.getState().playing).toBe(false);
+    expect(useModeStore.getState().editMode).toBe(false);
+    expect(useModeStore.getState().mode).toBe("editor");
+  });
+
+  // VAL-CROSS-006: mode-changed backend event drives App mode switching
+  it("mode-changed event from backend updates mode and editMode in store", async () => {
+    (
+      window as typeof window & {
+        __TAURI_INTERNALS__?: { metadata?: { currentWindow?: { label?: string } } };
+      }
+    ).__TAURI_INTERNALS__ = {
+      metadata: {
+        currentWindow: { label: "overlay" },
+      },
+    };
+    useSettingsStore.setState({
+      settings: { ...DEFAULT_SETTINGS },
+      loaded: true,
+      load: async () => {},
+    });
+
+    await renderApp();
+    await waitFor(() => {
+      expect(capturedListeners.get("mode-changed")).toBeDefined();
+    });
+
+    const cb = capturedListeners.get("mode-changed")!;
+    act(() => {
+      cb({ payload: { mode: "teleprompter", edit: true } });
+    });
+    expect(useModeStore.getState().mode).toBe("teleprompter");
+    expect(useModeStore.getState().editMode).toBe(true);
+
+    act(() => {
+      cb({ payload: { mode: "editor", edit: false } });
+    });
+    expect(useModeStore.getState().mode).toBe("editor");
+    expect(useModeStore.getState().editMode).toBe(false);
+  });
+
   it("overlay hotkey://play-pause callback flips playing state via toggle", async () => {
     (
       window as typeof window & {

@@ -176,6 +176,15 @@ describe("<TeleprompterView />", () => {
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Title");
   });
 
+  // VAL-CROSS-007: MarkdownPreview shared across both views with gp-prose class
+  it("renders MarkdownPreview with gp-prose class in viewport", () => {
+    const { container } = render(<TeleprompterView />);
+    const viewport = container.querySelector("[data-gp-viewport]");
+    expect(viewport).not.toBeNull();
+    const prose = viewport!.querySelector(".gp-prose");
+    expect(prose).not.toBeNull();
+  });
+
   it("shows the hotkey hint when not in edit mode", () => {
     render(<TeleprompterView />);
     expect(screen.getAllByText(/F6 edit/i).length).toBeGreaterThan(0);

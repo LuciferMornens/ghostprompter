@@ -172,6 +172,11 @@ describe("<EditorView />", () => {
       expect(alertSpy).toHaveBeenCalled();
     });
     expect(useModeStore.getState().mode).toBe("editor");
+    // VAL-CROSS-004: hotkeys must NOT be registered when Go Live fails
+    const registeredCalls = invokeMock.mock.calls.filter(
+      (c: string[]) => c[0] === "register_hotkeys",
+    );
+    expect(registeredCalls).toHaveLength(0);
 
     errSpy.mockRestore();
     vi.unstubAllGlobals();
