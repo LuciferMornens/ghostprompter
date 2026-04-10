@@ -118,13 +118,17 @@ export default function App() {
         if (modeRef.current !== "teleprompter") return;
         try {
           await ipc.unregisterHotkeys();
-          await ipc.exitTeleprompter();
-          setPlaying(false);
-          setEditMode(false);
-          setMode("editor");
         } catch (e) {
-          console.error(e);
+          console.error("unregister hotkeys failed (continuing exit)", e);
         }
+        try {
+          await ipc.exitTeleprompter();
+        } catch (e) {
+          console.error("exit teleprompter failed", e);
+        }
+        setPlaying(false);
+        setEditMode(false);
+        setMode("editor");
       }),
     );
 

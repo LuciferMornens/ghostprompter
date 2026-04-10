@@ -232,6 +232,57 @@ describe("<App />", () => {
     expect(useModeStore.getState().mode).toBe("editor");
   });
 
+  // VAL-CROSS-005: Exit flow resilient to unregisterHotkeys rejection
+  it("overlay hotkey://stop completes exit even when unregisterHotkeys rejects", async () => {
+    (
+      window as typeof window & {
+        __TAURI_INTERNALS__?: { metadata?: { currentWindow?: { label?: string } } };
+      }
+    ).__TAURI_INTERNALS__ = {
+      metadata: {
+        currentWindow: { label: "overlay" },
+      },
+    };
+    useSettingsStore.setState({
+      settings: { ...DEFAULT_SETTINGS },
+      loaded: true,
+      load: async () => {},
+    });
+    useModeStore.setState({
+      mode: "teleprompter",
+      editMode: true,
+      playing: true,
+      hidden: false,
+    });
+
+    await renderApp();
+    await waitFor(() => {
+      expect(capturedListeners.get("hotkey://stop")).toBeDefined();
+    });
+
+    invokeMock.mockClear();
+    invokeMock.mockImplementation((cmd: string) => {
+      if (cmd === "unregister_hotkeys") {
+        return Promise.reject(new Error("hotkey unregister failed"));
+      }
+      return Promise.resolve(undefined);
+    });
+
+    const cb = capturedListeners.get("hotkey://stop")!;
+    await act(async () => {
+      cb({ payload: undefined });
+      await new Promise((r) => setTimeout(r, 10));
+    });
+
+    const calls = invokeMock.mock.calls.map((c: string[]) => c[0]);
+    expect(calls).toContain("unregister_hotkeys");
+    expect(calls).toContain("exit_teleprompter_mode");
+
+    expect(useModeStore.getState().playing).toBe(false);
+    expect(useModeStore.getState().editMode).toBe(false);
+    expect(useModeStore.getState().mode).toBe("editor");
+  });
+
   // VAL-CROSS-006: mode-changed backend event drives App mode switching
   it("mode-changed event from backend updates mode and editMode in store", async () => {
     (
