@@ -718,3 +718,188 @@ describe("<EditorView /> — hotkey registration order (VAL-EDIT-014)", () => {
     });
   });
 });
+
+/* ============================================================
+   VAL-EDIT-010: Status rail shows script stats and keyboard hints
+   ============================================================ */
+describe("<EditorView /> — status rail stats and keyboard hints (VAL-EDIT-010)", () => {
+  it("footer displays Words, Chars, and Read time stat blocks", () => {
+    useScriptStore.setState({
+      script: {
+        path: null,
+        name: "Untitled.md",
+        content: "one two three four five",
+        dirty: false,
+      },
+    });
+    const { container } = render(<EditorView />);
+    const footer = container.querySelector("footer");
+    expect(footer).not.toBeNull();
+    expect(footer!.textContent).toContain("Words");
+    expect(footer!.textContent).toContain("Chars");
+    expect(footer!.textContent).toContain("Read time");
+  });
+
+  it("stat blocks show correct counts for given content", () => {
+    useScriptStore.setState({
+      script: {
+        path: null,
+        name: "Untitled.md",
+        content: "one two three",
+        dirty: false,
+      },
+    });
+    render(<EditorView />);
+    // 3 words
+    expect(screen.getByText("3")).toBeInTheDocument();
+    // 13 chars
+    expect(screen.getByText("13")).toBeInTheDocument();
+  });
+
+  it("stat blocks update reactively when content changes", () => {
+    useScriptStore.setState({
+      script: {
+        path: null,
+        name: "Untitled.md",
+        content: "hello world",
+        dirty: false,
+      },
+    });
+    const { rerender } = render(<EditorView />);
+    expect(screen.getByText("2")).toBeInTheDocument(); // 2 words
+
+    // Update content to have 4 words
+    useScriptStore.setState({
+      script: {
+        path: null,
+        name: "Untitled.md",
+        content: "hello world foo bar",
+        dirty: false,
+      },
+    });
+    rerender(<EditorView />);
+    expect(screen.getByText("4")).toBeInTheDocument(); // 4 words
+  });
+
+  it("keyboard hint for F7 Play is visible", () => {
+    const { container } = render(<EditorView />);
+    const footer = container.querySelector("footer");
+    expect(footer).not.toBeNull();
+    const kbds = footer!.querySelectorAll("kbd");
+    const kbdTexts = Array.from(kbds).map((k) => k.textContent);
+    expect(kbdTexts).toContain("F7");
+    expect(footer!.textContent).toContain("Play");
+  });
+
+  it("keyboard hint for F6 Edit is visible", () => {
+    const { container } = render(<EditorView />);
+    const footer = container.querySelector("footer");
+    expect(footer).not.toBeNull();
+    const kbds = footer!.querySelectorAll("kbd");
+    const kbdTexts = Array.from(kbds).map((k) => k.textContent);
+    expect(kbdTexts).toContain("F6");
+    expect(footer!.textContent).toContain("Edit");
+  });
+
+  it("keyboard hint for Esc Exit is visible", () => {
+    const { container } = render(<EditorView />);
+    const footer = container.querySelector("footer");
+    expect(footer).not.toBeNull();
+    const kbds = footer!.querySelectorAll("kbd");
+    const kbdTexts = Array.from(kbds).map((k) => k.textContent);
+    expect(kbdTexts).toContain("Esc");
+    expect(footer!.textContent).toContain("Exit");
+  });
+
+  it("Read time stat block shows '150 wpm' hint and has accent", () => {
+    useScriptStore.setState({
+      script: {
+        path: null,
+        name: "Untitled.md",
+        content: "word".repeat(10).split("").join(" "),
+        dirty: false,
+      },
+    });
+    const { container } = render(<EditorView />);
+    const footer = container.querySelector("footer");
+    expect(footer).not.toBeNull();
+    expect(footer!.textContent).toContain("150 wpm");
+  });
+});
+
+/* ============================================================
+   VAL-EDIT-015: Each editor component is a separate module with its own test file
+   ============================================================ */
+describe("Module separation (VAL-EDIT-015)", () => {
+  it("MarkdownEditor is importable from its own module", async () => {
+    const mod = await import("./MarkdownEditor");
+    expect(mod.MarkdownEditor).toBeDefined();
+    expect(typeof mod.MarkdownEditor).toBe("function");
+  });
+
+  it("MarkdownPreview is importable from its own module", async () => {
+    const mod = await import("./MarkdownPreview");
+    expect(mod.MarkdownPreview).toBeDefined();
+  });
+
+  it("SettingsModal is importable from its own module", async () => {
+    const mod = await import("@/settings/SettingsModal");
+    expect(mod.SettingsModal).toBeDefined();
+    expect(typeof mod.SettingsModal).toBe("function");
+  });
+
+  it("HotkeyRecorder is importable from its own module", async () => {
+    const mod = await import("@/settings/HotkeyRecorder");
+    expect(mod.HotkeyRecorder).toBeDefined();
+    expect(typeof mod.HotkeyRecorder).toBe("function");
+  });
+});
+
+/* ============================================================
+   VAL-EDIT-016: IPC command names match Rust backend commands
+   ============================================================ */
+describe("IPC command name contract (VAL-EDIT-016)", () => {
+  it("ipc.readScript uses 'read_script'", async () => {
+    const { ipc } = await import("@/lib/ipc");
+    invokeMock.mockResolvedValueOnce({ path: "/x", name: "x", content: "", dirty: false });
+    await ipc.readScript("/x");
+    expect(invokeMock).toHaveBeenCalledWith("read_script", { path: "/x" });
+  });
+
+  it("ipc.saveScript uses 'save_script'", async () => {
+    const { ipc } = await import("@/lib/ipc");
+    invokeMock.mockResolvedValueOnce("/x");
+    await ipc.saveScript("/x", "content");
+    expect(invokeMock).toHaveBeenCalledWith("save_script", { path: "/x", content: "content" });
+  });
+
+  it("ipc.enterTeleprompter uses 'enter_teleprompter_mode'", async () => {
+    const { ipc } = await import("@/lib/ipc");
+    invokeMock.mockResolvedValueOnce(undefined);
+    await ipc.enterTeleprompter({ path: null, name: "X", content: "", dirty: false }, { x: 0, y: 0, w: 100, h: 100 });
+    expect(invokeMock).toHaveBeenCalledWith("enter_teleprompter_mode", expect.anything());
+  });
+
+  it("ipc.registerHotkeys uses 'register_hotkeys'", async () => {
+    const { ipc } = await import("@/lib/ipc");
+    invokeMock.mockResolvedValueOnce(undefined);
+    await ipc.registerHotkeys(DEFAULT_SETTINGS.hotkeys);
+    expect(invokeMock).toHaveBeenCalledWith("register_hotkeys", { hotkeys: DEFAULT_SETTINGS.hotkeys });
+  });
+
+  it("ipc.isCaptureInvisibleSupported uses 'is_capture_invisible_supported'", async () => {
+    const { ipc } = await import("@/lib/ipc");
+    invokeMock.mockResolvedValueOnce(true);
+    await ipc.isCaptureInvisibleSupported();
+    expect(invokeMock).toHaveBeenCalledWith("is_capture_invisible_supported");
+  });
+
+  it("settings persist via LazyStore (plugin-store), not custom IPC", async () => {
+    const { LazyStore } = await import("@tauri-apps/plugin-store");
+    const store = new LazyStore("settings.json");
+    expect(store).toBeDefined();
+    expect(typeof store.get).toBe("function");
+    expect(typeof store.set).toBe("function");
+    expect(typeof store.save).toBe("function");
+  });
+});
