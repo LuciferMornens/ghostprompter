@@ -1,0 +1,11 @@
+commands:
+  install: npm install
+  typecheck: npm run typecheck
+  build: npm run build
+  test: npm test
+  test:frontend: npm run test:frontend
+  test:rust: npm run test:rust
+  lint: npm run lint
+  dev: npm run tauri:dev
+
+services: {}
