@@ -1,0 +1,216 @@
+﻿{
+    "groupId":  "viewport-hud",
+    "testedAt":  "2026-04-10T16:55:18.5813829Z",
+    "isolation":  {
+                      "repoRoot":  "D:\\coding\\somewhat",
+                      "missionDir":  "C:\\Users\\mitte\\.factory\\missions\\fe650437-0d94-4ece-8085-ac6da736d0ec",
+                      "surface":  "vitest",
+                      "mode":  "read-only validation",
+                      "appUrl":  null,
+                      "evidenceDir":  "C:\\Users\\mitte\\.factory\\missions\\fe650437-0d94-4ece-8085-ac6da736d0ec\\evidence\\overlay\\viewport-hud"
+                  },
+    "toolsUsed":  [
+                      "vitest",
+                      "static-analysis"
+                  ],
+    "assertions":  [
+                       {
+                           "id":  "VAL-TELE-001",
+                           "title":  "Viewport panel renders with correct attributes and dimensions from settings",
+                           "status":  "pass",
+                           "steps":  [
+                                         {
+                                             "action":  "Run focused TeleprompterView/ReadingLine Vitest files",
+                                             "expected":  "Viewport attribute/class and dimension tests pass",
+                                             "observed":  "Vitest passed, including TeleprompterView tests at lines 302 and 358 covering the viewport attribute/class and 0,0 + width/height behavior."
+                                         },
+                                         {
+                                             "action":  "Review TeleprompterView viewport source",
+                                             "expected":  "Viewport DOM stays at (0,0) and applies rect width/height from settings",
+                                             "observed":  "TeleprompterView.tsx lines 538 and 543-546 render data-gp-viewport with class gp-vp and inline left/top 0 plus width rect.w and height rect.h."
+                                         }
+                                     ],
+                           "evidence":  {
+                                            "command":  "npm exec -- vitest run --reporter=verbose \"src/teleprompter/TeleprompterView.test.tsx\" \"src/teleprompter/ReadingLine.test.tsx\"",
+                                            "logs":  [
+                                                         "overlay/viewport-hud/vitest-viewport-hud.txt"
+                                                     ],
+                                            "notes":  [
+                                                          "overlay/viewport-hud/assertion-map.md"
+                                                      ],
+                                            "tests":  [
+                                                          "src/teleprompter/TeleprompterView.test.tsx:302",
+                                                          "src/teleprompter/TeleprompterView.test.tsx:358"
+                                                      ],
+                                            "sourceRefs":  [
+                                                               "src/teleprompter/TeleprompterView.tsx:538",
+                                                               "src/teleprompter/TeleprompterView.tsx:543-546"
+                                                           ]
+                                        },
+                           "issues":  null
+                       },
+                       {
+                           "id":  "VAL-TELE-002",
+                           "title":  "Viewport snaps to persisted overlay rect on mount",
+                           "status":  "pass",
+                           "steps":  [
+                                         {
+                                             "action":  "Run focused TeleprompterView/ReadingLine Vitest files",
+                                             "expected":  "Persisted rect mount test and null-overlay default-rect test pass",
+                                             "observed":  "Vitest passed TeleprompterView tests at lines 397 and 419, covering both persisted rect IPC sync and the null overlay default-rect mount path."
+                                         },
+                                         {
+                                             "action":  "Review mount initialization source",
+                                             "expected":  "Mount should call set_overlay_rect(target) and persist computed defaults when overlayX/Y are null",
+                                             "observed":  "TeleprompterView.tsx lines 193-199 call ipc.setOverlayRect(target) and update overlayX/Y/Width/Height for first-run defaults sourced from viewportMath.ts lines 163-171."
+                                         }
+                                     ],
+                           "evidence":  {
+                                            "command":  "npm exec -- vitest run --reporter=verbose \"src/teleprompter/TeleprompterView.test.tsx\" \"src/teleprompter/ReadingLine.test.tsx\"",
+                                            "logs":  [
+                                                         "overlay/viewport-hud/vitest-viewport-hud.txt"
+                                                     ],
+                                            "notes":  [
+                                                          "overlay/viewport-hud/assertion-map.md"
+                                                      ],
+                                            "tests":  [
+                                                          "src/teleprompter/TeleprompterView.test.tsx:397",
+                                                          "src/teleprompter/TeleprompterView.test.tsx:419"
+                                                      ],
+                                            "sourceRefs":  [
+                                                               "src/teleprompter/TeleprompterView.tsx:193-199",
+                                                               "src/teleprompter/viewportMath.ts:163-171"
+                                                           ]
+                                        },
+                           "issues":  null
+                       },
+                       {
+                           "id":  "VAL-TELE-003",
+                           "title":  "ReadingLine renders at correct offset and only when enabled",
+                           "status":  "pass",
+                           "steps":  [
+                                         {
+                                             "action":  "Run focused TeleprompterView/ReadingLine Vitest files",
+                                             "expected":  "ReadingLine offset/accessibility tests and TeleprompterView visibility/in-viewport tests pass",
+                                             "observed":  "Vitest passed ReadingLine tests at lines 6, 12, and 36 plus TeleprompterView tests at lines 280 and 435 for visibility gating and viewport scoping."
+                                         },
+                                         {
+                                             "action":  "Review ReadingLine and TeleprompterView source",
+                                             "expected":  "ReadingLine should set top from offset, remain aria-hidden, and render only when highlightReadingLine is enabled",
+                                             "observed":  "ReadingLine.tsx lines 8-10 set class gp-reading-line, top `${offset * 100}%`, and aria-hidden; TeleprompterView.tsx lines 591-592 gate the component on settings.highlightReadingLine."
+                                         }
+                                     ],
+                           "evidence":  {
+                                            "command":  "npm exec -- vitest run --reporter=verbose \"src/teleprompter/TeleprompterView.test.tsx\" \"src/teleprompter/ReadingLine.test.tsx\"",
+                                            "logs":  [
+                                                         "overlay/viewport-hud/vitest-viewport-hud.txt"
+                                                     ],
+                                            "notes":  [
+                                                          "overlay/viewport-hud/assertion-map.md"
+                                                      ],
+                                            "tests":  [
+                                                          "src/teleprompter/ReadingLine.test.tsx:6",
+                                                          "src/teleprompter/ReadingLine.test.tsx:12",
+                                                          "src/teleprompter/ReadingLine.test.tsx:36",
+                                                          "src/teleprompter/TeleprompterView.test.tsx:280",
+                                                          "src/teleprompter/TeleprompterView.test.tsx:435"
+                                                      ],
+                                            "sourceRefs":  [
+                                                               "src/teleprompter/ReadingLine.tsx:8-10",
+                                                               "src/teleprompter/TeleprompterView.tsx:591-592"
+                                                           ]
+                                        },
+                           "issues":  null
+                       },
+                       {
+                           "id":  "VAL-TELE-004",
+                           "title":  "HUD shows Rolling/Standby based on playing state",
+                           "status":  "pass",
+                           "steps":  [
+                                         {
+                                             "action":  "Run focused TeleprompterView/ReadingLine Vitest files",
+                                             "expected":  "HUD state, speed, and script-name tests pass",
+                                             "observed":  "Vitest passed TeleprompterView tests at lines 309, 318, 327, and 337 covering Rolling/Standby, RecDot state, speed unit, and script name display."
+                                         },
+                                         {
+                                             "action":  "Review HUD source",
+                                             "expected":  "HUD should render playing state text plus speed and script name",
+                                             "observed":  "TeleprompterView.tsx line 615 renders `Rolling`/`Standby`, line 679 and 791 render the `px/s` readout, and the left HUD block renders the current script name."
+                                         }
+                                     ],
+                           "evidence":  {
+                                            "command":  "npm exec -- vitest run --reporter=verbose \"src/teleprompter/TeleprompterView.test.tsx\" \"src/teleprompter/ReadingLine.test.tsx\"",
+                                            "logs":  [
+                                                         "overlay/viewport-hud/vitest-viewport-hud.txt"
+                                                     ],
+                                            "notes":  [
+                                                          "overlay/viewport-hud/assertion-map.md"
+                                                      ],
+                                            "tests":  [
+                                                          "src/teleprompter/TeleprompterView.test.tsx:309",
+                                                          "src/teleprompter/TeleprompterView.test.tsx:318",
+                                                          "src/teleprompter/TeleprompterView.test.tsx:327",
+                                                          "src/teleprompter/TeleprompterView.test.tsx:337"
+                                                      ],
+                                            "sourceRefs":  [
+                                                               "src/teleprompter/TeleprompterView.tsx:615",
+                                                               "src/teleprompter/TeleprompterView.tsx:679",
+                                                               "src/teleprompter/TeleprompterView.tsx:791"
+                                                           ]
+                                        },
+                           "issues":  null
+                       },
+                       {
+                           "id":  "VAL-TELE-005",
+                           "title":  "HUD and controls hidden when hidden=true with opacity 0",
+                           "status":  "pass",
+                           "steps":  [
+                                         {
+                                             "action":  "Run focused TeleprompterView/ReadingLine Vitest files",
+                                             "expected":  "Hidden-mode opacity and HUD suppression tests pass",
+                                             "observed":  "Vitest passed TeleprompterView tests at lines 274 and 350, confirming opacity 0 and no gp-vp-hud nodes when hidden=true."
+                                         },
+                                         {
+                                             "action":  "Review hidden-mode source",
+                                             "expected":  "Root opacity should drop to 0 and HUD rendering should be skipped in hidden mode",
+                                             "observed":  "TeleprompterView.tsx line 516 sets opacity to hidden ? 0 : 1, and the HUD blocks are wrapped in a !hidden conditional."
+                                         }
+                                     ],
+                           "evidence":  {
+                                            "command":  "npm exec -- vitest run --reporter=verbose \"src/teleprompter/TeleprompterView.test.tsx\" \"src/teleprompter/ReadingLine.test.tsx\"",
+                                            "logs":  [
+                                                         "overlay/viewport-hud/vitest-viewport-hud.txt"
+                                                     ],
+                                            "notes":  [
+                                                          "overlay/viewport-hud/assertion-map.md"
+                                                      ],
+                                            "tests":  [
+                                                          "src/teleprompter/TeleprompterView.test.tsx:274",
+                                                          "src/teleprompter/TeleprompterView.test.tsx:350"
+                                                      ],
+                                            "sourceRefs":  [
+                                                               "src/teleprompter/TeleprompterView.tsx:516"
+                                                           ]
+                                        },
+                           "issues":  null
+                       }
+                   ],
+    "frictions":  [
+                      {
+                          "description":  "The focused TeleprompterView Vitest file emits repeated React act(...) warnings on stderr during unrelated tests, but the targeted command still exits 0 and all assigned assertion tests pass.",
+                          "resolved":  true,
+                          "resolution":  "Recorded the stderr warnings in the raw log and relied on the passing focused assertion tests plus source inspection for validation.",
+                          "affectedAssertions":  [
+                                                     "VAL-TELE-001",
+                                                     "VAL-TELE-002",
+                                                     "VAL-TELE-003",
+                                                     "VAL-TELE-004",
+                                                     "VAL-TELE-005"
+                                                 ]
+                      }
+                  ],
+    "blockers":  [
+
+                 ],
+    "summary":  "Tested 5 overlay viewport/HUD assertions with focused Vitest and static source review: 5 passed, 0 failed, 0 blocked."
+}

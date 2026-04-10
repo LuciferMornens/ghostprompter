@@ -1,0 +1,293 @@
+﻿{
+    "groupId":  "logic-sync",
+    "testedAt":  "2026-04-10T19:04:53.7586206+02:00",
+    "isolation":  {
+                      "repoRoot":  "D:\\coding\\somewhat",
+                      "missionDir":  "C:\\Users\\mitte\\.factory\\missions\\fe650437-0d94-4ece-8085-ac6da736d0ec",
+                      "mode":  "read-only validation",
+                      "surface":  "vitest/static-analysis",
+                      "assignedAssertions":  [
+                                                 "VAL-TELE-016",
+                                                 "VAL-TELE-017",
+                                                 "VAL-TELE-018",
+                                                 "VAL-TELE-019",
+                                                 "VAL-TELE-020",
+                                                 "VAL-TELE-021",
+                                                 "VAL-TELE-022"
+                                             ]
+                  },
+    "toolsUsed":  [
+                      "Read",
+                      "Grep",
+                      "Glob",
+                      "vitest",
+                      "tsc"
+                  ],
+    "assertions":  [
+                       {
+                           "id":  "VAL-TELE-016",
+                           "title":  "Auto-scroll advances by speed × dt when playing",
+                           "status":  "pass",
+                           "steps":  [
+                                         {
+                                             "action":  "Inspect useAutoScroll implementation",
+                                             "expected":  "Hook uses requestAnimationFrame, accumulates sub-pixel scroll, and cancels on cleanup",
+                                             "observed":  "src/teleprompter/useAutoScroll.ts lines 14-44 keep logicalScrollTop, schedule requestAnimationFrame, stop near maxScrollTop, and return cancelAnimationFrame cleanup."
+                                         },
+                                         {
+                                             "action":  "Run focused teleprompter Vitest files",
+                                             "expected":  "useAutoScroll tests prove paused/no-rAF, 1s@60≈60px, sub-pixel accumulation, and unmount cleanup",
+                                             "observed":  "overlay-logic-sync vitest run passed; useAutoScroll.test.ts cases at lines 76, 88, 108, and 148 all passed."
+                                         }
+                                     ],
+                           "evidence":  {
+                                            "commands":  [
+                                                             "\u0026 \"D:\\coding\\somewhat\\node_modules\\.bin\\vitest.cmd\" --config \"D:\\coding\\somewhat\\vitest.config.ts\" run \"D:\\coding\\somewhat\\src\\teleprompter\\TeleprompterView.test.tsx\" \"D:\\coding\\somewhat\\src\\teleprompter\\ReadingLine.test.tsx\" \"D:\\coding\\somewhat\\src\\teleprompter\\useAutoScroll.test.ts\" \"D:\\coding\\somewhat\\src\\teleprompter\\viewportMath.test.ts\" --reporter=verbose"
+                                                         ],
+                                            "commandLogs":  [
+                                                                "C:/Users/mitte/.factory/missions/fe650437-0d94-4ece-8085-ac6da736d0ec/evidence/overlay/logic-sync/overlay-logic-sync-vitest.txt"
+                                                            ],
+                                            "sourceFiles":  [
+                                                                "D:/coding/somewhat/src/teleprompter/useAutoScroll.ts",
+                                                                "D:/coding/somewhat/src/teleprompter/useAutoScroll.test.ts"
+                                                            ],
+                                            "sourceRefs":  [
+                                                               "useAutoScroll.ts:14-44",
+                                                               "useAutoScroll.test.ts:76,88,108,148"
+                                                           ]
+                                        },
+                           "issues":  null
+                       },
+                       {
+                           "id":  "VAL-TELE-017",
+                           "title":  "Auto-scroll stops at bottom boundary and fires onStop",
+                           "status":  "pass",
+                           "steps":  [
+                                         {
+                                             "action":  "Inspect bottom-boundary logic",
+                                             "expected":  "Hook stops when scroll reaches scrollHeight - clientHeight - 1 and invokes onStop once",
+                                             "observed":  "useAutoScroll.ts line 33 checks nextScrollTop \u003e= maxScrollTop - 1, gates onStop with a stopped flag, and returns without scheduling another frame."
+                                         },
+                                         {
+                                             "action":  "Run focused teleprompter Vitest files",
+                                             "expected":  "Tests verify rAF stops and onStop fires exactly once",
+                                             "observed":  "useAutoScroll.test.ts cases at lines 119 and 134 passed in the focused vitest run."
+                                         }
+                                     ],
+                           "evidence":  {
+                                            "commands":  [
+                                                             "\u0026 \"D:\\coding\\somewhat\\node_modules\\.bin\\vitest.cmd\" --config \"D:\\coding\\somewhat\\vitest.config.ts\" run \"D:\\coding\\somewhat\\src\\teleprompter\\TeleprompterView.test.tsx\" \"D:\\coding\\somewhat\\src\\teleprompter\\ReadingLine.test.tsx\" \"D:\\coding\\somewhat\\src\\teleprompter\\useAutoScroll.test.ts\" \"D:\\coding\\somewhat\\src\\teleprompter\\viewportMath.test.ts\" --reporter=verbose"
+                                                         ],
+                                            "commandLogs":  [
+                                                                "C:/Users/mitte/.factory/missions/fe650437-0d94-4ece-8085-ac6da736d0ec/evidence/overlay/logic-sync/overlay-logic-sync-vitest.txt"
+                                                            ],
+                                            "sourceFiles":  [
+                                                                "D:/coding/somewhat/src/teleprompter/useAutoScroll.ts",
+                                                                "D:/coding/somewhat/src/teleprompter/useAutoScroll.test.ts"
+                                                            ],
+                                            "sourceRefs":  [
+                                                               "useAutoScroll.ts:33-38",
+                                                               "useAutoScroll.test.ts:119,134"
+                                                           ]
+                                        },
+                           "issues":  null
+                       },
+                       {
+                           "id":  "VAL-TELE-018",
+                           "title":  "clampRect enforces min size, max screen bounds, non-negative coords",
+                           "status":  "pass",
+                           "steps":  [
+                                         {
+                                             "action":  "Inspect viewport math helpers",
+                                             "expected":  "MIN_SIZE is 260×160 and clampRect clamps size/position within screen bounds",
+                                             "observed":  "viewportMath.ts exports MIN_SIZE at line 26 and clampRect at lines 33-44 with min-size, max-screen, and non-negative coordinate enforcement."
+                                         },
+                                         {
+                                             "action":  "Run focused teleprompter Vitest files",
+                                             "expected":  "Unit tests cover negative coords, minimum size, and oversized rects",
+                                             "observed":  "viewportMath.test.ts cases at lines 30, 36, and 42 passed in the focused vitest run."
+                                         }
+                                     ],
+                           "evidence":  {
+                                            "commands":  [
+                                                             "\u0026 \"D:\\coding\\somewhat\\node_modules\\.bin\\vitest.cmd\" --config \"D:\\coding\\somewhat\\vitest.config.ts\" run \"D:\\coding\\somewhat\\src\\teleprompter\\TeleprompterView.test.tsx\" \"D:\\coding\\somewhat\\src\\teleprompter\\ReadingLine.test.tsx\" \"D:\\coding\\somewhat\\src\\teleprompter\\useAutoScroll.test.ts\" \"D:\\coding\\somewhat\\src\\teleprompter\\viewportMath.test.ts\" --reporter=verbose"
+                                                         ],
+                                            "commandLogs":  [
+                                                                "C:/Users/mitte/.factory/missions/fe650437-0d94-4ece-8085-ac6da736d0ec/evidence/overlay/logic-sync/overlay-logic-sync-vitest.txt"
+                                                            ],
+                                            "sourceFiles":  [
+                                                                "D:/coding/somewhat/src/teleprompter/viewportMath.ts",
+                                                                "D:/coding/somewhat/src/teleprompter/viewportMath.test.ts"
+                                                            ],
+                                            "sourceRefs":  [
+                                                               "viewportMath.ts:26,33-44",
+                                                               "viewportMath.test.ts:30,36,42"
+                                                           ]
+                                        },
+                           "issues":  null
+                       },
+                       {
+                           "id":  "VAL-TELE-019",
+                           "title":  "presetRect computes correct positions for all snap presets",
+                           "status":  "pass",
+                           "steps":  [
+                                         {
+                                             "action":  "Inspect presetRect/defaultRect implementations",
+                                             "expected":  "Preset helpers position full, top-right, centered, strip, and default rects within screen bounds",
+                                             "observed":  "viewportMath.ts exports presetRect at lines 53-156 and defaultRect at lines 163-171, including full-screen, edge/corner, centered, strip, and default right-half placement logic."
+                                         },
+                                         {
+                                             "action":  "Run focused teleprompter Vitest files",
+                                             "expected":  "Unit tests prove full, tr, mc, top-strip, and defaultRect geometry",
+                                             "observed":  "viewportMath.test.ts cases at lines 50, 55, 75, 83, 114, and 133 passed in the focused vitest run."
+                                         }
+                                     ],
+                           "evidence":  {
+                                            "commands":  [
+                                                             "\u0026 \"D:\\coding\\somewhat\\node_modules\\.bin\\vitest.cmd\" --config \"D:\\coding\\somewhat\\vitest.config.ts\" run \"D:\\coding\\somewhat\\src\\teleprompter\\TeleprompterView.test.tsx\" \"D:\\coding\\somewhat\\src\\teleprompter\\ReadingLine.test.tsx\" \"D:\\coding\\somewhat\\src\\teleprompter\\useAutoScroll.test.ts\" \"D:\\coding\\somewhat\\src\\teleprompter\\viewportMath.test.ts\" --reporter=verbose"
+                                                         ],
+                                            "commandLogs":  [
+                                                                "C:/Users/mitte/.factory/missions/fe650437-0d94-4ece-8085-ac6da736d0ec/evidence/overlay/logic-sync/overlay-logic-sync-vitest.txt"
+                                                            ],
+                                            "sourceFiles":  [
+                                                                "D:/coding/somewhat/src/teleprompter/viewportMath.ts",
+                                                                "D:/coding/somewhat/src/teleprompter/viewportMath.test.ts"
+                                                            ],
+                                            "sourceRefs":  [
+                                                               "viewportMath.ts:53-171",
+                                                               "viewportMath.test.ts:50,55,75,83,114,133"
+                                                           ]
+                                        },
+                           "issues":  null
+                       },
+                       {
+                           "id":  "VAL-TELE-020",
+                           "title":  "Hotkey events subscribed and cleaned up on unmount",
+                           "status":  "pass",
+                           "steps":  [
+                                         {
+                                             "action":  "Inspect TeleprompterView hotkey subscriptions",
+                                             "expected":  "Component subscribes to line-up, line-down, jump-start, jump-end and unregisters listeners on cleanup",
+                                             "observed":  "TeleprompterView.tsx lines 466-469 register the four hotkeys and the effect cleanup unregisters them."
+                                         },
+                                         {
+                                             "action":  "Run focused teleprompter Vitest files",
+                                             "expected":  "Tests verify subscriptions exist, line-up/jump-end behaviors work, and unmount removes all listeners",
+                                             "observed":  "TeleprompterView.test.tsx VAL-TELE-020 suite at lines 1485-1562 passed in the focused vitest run."
+                                         }
+                                     ],
+                           "evidence":  {
+                                            "commands":  [
+                                                             "\u0026 \"D:\\coding\\somewhat\\node_modules\\.bin\\vitest.cmd\" --config \"D:\\coding\\somewhat\\vitest.config.ts\" run \"D:\\coding\\somewhat\\src\\teleprompter\\TeleprompterView.test.tsx\" \"D:\\coding\\somewhat\\src\\teleprompter\\ReadingLine.test.tsx\" \"D:\\coding\\somewhat\\src\\teleprompter\\useAutoScroll.test.ts\" \"D:\\coding\\somewhat\\src\\teleprompter\\viewportMath.test.ts\" --reporter=verbose"
+                                                         ],
+                                            "commandLogs":  [
+                                                                "C:/Users/mitte/.factory/missions/fe650437-0d94-4ece-8085-ac6da736d0ec/evidence/overlay/logic-sync/overlay-logic-sync-vitest.txt"
+                                                            ],
+                                            "sourceFiles":  [
+                                                                "D:/coding/somewhat/src/teleprompter/TeleprompterView.tsx",
+                                                                "D:/coding/somewhat/src/teleprompter/TeleprompterView.test.tsx"
+                                                            ],
+                                            "sourceRefs":  [
+                                                               "TeleprompterView.tsx:466-469",
+                                                               "TeleprompterView.test.tsx:1485-1562"
+                                                           ]
+                                        },
+                           "issues":  null
+                       },
+                       {
+                           "id":  "VAL-TELE-021",
+                           "title":  "Native move/resize events sync position to settings store with coalescing",
+                           "status":  "pass",
+                           "steps":  [
+                                         {
+                                             "action":  "Inspect native sync/coalescing logic",
+                                             "expected":  "Move/resize listeners feed scheduleNativeRect, which batches viewport updates and persists one trailing settings write",
+                                             "observed":  "TeleprompterView.tsx lines 256-306 coalesce rect patches with requestAnimationFrame plus a 180ms persist timer, while lines 340-350 wire onMoved/onResized into scheduleNativeRect."
+                                         },
+                                         {
+                                             "action":  "Run focused teleprompter Vitest files",
+                                             "expected":  "Tests verify moved/resized settings sync and single-write coalescing on burst events",
+                                             "observed":  "TeleprompterView.test.tsx VAL-TELE-021 suite at lines 1570-1660 passed in the focused vitest run."
+                                         }
+                                     ],
+                           "evidence":  {
+                                            "commands":  [
+                                                             "\u0026 \"D:\\coding\\somewhat\\node_modules\\.bin\\vitest.cmd\" --config \"D:\\coding\\somewhat\\vitest.config.ts\" run \"D:\\coding\\somewhat\\src\\teleprompter\\TeleprompterView.test.tsx\" \"D:\\coding\\somewhat\\src\\teleprompter\\ReadingLine.test.tsx\" \"D:\\coding\\somewhat\\src\\teleprompter\\useAutoScroll.test.ts\" \"D:\\coding\\somewhat\\src\\teleprompter\\viewportMath.test.ts\" --reporter=verbose"
+                                                         ],
+                                            "commandLogs":  [
+                                                                "C:/Users/mitte/.factory/missions/fe650437-0d94-4ece-8085-ac6da736d0ec/evidence/overlay/logic-sync/overlay-logic-sync-vitest.txt"
+                                                            ],
+                                            "sourceFiles":  [
+                                                                "D:/coding/somewhat/src/teleprompter/TeleprompterView.tsx",
+                                                                "D:/coding/somewhat/src/teleprompter/TeleprompterView.test.tsx"
+                                                            ],
+                                            "sourceRefs":  [
+                                                               "TeleprompterView.tsx:256-306,340-350",
+                                                               "TeleprompterView.test.tsx:1570-1660"
+                                                           ]
+                                        },
+                           "issues":  null
+                       },
+                       {
+                           "id":  "VAL-TELE-022",
+                           "title":  "All teleprompter test files exist and pass",
+                           "status":  "pass",
+                           "steps":  [
+                                         {
+                                             "action":  "Confirm teleprompter test file inventory",
+                                             "expected":  "ReadingLine, TeleprompterView, useAutoScroll, and viewportMath test files all exist",
+                                             "observed":  "Repo glob found src/teleprompter/ReadingLine.test.tsx, TeleprompterView.test.tsx, useAutoScroll.test.ts, and viewportMath.test.ts."
+                                         },
+                                         {
+                                             "action":  "Run focused teleprompter Vitest files",
+                                             "expected":  "All four teleprompter test files pass",
+                                             "observed":  "Focused vitest run reported 4 passed test files and 128 passed tests."
+                                         },
+                                         {
+                                             "action":  "Run focused teleprompter typecheck",
+                                             "expected":  "Teleprompter source files typecheck clean",
+                                             "observed":  "Focused teleprompter typecheck passed using tsconfig.teleprompter.validation.json."
+                                         }
+                                     ],
+                           "evidence":  {
+                                            "commands":  [
+                                                             "\u0026 \"D:\\coding\\somewhat\\node_modules\\.bin\\vitest.cmd\" --config \"D:\\coding\\somewhat\\vitest.config.ts\" run \"D:\\coding\\somewhat\\src\\teleprompter\\TeleprompterView.test.tsx\" \"D:\\coding\\somewhat\\src\\teleprompter\\ReadingLine.test.tsx\" \"D:\\coding\\somewhat\\src\\teleprompter\\useAutoScroll.test.ts\" \"D:\\coding\\somewhat\\src\\teleprompter\\viewportMath.test.ts\" --reporter=verbose",
+                                                             "\u0026 \"D:\\coding\\somewhat\\node_modules\\.bin\\tsc.cmd\" -p \"C:\\Users\\mitte\\.factory\\missions\\fe650437-0d94-4ece-8085-ac6da736d0ec\\evidence\\overlay\\logic-sync\\tsconfig.teleprompter.validation.json\" --pretty false"
+                                                         ],
+                                            "commandLogs":  [
+                                                                "C:/Users/mitte/.factory/missions/fe650437-0d94-4ece-8085-ac6da736d0ec/evidence/overlay/logic-sync/overlay-logic-sync-vitest.txt",
+                                                                "C:/Users/mitte/.factory/missions/fe650437-0d94-4ece-8085-ac6da736d0ec/evidence/overlay/logic-sync/overlay-logic-sync-typecheck.txt"
+                                                            ],
+                                            "sourceFiles":  [
+                                                                "D:/coding/somewhat/src/teleprompter/ReadingLine.test.tsx",
+                                                                "D:/coding/somewhat/src/teleprompter/TeleprompterView.test.tsx",
+                                                                "D:/coding/somewhat/src/teleprompter/useAutoScroll.test.ts",
+                                                                "D:/coding/somewhat/src/teleprompter/viewportMath.test.ts",
+                                                                "C:/Users/mitte/.factory/missions/fe650437-0d94-4ece-8085-ac6da736d0ec/evidence/overlay/logic-sync/tsconfig.teleprompter.validation.json"
+                                                            ],
+                                            "sourceRefs":  [
+                                                               "teleprompter test inventory via glob",
+                                                               "focused vitest summary: 4 files / 128 tests",
+                                                               "focused typecheck: teleprompter source files only"
+                                                           ]
+                                        },
+                           "issues":  null
+                       }
+                   ],
+    "frictions":  [
+                      {
+                          "description":  "TeleprompterView.test.tsx emits React act(...) warnings on stderr during the focused vitest run. The warnings did not fail vitest, but they caused a PowerShell Tee-Object attempt to surface a NativeCommandError while capturing logs.",
+                          "resolved":  true,
+                          "resolution":  "Used the direct vitest exit-code-0 run as the authoritative result and kept the earlier captured log file as supplemental evidence.",
+                          "affectedAssertions":  [
+                                                     "VAL-TELE-020",
+                                                     "VAL-TELE-021",
+                                                     "VAL-TELE-022"
+                                                 ]
+                      }
+                  ],
+    "blockers":  [
+
+                 ],
+    "summary":  "Tested 7 assertions for overlay logic sync: all 7 passed. Focused vitest covered 4 teleprompter test files (128 tests), and a focused teleprompter-only typecheck also passed."
+}

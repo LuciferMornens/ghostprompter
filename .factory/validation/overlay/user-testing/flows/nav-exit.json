@@ -1,0 +1,176 @@
+{
+  "groupId": "nav-exit",
+  "testedAt": "2026-04-10T19:02:07.3257327+02:00",
+  "isolation": {
+    "repoRoot": "D:\\coding\\somewhat",
+    "missionDir": "C:\\Users\\mitte\\.factory\\missions\\fe650437-0d94-4ece-8085-ac6da736d0ec",
+    "surface": "vitest/static-analysis",
+    "readOnlyValidation": true
+  },
+  "toolsUsed": [
+    "Read",
+    "Grep",
+    "Glob",
+    "Vitest"
+  ],
+  "commandsRun": [
+    "powershell -NoProfile -Command \"& 'D:\\coding\\somewhat\\node_modules\\.bin\\vitest.cmd' run 'D:\\coding\\somewhat\\src\\teleprompter\\TeleprompterView.test.tsx' --testNamePattern 'VAL-TELE-012'\"",
+    "powershell -NoProfile -Command \"& 'D:\\coding\\somewhat\\node_modules\\.bin\\vitest.cmd' run 'D:\\coding\\somewhat\\src\\teleprompter\\TeleprompterView.test.tsx' --testNamePattern 'VAL-TELE-013'\"",
+    "powershell -NoProfile -Command \"& 'D:\\coding\\somewhat\\node_modules\\.bin\\vitest.cmd' run 'D:\\coding\\somewhat\\src\\teleprompter\\TeleprompterView.test.tsx' --testNamePattern 'VAL-TELE-014'\"",
+    "powershell -NoProfile -Command \"& 'D:\\coding\\somewhat\\node_modules\\.bin\\vitest.cmd' run 'D:\\coding\\somewhat\\src\\teleprompter\\TeleprompterView.test.tsx' --testNamePattern 'VAL-TELE-015'\""
+  ],
+  "assertions": [
+    {
+      "id": "VAL-TELE-012",
+      "title": "Line up/down scrolls content and pauses playback",
+      "status": "pass",
+      "steps": [
+        {
+          "action": "Locate the targeted tests and implementation for line navigation.",
+          "expected": "There is focused coverage for line up/down scroll delta, playback pause, arrow-key edit-mode gating, and editable-target guards.",
+          "observed": "TeleprompterView.test.tsx contains a dedicated VAL-TELE-012 block and TeleprompterView.tsx implements jumpLines plus keyboard guards."
+        },
+        {
+          "action": "Run the focused Vitest subset for VAL-TELE-012.",
+          "expected": "The assertion-specific tests pass.",
+          "observed": "Vitest exited 0 with 7 passed tests and 81 skipped in src/teleprompter/TeleprompterView.test.tsx."
+        },
+        {
+          "action": "Review the test expectations against the implementation.",
+          "expected": "Line down/up changes scrollTop by fontSize × lineHeight × 1.5, pauses playback, and arrow keys only work in edit mode while ignoring editable targets.",
+          "observed": "The test block and implementation both match the contract behavior."
+        }
+      ],
+      "evidence": {
+        "commandEvidence": [
+          "overlay/nav-exit/VAL-TELE-012-vitest.txt"
+        ],
+        "sourceRefs": [
+          "src/teleprompter/TeleprompterView.test.tsx:1165-1316",
+          "src/teleprompter/TeleprompterView.tsx:422-468"
+        ]
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-TELE-013",
+      "title": "Exit button unregisters hotkeys, exits mode, resets state",
+      "status": "pass",
+      "steps": [
+        {
+          "action": "Locate the targeted tests and implementation for exit flow.",
+          "expected": "There is focused coverage for IPC call ordering, state reset, and unregister failure resilience.",
+          "observed": "TeleprompterView.test.tsx contains a dedicated VAL-TELE-013 block and TeleprompterView.tsx implements onExit with unregister, exit, and state reset."
+        },
+        {
+          "action": "Run the focused Vitest subset for VAL-TELE-013.",
+          "expected": "The assertion-specific tests pass.",
+          "observed": "Vitest exited 0 with 3 passed tests and 85 skipped in src/teleprompter/TeleprompterView.test.tsx."
+        },
+        {
+          "action": "Review the test expectations against the implementation.",
+          "expected": "Exit should call unregister_hotkeys before exit_teleprompter_mode and end with playing=false, editMode=false, mode='editor'.",
+          "observed": "The tests verify order and final state, and the implementation matches that behavior."
+        }
+      ],
+      "evidence": {
+        "commandEvidence": [
+          "overlay/nav-exit/VAL-TELE-013-vitest.txt"
+        ],
+        "sourceRefs": [
+          "src/teleprompter/TeleprompterView.test.tsx:1318-1377",
+          "src/teleprompter/TeleprompterView.tsx:475-483"
+        ]
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-TELE-014",
+      "title": "Drag handle calls startDragging in edit mode only",
+      "status": "pass",
+      "steps": [
+        {
+          "action": "Locate the targeted tests and implementation for the drag handle.",
+          "expected": "There is focused coverage for pointerdown behavior, accessibility attributes, and edit-mode-only rendering.",
+          "observed": "TeleprompterView.test.tsx contains a dedicated VAL-TELE-014 block and TeleprompterView.tsx renders the drag handle with the required attributes and pointer handler."
+        },
+        {
+          "action": "Run the focused Vitest subset for VAL-TELE-014.",
+          "expected": "The assertion-specific tests pass.",
+          "observed": "Vitest exited 0 with 4 passed tests and 84 skipped in src/teleprompter/TeleprompterView.test.tsx."
+        },
+        {
+          "action": "Review the test expectations against the implementation.",
+          "expected": "Pointerdown should call startDragging only in edit mode, with aria-label='Drag to move', role='button', and tabIndex=-1.",
+          "observed": "The tests and source both match the contract behavior."
+        }
+      ],
+      "evidence": {
+        "commandEvidence": [
+          "overlay/nav-exit/VAL-TELE-014-vitest.txt"
+        ],
+        "sourceRefs": [
+          "src/teleprompter/TeleprompterView.test.tsx:1379-1413",
+          "src/teleprompter/TeleprompterView.tsx:366-371",
+          "src/teleprompter/TeleprompterView.tsx:691-699"
+        ]
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-TELE-015",
+      "title": "All 8 resize handles present in edit mode with correct directions",
+      "status": "pass",
+      "steps": [
+        {
+          "action": "Locate the targeted tests and implementation for resize handles.",
+          "expected": "There is focused coverage for all eight handles, direction mapping, the southeast grip label, and absence outside edit mode.",
+          "observed": "TeleprompterView.test.tsx contains a dedicated VAL-TELE-015 block and TeleprompterView.tsx renders the edge/corner handles with the expected direction handlers."
+        },
+        {
+          "action": "Run the focused Vitest subset for VAL-TELE-015.",
+          "expected": "The assertion-specific tests pass.",
+          "observed": "Vitest exited 0 with 4 passed tests and 84 skipped in src/teleprompter/TeleprompterView.test.tsx."
+        },
+        {
+          "action": "Review the test expectations against the implementation.",
+          "expected": "The four edge and four corner handles should exist only in edit mode, call startResizeDragging with correct directions, and expose aria-label='Resize' on the southeast grip.",
+          "observed": "The tests and source both match the contract behavior."
+        }
+      ],
+      "evidence": {
+        "commandEvidence": [
+          "overlay/nav-exit/VAL-TELE-015-vitest.txt"
+        ],
+        "sourceRefs": [
+          "src/teleprompter/TeleprompterView.test.tsx:1414-1478",
+          "src/teleprompter/TeleprompterView.tsx:373-383",
+          "src/teleprompter/TeleprompterView.tsx:711-749"
+        ]
+      },
+      "issues": null
+    }
+  ],
+  "frictions": [
+    {
+      "description": "Focused TeleprompterView Vitest runs emit repeated React act(...) warnings on stderr while still exiting successfully.",
+      "resolved": true,
+      "resolution": "Treated as non-blocking test-noise because each targeted command exited 0 and the assertion-specific expectations passed.",
+      "affectedAssertions": [
+        "VAL-TELE-012",
+        "VAL-TELE-014",
+        "VAL-TELE-015"
+      ]
+    },
+    {
+      "description": "The VAL-TELE-013 resilience test intentionally logs `unregister hotkeys failed (continuing exit)` to stderr when the mock rejects.",
+      "resolved": true,
+      "resolution": "Confirmed it is expected test evidence for the rejection-handling path; the focused run still passed.",
+      "affectedAssertions": [
+        "VAL-TELE-013"
+      ]
+    }
+  ],
+  "blockers": [],
+  "summary": "Validated 4 overlay navigation/exit assertions with focused Vitest subsets and static source reads. VAL-TELE-012, VAL-TELE-013, VAL-TELE-014, and VAL-TELE-015 all passed."
+}

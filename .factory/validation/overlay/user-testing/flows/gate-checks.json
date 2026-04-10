@@ -1,0 +1,211 @@
+{
+  "groupId": "gate-checks",
+  "testedAt": "2026-04-10T19:14:47.0879266+02:00",
+  "isolation": {
+    "repoRoot": "D:/coding/somewhat",
+    "missionDir": "C:/Users/mitte/.factory/missions/fe650437-0d94-4ece-8085-ac6da736d0ec",
+    "surface": "vitest/static-analysis",
+    "readOnlyValidation": true,
+    "fullGateCommandsReservedFor": "parent validator"
+  },
+  "toolsUsed": [
+    "Read",
+    "Glob",
+    "Grep",
+    "Execute"
+  ],
+  "commandsRun": [
+    "Read mission guidance, validation contract, package.json, tsconfig.json, eslint.config.js, and targeted source/test files",
+    "Glob src/**/*.test.ts and src/**/*.test.tsx",
+    "Grep for cross-imports between src/editor and src/teleprompter",
+    "node -e \"count test definitions in named legacy suites\"",
+    "Get-Date -Format o"
+  ],
+  "assertions": [
+    {
+      "id": "VAL-CROSS-011",
+      "title": "All frontend tests pass (244+ tests)",
+      "status": "skipped",
+      "provisionalAssessment": "ready_for_parent_test_frontend_run",
+      "commandsRun": [
+        "package.json -> npm run test:frontend = vitest run",
+        "Glob src/**/*.test.ts and src/**/*.test.tsx"
+      ],
+      "steps": [
+        {
+          "action": "Map the contract command to npm scripts",
+          "expected": "A frontend test script exists for the full suite",
+          "observed": "package.json defines `test:frontend` as `vitest run`"
+        },
+        {
+          "action": "Inventory frontend test files",
+          "expected": "Frontend test files exist for the Vitest surface",
+          "observed": "28 frontend test files were found under src/**/*.test.ts(x), including app, editor, teleprompter, store, lib, settings, and ui suites"
+        }
+      ],
+      "evidence": {
+        "scripts": [
+          "D:/coding/somewhat/package.json"
+        ],
+        "testFileInventory": [
+          "D:/coding/somewhat/src/App.test.tsx",
+          "D:/coding/somewhat/src/editor/EditorView.test.tsx",
+          "D:/coding/somewhat/src/teleprompter/TeleprompterView.test.tsx",
+          "D:/coding/somewhat/src/editor/MarkdownPreview.test.tsx",
+          "D:/coding/somewhat/src/lib/events.test.ts",
+          "D:/coding/somewhat/src/store/modeStore.test.ts",
+          "D:/coding/somewhat/src/store/scriptStore.test.ts",
+          "D:/coding/somewhat/src/store/settingsStore.test.ts",
+          "D:/coding/somewhat/src/types.test.ts"
+        ],
+        "notes": "Static preflight only; the required `npm run test:frontend` command was intentionally not executed in this subagent."
+      },
+      "issues": "Final pass/fail must be confirmed by the parent validator running `npm run test:frontend`."
+    },
+    {
+      "id": "VAL-CROSS-012",
+      "title": "TypeScript typecheck and ESLint pass with zero errors",
+      "status": "skipped",
+      "provisionalAssessment": "scripts_and_configs_present_no_obvious_static_blocker",
+      "commandsRun": [
+        "package.json -> npm run typecheck = tsc -p tsconfig.json --noEmit",
+        "package.json -> npm run lint = eslint .",
+        "Read tsconfig.json and eslint.config.js"
+      ],
+      "steps": [
+        {
+          "action": "Map the contract commands to npm scripts",
+          "expected": "Dedicated typecheck and lint scripts exist",
+          "observed": "package.json defines `typecheck` as `tsc -p tsconfig.json --noEmit` and `lint` as `eslint .`"
+        },
+        {
+          "action": "Inspect the referenced configuration files",
+          "expected": "TypeScript and ESLint configs referenced by those scripts are present",
+          "observed": "Both `tsconfig.json` and `eslint.config.js` exist and were read during preflight"
+        }
+      ],
+      "evidence": {
+        "scripts": [
+          "D:/coding/somewhat/package.json"
+        ],
+        "configs": [
+          "D:/coding/somewhat/tsconfig.json",
+          "D:/coding/somewhat/eslint.config.js"
+        ],
+        "notes": "No full `npm run typecheck` or `npm run lint` execution was performed here by design."
+      },
+      "issues": "Final zero-error status must be confirmed by the parent validator running `npm run typecheck` and `npm run lint`."
+    },
+    {
+      "id": "VAL-CROSS-013",
+      "title": "All existing test files pass unchanged (no regressions)",
+      "status": "skipped",
+      "provisionalAssessment": "named_test_files_present_static_counts_recorded",
+      "commandsRun": [
+        "Glob src/**/*.test.ts and src/**/*.test.tsx",
+        "node -e \"count test definitions in named legacy suites\"",
+        "Read targeted legacy suite files"
+      ],
+      "steps": [
+        {
+          "action": "Verify the contract-named test files exist",
+          "expected": "App, editor, teleprompter, markdown, events, store, and types suites are present",
+          "observed": "All named files exist: App.test.tsx, EditorView.test.tsx, TeleprompterView.test.tsx, MarkdownPreview.test.tsx, events.test.ts, modeStore.test.ts, scriptStore.test.ts, settingsStore.test.ts, and types.test.ts"
+        },
+        {
+          "action": "Record static test-definition counts from those files",
+          "expected": "Legacy suite sizes can be preflighted before the parent run",
+          "observed": "Current source counts are App=12, EditorView=59, TeleprompterView=88, MarkdownPreview=9, events=3, modeStore=13, scriptStore=17, settingsStore=10, types=5"
+        }
+      ],
+      "evidence": {
+        "testFiles": [
+          "D:/coding/somewhat/src/App.test.tsx",
+          "D:/coding/somewhat/src/editor/EditorView.test.tsx",
+          "D:/coding/somewhat/src/teleprompter/TeleprompterView.test.tsx",
+          "D:/coding/somewhat/src/editor/MarkdownPreview.test.tsx",
+          "D:/coding/somewhat/src/lib/events.test.ts",
+          "D:/coding/somewhat/src/store/modeStore.test.ts",
+          "D:/coding/somewhat/src/store/scriptStore.test.ts",
+          "D:/coding/somewhat/src/store/settingsStore.test.ts",
+          "D:/coding/somewhat/src/types.test.ts"
+        ],
+        "observedStaticTestCounts": {
+          "src/App.test.tsx": 12,
+          "src/editor/EditorView.test.tsx": 59,
+          "src/teleprompter/TeleprompterView.test.tsx": 88,
+          "src/editor/MarkdownPreview.test.tsx": 9,
+          "src/lib/events.test.ts": 3,
+          "src/store/modeStore.test.ts": 13,
+          "src/store/scriptStore.test.ts": 17,
+          "src/store/settingsStore.test.ts": 10,
+          "src/types.test.ts": 5
+        },
+        "notes": "Counts were derived from source inspection only; pass/fail still requires the parent `npm run test:frontend` execution."
+      },
+      "issues": "The validation contract's legacy per-file counts are stale relative to the current source files, so the parent should rely on actual Vitest output rather than the historical numbers in the contract."
+    },
+    {
+      "id": "VAL-CROSS-014",
+      "title": "No circular dependencies between editor and teleprompter modules",
+      "status": "skipped",
+      "provisionalAssessment": "no_static_cross_area_cycle_detected",
+      "commandsRun": [
+        "Grep for '@/editor/' imports inside src/teleprompter",
+        "Grep for '@/teleprompter/' imports inside src/editor",
+        "Read src/editor/MarkdownPreview.tsx, src/teleprompter/viewportMath.ts, src/ui/index.ts"
+      ],
+      "steps": [
+        {
+          "action": "Inspect cross-imports between editor and teleprompter",
+          "expected": "Only the allowed shared/pure module boundaries should appear",
+          "observed": "The only cross-area imports found were `src/teleprompter/TeleprompterView.tsx -> @/editor/MarkdownPreview` and `src/editor/EditorView.tsx -> @/teleprompter/viewportMath`"
+        },
+        {
+          "action": "Inspect the imported leaf modules for back-imports",
+          "expected": "The imported modules should not import back into the opposite view layer",
+          "observed": "`src/editor/MarkdownPreview.tsx` only imports React Markdown libraries, and `src/teleprompter/viewportMath.ts` is a pure utility module with no imports"
+        },
+        {
+          "action": "Confirm shared UI barrel availability",
+          "expected": "Shared UI exports can be consumed by both views without crossing view-layer boundaries",
+          "observed": "`src/ui/index.ts` exports the shared UI primitives used by both EditorView and TeleprompterView"
+        }
+      ],
+      "evidence": {
+        "crossImports": [
+          "D:/coding/somewhat/src/teleprompter/TeleprompterView.tsx: import { MarkdownPreview } from \"@/editor/MarkdownPreview\"",
+          "D:/coding/somewhat/src/editor/EditorView.tsx: import { clampRect, defaultRect } from \"@/teleprompter/viewportMath\""
+        ],
+        "inspectedLeafModules": [
+          "D:/coding/somewhat/src/editor/MarkdownPreview.tsx",
+          "D:/coding/somewhat/src/teleprompter/viewportMath.ts",
+          "D:/coding/somewhat/src/ui/index.ts"
+        ],
+        "notes": "Static inspection found no obvious circular dependency. Final confirmation still belongs to the parent validator's typecheck/frontend-test gate."
+      },
+      "issues": "No obvious static cycle was found, but the authoritative contract evidence remains the parent run of `npm run typecheck` and `npm run test:frontend`."
+    }
+  ],
+  "frictions": [
+    {
+      "description": "validation-contract.md lists legacy per-file suite sizes for VAL-CROSS-013, but current source files contain materially different counts (for example App=12 vs 8, EditorView=59 vs 13, TeleprompterView=88 vs ~28, events=3 vs 4).",
+      "resolved": true,
+      "resolution": "Recorded actual static counts from source inspection so the parent validator can treat the contract counts as historical guidance rather than exact expectations.",
+      "affectedAssertions": [
+        "VAL-CROSS-013"
+      ]
+    },
+    {
+      "description": "Mission guidance still mentions a missing eslint.config.js, but the repository now contains D:/coding/somewhat/eslint.config.js.",
+      "resolved": true,
+      "resolution": "Verified the file exists and treated the note as stale guidance rather than a present blocker.",
+      "affectedAssertions": [
+        "VAL-CROSS-012"
+      ]
+    }
+  ],
+  "blockers": [],
+  "fullGateConfirmationRequired": true,
+  "summary": "Completed static preflight for overlay gate assertions VAL-CROSS-011 through VAL-CROSS-014. The mapped npm scripts, referenced config files, and named test files are present, and no obvious static import-cycle blocker was found. Final pass/fail for these assertions must be confirmed by the parent validator running `npm run test:frontend`, `npm run typecheck`, and `npm run lint`."
+}

@@ -1,0 +1,239 @@
+{
+  "groupId": "app-flows",
+  "testedAt": "2026-04-10T19:08:43.0961464+02:00",
+  "isolation": {
+    "repoRoot": "D:\\coding\\somewhat",
+    "missionDir": "C:\\Users\\mitte\\.factory\\missions\\fe650437-0d94-4ece-8085-ac6da736d0ec",
+    "surface": "vitest/static-analysis",
+    "readOnlyValidation": true,
+    "evidenceDir": "C:\\Users\\mitte\\.factory\\missions\\fe650437-0d94-4ece-8085-ac6da736d0ec\\evidence\\overlay\\app-flows",
+    "flowReportPath": "D:\\coding\\somewhat\\.factory\\validation\\overlay\\user-testing\\flows\\app-flows.json"
+  },
+  "toolsUsed": [
+    "Read",
+    "Grep",
+    "Glob",
+    "Vitest"
+  ],
+  "commandsRun": [
+    "npm --prefix \"D:\\coding\\somewhat\" run test:frontend -- src/App.test.tsx src/editor/EditorView.test.tsx (stdout/stderr captured to overlay/app-flows/focused-vitest.txt)"
+  ],
+  "assertions": [
+    {
+      "id": "VAL-CROSS-001",
+      "title": "Editor view renders when mode=editor",
+      "status": "pass",
+      "steps": [
+        {
+          "action": "Locate the focused App test and render path for editor mode.",
+          "expected": "There is direct coverage showing App renders EditorView when the mode store is editor.",
+          "observed": "App.test.tsx asserts the Open toolbar button is present, and App.tsx returns EditorView when activeMode is editor."
+        },
+        {
+          "action": "Run the focused Vitest command covering App and editor flows.",
+          "expected": "The editor-mode App assertion passes.",
+          "observed": "Vitest exited 0 with src/App.test.tsx and src/editor/EditorView.test.tsx both passing (71 tests total)."
+        },
+        {
+          "action": "Cross-check the rendered control against the implementation.",
+          "expected": "The editor toolbar exposes an Open button through EditorView.",
+          "observed": "EditorView.tsx renders ToolbarButton labeled Open, matching the App test expectation."
+        }
+      ],
+      "evidence": {
+        "commandEvidence": [
+          "overlay/app-flows/focused-vitest.txt"
+        ],
+        "sourceRefs": [
+          "src/App.test.tsx:102-104",
+          "src/App.tsx:144",
+          "src/editor/EditorView.tsx:104"
+        ]
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-CROSS-002",
+      "title": "Teleprompter view renders when mode=teleprompter",
+      "status": "pass",
+      "steps": [
+        {
+          "action": "Locate the focused App test and teleprompter hint text path.",
+          "expected": "There is direct coverage showing App renders TeleprompterView when the mode store is teleprompter.",
+          "observed": "App.test.tsx checks for the teleprompter hint text 'F6 edit · F7 play · Esc exit', and App.tsx renders TeleprompterView when activeMode is teleprompter."
+        },
+        {
+          "action": "Run the focused Vitest command covering App and editor flows.",
+          "expected": "The teleprompter-mode App assertion passes.",
+          "observed": "Vitest exited 0 and the App test file passed."
+        },
+        {
+          "action": "Cross-check the rendered hint against the implementation.",
+          "expected": "TeleprompterView contains the hotkey hint text used to confirm the teleprompter surface rendered.",
+          "observed": "TeleprompterView.tsx renders the exact hint text used by the App assertion."
+        }
+      ],
+      "evidence": {
+        "commandEvidence": [
+          "overlay/app-flows/focused-vitest.txt"
+        ],
+        "sourceRefs": [
+          "src/App.test.tsx:107-113",
+          "src/App.tsx:144",
+          "src/teleprompter/TeleprompterView.tsx:966"
+        ]
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-CROSS-003",
+      "title": "Body CSS class toggles with active mode",
+      "status": "pass",
+      "steps": [
+        {
+          "action": "Locate the focused App tests and body-class implementation.",
+          "expected": "There is coverage for editor-mode and teleprompter-mode body classes, with no overlap.",
+          "observed": "App.test.tsx contains one test for initial mode-editor and another for switching to mode-teleprompter while ensuring mode-editor is removed."
+        },
+        {
+          "action": "Run the focused Vitest command covering App and editor flows.",
+          "expected": "The body-class assertions pass.",
+          "observed": "Vitest exited 0 and the App body-class tests passed."
+        },
+        {
+          "action": "Review the corresponding effect in App.",
+          "expected": "App removes both mode classes then applies only the current mode class.",
+          "observed": "App.tsx removes mode-editor and mode-teleprompter before adding mode-${activeMode}, matching the contract."
+        }
+      ],
+      "evidence": {
+        "commandEvidence": [
+          "overlay/app-flows/focused-vitest.txt"
+        ],
+        "sourceRefs": [
+          "src/App.test.tsx:117-131",
+          "src/App.tsx:43-44"
+        ]
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-CROSS-004",
+      "title": "Go Live failure shows alert and stays in editor",
+      "status": "pass",
+      "steps": [
+        {
+          "action": "Locate the focused EditorView failure-path test and implementation.",
+          "expected": "There is direct coverage for enter_teleprompter_mode rejection showing alert behavior, preserved editor mode, and no hotkey registration.",
+          "observed": "EditorView.test.tsx contains a dedicated rejection test that asserts alert was called, mode stayed editor, and register_hotkeys was never called."
+        },
+        {
+          "action": "Run the focused Vitest command covering App and editor flows.",
+          "expected": "The Go Live failure assertion passes.",
+          "observed": "Vitest exited 0 and src/editor/EditorView.test.tsx passed."
+        },
+        {
+          "action": "Review the Go Live implementation.",
+          "expected": "EditorView should attempt enterTeleprompter, only register hotkeys after success, and alert on failure without changing mode.",
+          "observed": "EditorView.tsx awaits enterTeleprompter before registerHotkeys, resets playing after success, and alerts in the catch path."
+        }
+      ],
+      "evidence": {
+        "commandEvidence": [
+          "overlay/app-flows/focused-vitest.txt"
+        ],
+        "sourceRefs": [
+          "src/editor/EditorView.test.tsx:158-179",
+          "src/editor/EditorView.tsx:51-56"
+        ]
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-CROSS-005",
+      "title": "Exit flow unregisters hotkeys, exits teleprompter, resets mode",
+      "status": "pass",
+      "steps": [
+        {
+          "action": "Locate the focused App hotkey-stop exit test and implementation.",
+          "expected": "There is direct coverage for unregister_hotkeys before exit_teleprompter_mode and resetting playing, editMode, and mode.",
+          "observed": "App.test.tsx contains a dedicated hotkey://stop test that verifies IPC ordering and final store state reset to editor."
+        },
+        {
+          "action": "Run the focused Vitest command covering App and editor flows.",
+          "expected": "The exit-flow assertion passes.",
+          "observed": "Vitest exited 0 and the App exit-flow test passed."
+        },
+        {
+          "action": "Review the stop-hotkey handler in App.",
+          "expected": "App should unregister hotkeys, then exit teleprompter, then force playing=false, editMode=false, mode='editor'.",
+          "observed": "App.tsx performs unregisterHotkeys, then exitTeleprompter, then resets playing, editMode, and mode to editor."
+        }
+      ],
+      "evidence": {
+        "commandEvidence": [
+          "overlay/app-flows/focused-vitest.txt"
+        ],
+        "sourceRefs": [
+          "src/App.test.tsx:188-231",
+          "src/App.tsx:117-129"
+        ]
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-CROSS-006",
+      "title": "mode-changed backend event drives App mode switching",
+      "status": "pass",
+      "steps": [
+        {
+          "action": "Locate the focused App mode-changed test plus the event-forwarding implementation.",
+          "expected": "There is direct coverage showing the backend mode-changed payload updates mode and editMode, backed by an event helper that listens to mode-changed.",
+          "observed": "App.test.tsx verifies the captured mode-changed listener updates the store, App.tsx wires onModeChanged to setMode/setEditMode, and events.ts forwards e.payload.mode and e.payload.edit from the mode-changed event."
+        },
+        {
+          "action": "Run the focused Vitest command covering App and editor flows.",
+          "expected": "The mode-changed App assertion passes.",
+          "observed": "Vitest exited 0 and the App mode-changed test passed."
+        },
+        {
+          "action": "Review the mode-change subscription path.",
+          "expected": "The backend event should subscribe to mode-changed and forward both mode and edit into App state updates.",
+          "observed": "App.tsx and events.ts match the contract: the mode-changed listener forwards both values and App applies them to the store."
+        }
+      ],
+      "evidence": {
+        "commandEvidence": [
+          "overlay/app-flows/focused-vitest.txt"
+        ],
+        "sourceRefs": [
+          "src/App.test.tsx:287-308",
+          "src/App.tsx:88-90",
+          "src/lib/events.ts:26-27",
+          "src/lib/events.test.ts:55-72"
+        ]
+      },
+      "issues": null
+    }
+  ],
+  "frictions": [
+    {
+      "description": "The focused file-level Vitest run emitted unrelated React act(...) warnings from other passing EditorView tests in the same file.",
+      "resolved": true,
+      "resolution": "Treated as non-blocking test noise because the command exited 0 and the assigned cross-flow assertions passed.",
+      "affectedAssertions": [
+        "VAL-CROSS-004"
+      ]
+    },
+    {
+      "description": "The App test file prints an expected stderr log when the unregisterHotkeys rejection-resilience test exercises the catch path.",
+      "resolved": true,
+      "resolution": "Confirmed the stderr line is expected evidence for a separate passing resilience test and does not invalidate VAL-CROSS-005.",
+      "affectedAssertions": [
+        "VAL-CROSS-005"
+      ]
+    }
+  ],
+  "blockers": [],
+  "summary": "Validated 6 overlay cross-area app-flow assertions with focused Vitest coverage in App.test.tsx and EditorView.test.tsx plus static source reads. VAL-CROSS-001 through VAL-CROSS-006 all passed."
+}

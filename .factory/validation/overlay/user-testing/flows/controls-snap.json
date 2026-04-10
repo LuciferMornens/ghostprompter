@@ -1,0 +1,241 @@
+{
+  "groupId": "controls-snap",
+  "testedAt": "2026-04-10T18:57:17.0543191+02:00",
+  "isolation": {
+    "repoRoot": "D:\\coding\\somewhat",
+    "missionDir": "C:\\Users\\mitte\\.factory\\missions\\fe650437-0d94-4ece-8085-ac6da736d0ec",
+    "surface": "vitest/static-analysis",
+    "scope": "read-only validation inside existing repo",
+    "milestone": "overlay"
+  },
+  "toolsUsed": [
+    "vitest",
+    "static-analysis"
+  ],
+  "commandsRun": [
+    "cmd.exe /d /s /c \"\"D:\\coding\\somewhat\\node_modules\\.bin\\vitest.cmd\" run --root \"D:\\coding\\somewhat\" \"D:\\coding\\somewhat\\src\\teleprompter\\TeleprompterView.test.tsx\" -t \"VAL-TELE-006\"\"",
+    "cmd.exe /d /s /c \"\"D:\\coding\\somewhat\\node_modules\\.bin\\vitest.cmd\" run --root \"D:\\coding\\somewhat\" \"D:\\coding\\somewhat\\src\\teleprompter\\TeleprompterView.test.tsx\" -t \"VAL-TELE-007\"\"",
+    "cmd.exe /d /s /c \"\"D:\\coding\\somewhat\\node_modules\\.bin\\vitest.cmd\" run --root \"D:\\coding\\somewhat\" \"D:\\coding\\somewhat\\src\\teleprompter\\TeleprompterView.test.tsx\" -t \"VAL-TELE-008\"\"",
+    "cmd.exe /d /s /c \"\"D:\\coding\\somewhat\\node_modules\\.bin\\vitest.cmd\" run --root \"D:\\coding\\somewhat\" \"D:\\coding\\somewhat\\src\\teleprompter\\TeleprompterView.test.tsx\" -t \"VAL-TELE-009\"\"",
+    "cmd.exe /d /s /c \"\"D:\\coding\\somewhat\\node_modules\\.bin\\vitest.cmd\" run --root \"D:\\coding\\somewhat\" \"D:\\coding\\somewhat\\src\\teleprompter\\TeleprompterView.test.tsx\" -t \"VAL-TELE-010\"\"",
+    "cmd.exe /d /s /c \"\"D:\\coding\\somewhat\\node_modules\\.bin\\vitest.cmd\" run --root \"D:\\coding\\somewhat\" \"D:\\coding\\somewhat\\src\\teleprompter\\TeleprompterView.test.tsx\" -t \"VAL-TELE-011\"\"",
+    "cmd.exe /d /s /c \"\"D:\\coding\\somewhat\\node_modules\\.bin\\vitest.cmd\" run --root \"D:\\coding\\somewhat\" \"D:\\coding\\somewhat\\src\\teleprompter\\viewportMath.test.ts\" -t \"presetRect\"\""
+  ],
+  "assertions": [
+    {
+      "id": "VAL-TELE-006",
+      "title": "Control cluster renders all buttons in edit mode with toolbar role",
+      "status": "pass",
+      "steps": [
+        {
+          "action": "Inspect dedicated coverage in src/teleprompter/TeleprompterView.test.tsx",
+          "expected": "Tests prove all buttons, toolbar semantics, and drag region presence.",
+          "observed": "The VAL-TELE-006 block asserts Slower, Faster, Play, Line up, Line down, Snap, Lock overlay, Exit teleprompter, role=toolbar, aria-label, and data-tauri-drag-region."
+        },
+        {
+          "action": "Run focused Vitest subset for VAL-TELE-006",
+          "expected": "Only the assigned control-cluster checks pass.",
+          "observed": "Vitest passed: 1 file, 4 tests passed, 84 skipped."
+        },
+        {
+          "action": "Inspect src/teleprompter/TeleprompterView.tsx",
+          "expected": "editMode branch renders the toolbar cluster.",
+          "observed": "The implementation renders the control cluster only when editMode is true with role=\"toolbar\" and aria-label=\"Teleprompter controls\"."
+        }
+      ],
+      "evidence": {
+        "logs": [
+          "overlay/controls-snap/vitest-controls-snap.txt"
+        ],
+        "sourceRefs": [
+          "src/teleprompter/TeleprompterView.test.tsx (VAL-TELE-006 block)",
+          "src/teleprompter/TeleprompterView.tsx (editMode toolbar branch)"
+        ],
+        "consoleErrors": "N/A for vitest surface; focused run passed with React act(...) warnings in stderr only."
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-TELE-007",
+      "title": "Controls hidden and pointer-events disabled when not in edit mode",
+      "status": "pass",
+      "steps": [
+        {
+          "action": "Inspect dedicated coverage in src/teleprompter/TeleprompterView.test.tsx",
+          "expected": "Tests prove hidden controls, pointer-events behavior, and F6 hint visibility.",
+          "observed": "The VAL-TELE-007 block asserts no control buttons or toolbar render, root pointerEvents is none, viewport pointerEvents is auto, and the F6 edit hint is shown."
+        },
+        {
+          "action": "Run focused Vitest subset for VAL-TELE-007",
+          "expected": "Only the assigned non-editing checks pass.",
+          "observed": "Vitest passed: 1 file, 3 tests passed, 85 skipped."
+        },
+        {
+          "action": "Inspect src/teleprompter/TeleprompterView.tsx",
+          "expected": "Root disables pointer events while viewport stays interactive and hint renders when unlocked.",
+          "observed": "The root style switches to pointerEvents: none when editMode is false, the viewport remains pointerEvents: auto, and the F6 edit hint renders when !editMode && !hidden."
+        }
+      ],
+      "evidence": {
+        "logs": [
+          "overlay/controls-snap/vitest-controls-snap.txt"
+        ],
+        "sourceRefs": [
+          "src/teleprompter/TeleprompterView.test.tsx (VAL-TELE-007 block)",
+          "src/teleprompter/TeleprompterView.tsx (root pointerEvents + !editMode hint branch)"
+        ],
+        "consoleErrors": "N/A for vitest surface; focused run passed with React act(...) warnings in stderr only."
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-TELE-008",
+      "title": "Snap popover opens/closes with grid cells and strip presets",
+      "status": "pass",
+      "steps": [
+        {
+          "action": "Inspect dedicated coverage in src/teleprompter/TeleprompterView.test.tsx",
+          "expected": "Tests prove initial closed state, 9 grid cells, 5 strip presets, menu semantics, and Escape/outside-click close behavior.",
+          "observed": "The VAL-TELE-008 block covers all required open/close and structure assertions for the snap popover."
+        },
+        {
+          "action": "Run focused Vitest subset for VAL-TELE-008",
+          "expected": "Only the assigned snap-popover checks pass.",
+          "observed": "Vitest passed: 1 file, 6 tests passed, 82 skipped."
+        },
+        {
+          "action": "Inspect src/teleprompter/TeleprompterView.tsx",
+          "expected": "snapOpen toggles a popover with document-level close handlers.",
+          "observed": "The implementation tracks snapOpen, closes on Escape and outside mousedown, and renders SnapPopover with role=\"menu\", aria-label=\"Snap presets\", 9 grid cells, and 5 strip presets."
+        }
+      ],
+      "evidence": {
+        "logs": [
+          "overlay/controls-snap/vitest-controls-snap.txt"
+        ],
+        "sourceRefs": [
+          "src/teleprompter/TeleprompterView.test.tsx (VAL-TELE-008 block)",
+          "src/teleprompter/TeleprompterView.tsx (snapOpen effect + SnapPopover component)"
+        ],
+        "consoleErrors": "N/A for vitest surface; focused run passed with React act(...) warnings in stderr only."
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-TELE-009",
+      "title": "Snap presets persist correct rect and call set_overlay_rect IPC",
+      "status": "pass",
+      "steps": [
+        {
+          "action": "Inspect TeleprompterView and viewportMath coverage",
+          "expected": "Tests prove preset persistence, IPC calls, active preset state, and preset geometry.",
+          "observed": "The VAL-TELE-009 block verifies settings persistence, set_overlay_rect invocation, and active preset styling; viewportMath presetRect tests verify full, tr, tl, br, mc, top-strip, bottom-strip, left, and right geometry."
+        },
+        {
+          "action": "Run focused Vitest subsets for VAL-TELE-009 and presetRect geometry",
+          "expected": "Assigned snap-preset checks pass.",
+          "observed": "TeleprompterView passed: 1 file, 2 tests passed, 86 skipped. viewportMath passed: 1 file, 9 tests passed, 15 skipped."
+        },
+        {
+          "action": "Inspect src/teleprompter/TeleprompterView.tsx and src/teleprompter/viewportMath.ts",
+          "expected": "Selecting a preset computes a rect, calls set_overlay_rect, and persists overlay settings.",
+          "observed": "applyPreset computes presetRect(screen), closes the popover, calls ipc.setOverlayRect(r), and updates overlayX/Y/Width/Height; presetRect defines the snap geometry used by those writes."
+        }
+      ],
+      "evidence": {
+        "logs": [
+          "overlay/controls-snap/vitest-controls-snap.txt",
+          "overlay/controls-snap/vitest-viewportMath-presetRect.txt"
+        ],
+        "sourceRefs": [
+          "src/teleprompter/TeleprompterView.test.tsx (VAL-TELE-009 block)",
+          "src/teleprompter/TeleprompterView.tsx (applyPreset)",
+          "src/teleprompter/viewportMath.ts (presetRect)"
+        ],
+        "consoleErrors": "N/A for vitest surface; focused runs passed with no stderr warnings in the VAL-TELE-009 and presetRect subsets."
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-TELE-010",
+      "title": "Speed controls increment/decrement by 5, clamped to [5, 500]",
+      "status": "pass",
+      "steps": [
+        {
+          "action": "Inspect dedicated coverage in src/teleprompter/TeleprompterView.test.tsx",
+          "expected": "Tests prove increment, decrement, clamping, and live readout.",
+          "observed": "The VAL-TELE-010 block covers Faster/Slower deltas, min/max clamp behavior, and the live speed value changing from 40 to 45."
+        },
+        {
+          "action": "Run focused Vitest subset for VAL-TELE-010",
+          "expected": "Assigned speed-control checks pass.",
+          "observed": "Vitest passed: 1 file, 5 tests passed, 83 skipped."
+        },
+        {
+          "action": "Inspect src/teleprompter/TeleprompterView.tsx",
+          "expected": "speedDelta clamps the stored value to the required range.",
+          "observed": "speedDelta uses Math.max(5, Math.min(500, settings.scrollSpeed + delta)) and the toolbar renders the live scrollSpeed readout."
+        }
+      ],
+      "evidence": {
+        "logs": [
+          "overlay/controls-snap/vitest-controls-snap.txt"
+        ],
+        "sourceRefs": [
+          "src/teleprompter/TeleprompterView.test.tsx (VAL-TELE-010 block)",
+          "src/teleprompter/TeleprompterView.tsx (speedDelta + speed readout)"
+        ],
+        "consoleErrors": "N/A for vitest surface; focused run passed with no stderr warnings."
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-TELE-011",
+      "title": "Play/Pause toggle updates playing state with correct icon",
+      "status": "pass",
+      "steps": [
+        {
+          "action": "Inspect dedicated coverage in src/teleprompter/TeleprompterView.test.tsx",
+          "expected": "Tests prove click toggle, icon swap, and Space behavior only in allowed contexts.",
+          "observed": "The VAL-TELE-011 block covers button toggling, ▶/⏸ icon swap, Space toggling in edit mode, Space ignored outside edit mode, and Space ignored on focused buttons/menuitems."
+        },
+        {
+          "action": "Run focused Vitest subset for VAL-TELE-011",
+          "expected": "Assigned play/pause checks pass.",
+          "observed": "Vitest passed: 1 file, 6 tests passed, 82 skipped."
+        },
+        {
+          "action": "Inspect src/teleprompter/TeleprompterView.tsx",
+          "expected": "The button and keydown handler toggle playing only when permitted.",
+          "observed": "The button title/ariaLabel/icon are derived from playing state and the keydown effect toggles on Space only when editMode is true and the active element is not an interactive control."
+        }
+      ],
+      "evidence": {
+        "logs": [
+          "overlay/controls-snap/vitest-controls-snap.txt"
+        ],
+        "sourceRefs": [
+          "src/teleprompter/TeleprompterView.test.tsx (VAL-TELE-011 block)",
+          "src/teleprompter/TeleprompterView.tsx (Play/Pause button + Space key handler)"
+        ],
+        "consoleErrors": "N/A for vitest surface; focused run passed with React act(...) warnings in stderr only."
+      },
+      "issues": null
+    }
+  ],
+  "frictions": [
+    {
+      "description": "Focused TeleprompterView Vitest subsets for VAL-TELE-006, VAL-TELE-007, VAL-TELE-008, and VAL-TELE-011 emitted pre-existing React act(...) warnings on stderr even though all targeted assertions passed.",
+      "resolved": true,
+      "resolution": "Used the passing Vitest exit status plus source inspection as the validation evidence and recorded the warnings as non-blocking noise.",
+      "affectedAssertions": [
+        "VAL-TELE-006",
+        "VAL-TELE-007",
+        "VAL-TELE-008",
+        "VAL-TELE-011"
+      ]
+    }
+  ],
+  "blockers": [],
+  "summary": "Tested 6 assigned overlay assertions with targeted Vitest subsets plus presetRect geometry coverage: all 6 passed and no blockers were encountered."
+}

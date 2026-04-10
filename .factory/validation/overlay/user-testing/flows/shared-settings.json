@@ -1,0 +1,189 @@
+{
+  "groupId": "shared-settings",
+  "testedAt": "2026-04-10T17:09:45Z",
+  "isolation": {
+    "repoRoot": "D:\\coding\\somewhat",
+    "missionDir": "C:\\Users\\mitte\\.factory\\missions\\fe650437-0d94-4ece-8085-ac6da736d0ec",
+    "validationSurface": "vitest/static-analysis",
+    "scope": "read-only validation",
+    "assignedAssertions": [
+      "VAL-CROSS-007",
+      "VAL-CROSS-008",
+      "VAL-CROSS-009",
+      "VAL-CROSS-010"
+    ]
+  },
+  "toolsUsed": [
+    "Read",
+    "Grep",
+    "Execute"
+  ],
+  "assertions": [
+    {
+      "id": "VAL-CROSS-007",
+      "title": "MarkdownPreview shared across both views",
+      "status": "pass",
+      "steps": [
+        {
+          "action": "Inspect editor and teleprompter sources for MarkdownPreview consumption.",
+          "expected": "Both views import and render the shared MarkdownPreview component.",
+          "observed": "EditorView imports MarkdownPreview and renders it in the preview panel; TeleprompterView imports the same component and renders it inside the viewport."
+        },
+        {
+          "action": "Run focused Vitest coverage for MarkdownPreview, EditorView, and TeleprompterView.",
+          "expected": "gp-prose appears in both views and MarkdownPreview unit tests pass.",
+          "observed": "EditorView.test and TeleprompterView.test passed their gp-prose assertions; MarkdownPreview.test.tsx passed all 9 unit tests."
+        }
+      ],
+      "evidence": {
+        "commands": [
+          "npm run test:frontend -- --reporter=verbose src/editor/MarkdownPreview.test.tsx src/teleprompter/TeleprompterView.test.tsx src/editor/EditorView.test.tsx src/ui/StatBlock.test.tsx src/ui/RecDot.test.tsx src/App.test.tsx src/store/settingsStore.test.ts"
+        ],
+        "files": [
+          "overlay/shared-settings/focused-vitest-output.txt",
+          "overlay/shared-settings/static-source-evidence.json"
+        ],
+        "sourceRefs": [
+          "src/editor/EditorView.tsx:10",
+          "src/editor/EditorView.tsx:143",
+          "src/editor/EditorView.test.tsx:101",
+          "src/editor/MarkdownPreview.test.tsx:1-69",
+          "src/teleprompter/TeleprompterView.tsx:9",
+          "src/teleprompter/TeleprompterView.tsx:583-586",
+          "src/teleprompter/TeleprompterView.test.tsx:180"
+        ],
+        "consoleErrors": "Vitest/static surface only. Raw output captured; no failing errors for this assertion."
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-CROSS-008",
+      "title": "Shared UI components work correctly across views",
+      "status": "pass",
+      "steps": [
+        {
+          "action": "Inspect consumer views for shared RecDot and StatBlock usage.",
+          "expected": "TeleprompterView uses RecDot in the HUD and EditorView uses StatBlock in the status rail.",
+          "observed": "TeleprompterView renders RecDot with playing state; EditorView renders StatBlock entries for Words, Chars, and Read time."
+        },
+        {
+          "action": "Run focused Vitest coverage for RecDot, StatBlock, EditorView, and TeleprompterView.",
+          "expected": "Consumer-view assertions and component unit tests pass.",
+          "observed": "TeleprompterView passed Rolling/Standby RecDot assertions; EditorView passed footer StatBlock assertions; RecDot and StatBlock unit test files both passed."
+        }
+      ],
+      "evidence": {
+        "commands": [
+          "npm run test:frontend -- --reporter=verbose src/editor/MarkdownPreview.test.tsx src/teleprompter/TeleprompterView.test.tsx src/editor/EditorView.test.tsx src/ui/StatBlock.test.tsx src/ui/RecDot.test.tsx src/App.test.tsx src/store/settingsStore.test.ts"
+        ],
+        "files": [
+          "overlay/shared-settings/focused-vitest-output.txt",
+          "overlay/shared-settings/static-source-evidence.json"
+        ],
+        "sourceRefs": [
+          "src/editor/EditorView.tsx:8",
+          "src/editor/EditorView.tsx:152-155",
+          "src/editor/EditorView.test.tsx:731",
+          "src/ui/StatBlock.test.tsx:1-99",
+          "src/teleprompter/TeleprompterView.tsx:10",
+          "src/teleprompter/TeleprompterView.tsx:602",
+          "src/teleprompter/TeleprompterView.test.tsx:309",
+          "src/teleprompter/TeleprompterView.test.tsx:318",
+          "src/ui/RecDot.test.tsx:1-70"
+        ],
+        "consoleErrors": "Vitest/static surface only. Raw output captured; no failing errors for this assertion."
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-CROSS-009",
+      "title": "Settings propagation: speed, font, mirror apply to teleprompter",
+      "status": "pass",
+      "steps": [
+        {
+          "action": "Inspect teleprompter and app sources for settings propagation paths.",
+          "expected": "Speed changes flow through settingsStore; fontSize/lineHeight/mirrorHorizontal/highlightReadingLine affect TeleprompterView rendering.",
+          "observed": "App hotkey handlers update scrollSpeed through settingsStore; TeleprompterView applies fontSize and lineHeight inline, builds scaleX(-1) when mirrored, and conditionally renders ReadingLine."
+        },
+        {
+          "action": "Run focused TeleprompterView and settingsStore tests.",
+          "expected": "Control-driven speed updates, reading-line visibility, mirror transform, and settings persistence tests pass.",
+          "observed": "TeleprompterView passed Faster/Slower, reading-line visibility, mirror transform, and line-step tests; settingsStore tests passed load/update persistence checks."
+        }
+      ],
+      "evidence": {
+        "commands": [
+          "npm run test:frontend -- --reporter=verbose src/editor/MarkdownPreview.test.tsx src/teleprompter/TeleprompterView.test.tsx src/editor/EditorView.test.tsx src/ui/StatBlock.test.tsx src/ui/RecDot.test.tsx src/App.test.tsx src/store/settingsStore.test.ts"
+        ],
+        "files": [
+          "overlay/shared-settings/focused-vitest-output.txt",
+          "overlay/shared-settings/static-source-evidence.json"
+        ],
+        "sourceRefs": [
+          "src/App.tsx:97-105",
+          "src/teleprompter/TeleprompterView.tsx:502",
+          "src/teleprompter/TeleprompterView.tsx:574-575",
+          "src/teleprompter/TeleprompterView.tsx:591",
+          "src/teleprompter/TeleprompterView.test.tsx:207-226",
+          "src/teleprompter/TeleprompterView.test.tsx:280",
+          "src/teleprompter/TeleprompterView.test.tsx:292",
+          "src/teleprompter/TeleprompterView.test.tsx:1168-1199",
+          "src/store/settingsStore.test.ts:37-110"
+        ],
+        "consoleErrors": "Vitest/static surface only. Raw output captured; pre-existing act warnings were present but did not fail the targeted assertions."
+      },
+      "issues": null
+    },
+    {
+      "id": "VAL-CROSS-010",
+      "title": "Overlay rect settings persist and restore on mount",
+      "status": "pass",
+      "steps": [
+        {
+          "action": "Inspect App/settings store bootstrap and teleprompter mount logic.",
+          "expected": "App loads persisted settings via LazyStore and TeleprompterView restores overlay rect from settings.",
+          "observed": "App calls loadSettings on mount; settingsStore uses LazyStore-backed persistence; TeleprompterView reads persisted overlay rect values and forwards them to ipc.setOverlayRect."
+        },
+        {
+          "action": "Run focused App, settingsStore, and TeleprompterView tests.",
+          "expected": "LazyStore construction and persisted-rect restoration tests pass.",
+          "observed": "App.test confirmed LazyStore construction on mount; TeleprompterView.test confirmed viewport dimensions and set_overlay_rect payload match persisted overlay settings."
+        }
+      ],
+      "evidence": {
+        "commands": [
+          "npm run test:frontend -- --reporter=verbose src/editor/MarkdownPreview.test.tsx src/teleprompter/TeleprompterView.test.tsx src/editor/EditorView.test.tsx src/ui/StatBlock.test.tsx src/ui/RecDot.test.tsx src/App.test.tsx src/store/settingsStore.test.ts"
+        ],
+        "files": [
+          "overlay/shared-settings/focused-vitest-output.txt",
+          "overlay/shared-settings/static-source-evidence.json"
+        ],
+        "sourceRefs": [
+          "src/App.tsx:23",
+          "src/App.tsx:48",
+          "src/App.test.tsx:134",
+          "src/store/settingsStore.ts:1-34",
+          "src/teleprompter/TeleprompterView.tsx:149-199",
+          "src/teleprompter/TeleprompterView.test.tsx:358-408"
+        ],
+        "consoleErrors": "Vitest/static surface only. Raw output captured; no failing errors for this assertion."
+      },
+      "issues": null
+    }
+  ],
+  "frictions": [
+    {
+      "description": "The focused Vitest run emitted React act warnings and expected mocked error-path stderr even though all targeted tests passed.",
+      "resolved": true,
+      "resolution": "Used the passing exit code plus green assertion output and static source refs as the validation signal; preserved the raw transcript under mission evidence.",
+      "affectedAssertions": [
+        "VAL-CROSS-007",
+        "VAL-CROSS-008",
+        "VAL-CROSS-009",
+        "VAL-CROSS-010"
+      ]
+    }
+  ],
+  "blockers": [],
+  "summary": "Tested 4 assigned assertions with targeted vitest/static checks: all 4 passed. Focused validation covered 7 test files / 202 passing tests plus source verification for shared rendering, settings propagation, and LazyStore-backed overlay restoration."
+}
