@@ -1,0 +1,21 @@
+{
+  "featureId": "fix-hotkey-recorder-shifted-keys",
+  "reviewedAt": "2026-04-10T17:07:32.2679219+02:00",
+  "commitId": "2ddb71c",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "pass",
+  "codeReview": {
+    "summary": "Pass. I reviewed the fix feature metadata, prior failing review, worker handoff, transcript skeleton, and commit `2ddb71c`. The original blocking issue in `HotkeyRecorder` is resolved: `normalizeKey` now resolves `event.code` for `Key*`, `Digit*`, and common punctuation codes before falling back to printable `event.key`, so shifted symbol inputs such as `Shift+1`/`Shift+/` are normalized to backend-compatible base-key forms instead of `Shift+!`/`Shift+?`. The added tests cover shifted digits, shifted punctuation, and an unshifted punctuation regression case, and the existing letter/function-key behavior remains intact because those paths still normalize to the same canonical strings.",
+    "issues": []
+  },
+  "sharedStateObservations": [
+    {
+      "area": "skills",
+      "observation": "The `frontend-redesign` skill procedure and the `followedProcedure` reporting are out of sync for small bug-fix sessions. This worker skipped documented procedure steps (for example invoking `frontend-design` at session start, reading `architecture.md`, and doing an explicit RED test-first phase) but the handoff still reported `followedProcedure: true` with no deviations.",
+      "evidence": "D:\\coding\\somewhat\\.factory\\skills\\frontend-redesign\\SKILL.md:21-24 requires `frontend-design` at session start, and lines 41-45 require a RED test-first phase. The same skill also says to read `.factory/library/architecture.md` during the understand step. In C:\\Users\\mitte\\.factory\\missions\\fe650437-0d94-4ece-8085-ac6da736d0ec\\worker-transcripts.jsonl:16, the session shows only `mission-worker-base` and later `frontend-redesign`, edits `src/settings/HotkeyRecorder.tsx` before adding the new tests, and never reads `.factory/library/architecture.md`. The handoff at C:\\Users\\mitte\\.factory\\missions\\fe650437-0d94-4ece-8085-ac6da736d0ec\\handoffs\\2026-04-10T15-04-18-746Z__fix-hotkey-recorder-shifted-keys__00e98124-59b5-44d3-a351-612e7dbd1576.json:63-64 still records `\"followedProcedure\": true`."
+    }
+  ],
+  "addressesFailureFrom": "D:\\coding\\somewhat\\.factory\\validation\\editor\\scrutiny\\reviews\\editor-statusrail-settings-modularity.json",
+  "summary": "Pass. Commit `2ddb71c` fixes the original blocking shifted-key normalization bug by preferring physical key-code normalization over printable symbols and adds focused regression coverage for shifted digit/punctuation shortcuts."
+}

@@ -1,0 +1,79 @@
+{
+  "milestone": "editor",
+  "round": 1,
+  "status": "fail",
+  "validatorsRun": {
+    "test": {
+      "passed": true,
+      "command": "npm --prefix \"D:\\coding\\somewhat\" test",
+      "exitCode": 0
+    },
+    "typecheck": {
+      "passed": true,
+      "command": "npm --prefix \"D:\\coding\\somewhat\" run typecheck",
+      "exitCode": 0
+    },
+    "lint": {
+      "passed": true,
+      "command": "npm --prefix \"D:\\coding\\somewhat\" run lint",
+      "exitCode": 0
+    }
+  },
+  "reviewsSummary": {
+    "total": 4,
+    "passed": 1,
+    "failed": 3,
+    "failedFeatures": [
+      "editor-topbar-redesign",
+      "editor-workspace-redesign",
+      "editor-statusrail-settings-modularity"
+    ]
+  },
+  "blockingIssues": [
+    {
+      "featureId": "editor-topbar-redesign",
+      "severity": "blocking",
+      "description": "The top-bar redesign still hardcodes RGBA colors and shadows in `.gp-btn-live` instead of design-token variables, so the Go Live CTA does not satisfy the feature's design-token-only styling requirement."
+    },
+    {
+      "featureId": "editor-topbar-redesign",
+      "severity": "blocking",
+      "description": "The file indicator/header crest styling still uses hardcoded RGBA backgrounds, borders, and glow values in `.gp-filecrest*` selectors instead of design-token variables."
+    },
+    {
+      "featureId": "editor-workspace-redesign",
+      "severity": "blocking",
+      "description": "The Script workspace panel keeps hardcoded background and shadow colors (`rgba(...)`, `#0a0a0c`) in `src/index.css` rather than token-backed values, so the panel styling is not fully tokenized."
+    },
+    {
+      "featureId": "editor-workspace-redesign",
+      "severity": "blocking",
+      "description": "The Preview workspace panel also keeps hardcoded highlight/base/shadow colors (`rgba(...)`, `#101013`) instead of design-token variables, missing the feature's explicit design-token styling contract."
+    },
+    {
+      "featureId": "editor-statusrail-settings-modularity",
+      "severity": "blocking",
+      "description": "HotkeyRecorder normalizes shifted digit and punctuation shortcuts to printable symbols such as `Shift+!` and `Shift+?`, which are not backend-safe forms for Rust hotkey parsing, so it does not correctly normalize all key types."
+    }
+  ],
+  "appliedUpdates": [],
+  "suggestedGuidanceUpdates": [
+    {
+      "target": "frontend-redesign skill",
+      "suggestion": "Clarify when companion skills and RED-first testing are truly mandatory, or require handoffs to mark deviations explicitly when validation/test-only work starts from already-green behavior.",
+      "evidence": "All four reviewed editor features reported or implied deviations from the current `frontend-redesign` procedure: transcripts showed only `frontend-redesign` being invoked, and at least two sessions started from green tests because behavior already existed. Despite that, handoffs still reported `skillFeedback.followedProcedure: true`.",
+      "isSystemic": true
+    }
+  ],
+  "rejectedObservations": [
+    {
+      "observation": "The shared library should add a dedicated design-token reference because one workspace redesign worker tried to read `.factory/library/design-tokens.md` and it was missing.",
+      "reason": "Ambiguous. This is a possible documentation improvement, but the current evidence comes from a single worker flow and does not establish the exact canonical content or owner for such a document."
+    },
+    {
+      "observation": "Worker bootstrapping should point to `.factory/library/README.md` or add that file because one reviewed session attempted to read it and it does not exist.",
+      "reason": "Ambiguous source. The observation is factual, but the current review evidence does not identify whether the stale reference comes from mission bootstrap, a skill, or ad hoc worker behavior, so recommending a concrete guidance change would be guesswork."
+    }
+  ],
+  "previousRound": null
+}

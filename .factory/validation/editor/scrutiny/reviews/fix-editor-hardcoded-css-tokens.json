@@ -1,0 +1,21 @@
+{
+  "featureId": "fix-editor-hardcoded-css-tokens",
+  "reviewedAt": "2026-04-10T15:08:13.1494104Z",
+  "commitId": "9aca440",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "pass",
+  "codeReview": {
+    "summary": "I reviewed the fix handoff, transcript skeleton, commit `9aca440`, the prior failing reviews for `editor-topbar-redesign` and `editor-workspace-redesign`, and the resulting CSS/token changes. The previously flagged hardcoded literals in the Go Live CTA, file crest selectors, and editor/preview panel surfaces are now replaced with token-backed `var(...)`/`color-mix(...)` references in `src/index.css` (`.gp-btn-live` around line 517, `.gp-filecrest*` around line 2014, `.gp-frame--editor` around line 2242, `.gp-frame--preview` around line 2279). The added theme tokens at `src/index.css:35-59` and matching manifest/test updates in `src/ui/tokens.ts` / `src/ui/tokens.test.ts` support those replacements. I did not find a remaining blocking issue related to the original CSS-token failures.",
+    "issues": []
+  },
+  "sharedStateObservations": [
+    {
+      "area": "skills",
+      "observation": "The `frontend-redesign` procedure still appears stricter than actual accepted practice for token-only CSS fixes. This worker ran a green baseline before invoking `frontend-redesign`, never invoked `frontend-design`, and still reported `followedProcedure: true`, which suggests the skill guidance and handoff rubric remain out of sync.",
+      "evidence": "D:\\coding\\somewhat\\.factory\\skills\\frontend-redesign\\SKILL.md:21 requires invoking `frontend-design` at the start, and lines 41-45 require a RED-first failing frontend test. The transcript skeleton entry at C:\\Users\\mitte\\.factory\\missions\\fe650437-0d94-4ece-8085-ac6da736d0ec\\worker-transcripts.jsonl:15 shows a green baseline `npm run test:frontend` before `Skill {\"skill\":\"frontend-redesign\"}` and no `frontend-design` invocation. The handoff file C:\\Users\\mitte\\.factory\\missions\\fe650437-0d94-4ece-8085-ac6da736d0ec\\handoffs\\2026-04-10T14-59-15-510Z__fix-editor-hardcoded-css-tokens__36be95cf-76c3-403a-b82c-57a7ed05c1d5.json still reports `skillFeedback.followedProcedure: true`."
+    }
+  ],
+  "addressesFailureFrom": "D:\\coding\\somewhat\\.factory\\validation\\editor\\scrutiny\\reviews\\editor-topbar-redesign.json; D:\\coding\\somewhat\\.factory\\validation\\editor\\scrutiny\\reviews\\editor-workspace-redesign.json",
+  "summary": "Pass. This fix resolves the prior blocking scrutiny findings: the reviewed editor CTA, file crest, and workspace surface CSS now use token-backed variables instead of hardcoded rgba/hex literals, and no blocking issue remains in those scoped areas."
+}
