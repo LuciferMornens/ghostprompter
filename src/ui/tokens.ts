@@ -31,6 +31,8 @@ const colorKeys = [
   "ember",
   "mint",
   "sunset",
+  "glow",
+  "shadow",
 ] as const;
 
 type ColorKey = (typeof colorKeys)[number];
@@ -52,6 +54,8 @@ const colors: TokenRecord<ColorKey> = {
   ember: "var(--color-gp-ember)",
   mint: "var(--color-gp-mint)",
   sunset: "var(--color-gp-sunset)",
+  glow: "var(--color-gp-glow)",
+  shadow: "var(--color-gp-shadow)",
 } as const;
 
 /* -----------------------------------------------------------------------
@@ -66,6 +70,9 @@ const glassKeys = [
   "hairline",
   "hairlineStrong",
   "highlight",
+  "surfaceLive",
+  "surfaceEditor",
+  "surfacePreview",
 ] as const;
 
 type GlassKey = (typeof glassKeys)[number];
@@ -78,6 +85,9 @@ const glass: TokenRecord<GlassKey> = {
   hairline: "var(--gp-hairline)",
   hairlineStrong: "var(--gp-hairline-strong)",
   highlight: "var(--gp-highlight)",
+  surfaceLive: "var(--gp-surface-live)",
+  surfaceEditor: "var(--gp-surface-editor)",
+  surfacePreview: "var(--gp-surface-preview)",
 } as const;
 
 /* -----------------------------------------------------------------------

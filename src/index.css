@@ -31,6 +31,10 @@
   --color-gp-mint: #8ab892;
   --color-gp-sunset: #d77a55;
 
+  /* Effect colors — used via color-mix() at various alphas */
+  --color-gp-glow: #fff0dc;
+  --color-gp-shadow: #000000;
+
   /* Interactive accent resolution */
   --color-gp-accent: var(--color-gp-bronze);
   --color-gp-live: var(--color-gp-amber);
@@ -48,6 +52,11 @@
   --gp-hairline: rgba(255, 248, 236, 0.07);
   --gp-hairline-strong: rgba(255, 248, 236, 0.13);
   --gp-highlight: rgba(255, 240, 220, 0.42);
+
+  /* Surface tokens u2014 specific panel/component base colors */
+  --gp-surface-live: #14110d;
+  --gp-surface-editor: #0a0a0c;
+  --gp-surface-preview: #101013;
 
   /* Legacy names preserved so existing tests & styles keep matching */
   --color-ghost-bg: var(--color-gp-ink);
@@ -513,14 +522,14 @@ textarea,
   height: 34px;
   padding: 0 18px;
   border-radius: 999px;
-  border: 1px solid rgba(199, 138, 74, 0.42);
+  border: 1px solid color-mix(in srgb, var(--color-gp-bronze) 42%, transparent);
   background:
     linear-gradient(
       180deg,
-      rgba(199, 138, 74, 0.22),
-      rgba(199, 138, 74, 0.04)
+      color-mix(in srgb, var(--color-gp-bronze) 22%, transparent),
+      color-mix(in srgb, var(--color-gp-bronze) 4%, transparent)
     ),
-    #14110d;
+    var(--gp-surface-live);
   color: var(--color-gp-paper);
   font-family: var(--font-sans);
   font-weight: 600;
@@ -528,10 +537,10 @@ textarea,
   letter-spacing: 0.015em;
   cursor: pointer;
   box-shadow:
-    inset 0 1px 0 rgba(255, 240, 220, 0.18),
-    inset 0 0 0 1px rgba(0, 0, 0, 0.35),
-    0 10px 28px -14px rgba(199, 138, 74, 0.55),
-    0 2px 0 rgba(0, 0, 0, 0.35);
+    inset 0 1px 0 color-mix(in srgb, var(--color-gp-glow) 18%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, var(--color-gp-shadow) 35%, transparent),
+    0 10px 28px -14px color-mix(in srgb, var(--color-gp-bronze) 55%, transparent),
+    0 2px 0 color-mix(in srgb, var(--color-gp-shadow) 35%, transparent);
   transition:
     transform 320ms var(--gp-spring-soft),
     box-shadow 320ms var(--gp-ease-swift),
@@ -545,7 +554,7 @@ textarea,
   border-radius: 999px;
   background: radial-gradient(
     90% 180% at 50% -10%,
-    rgba(255, 240, 220, 0.15),
+    color-mix(in srgb, var(--color-gp-glow) 15%, transparent),
     transparent 60%
   );
   pointer-events: none;
@@ -553,12 +562,12 @@ textarea,
 .gp-btn-live:hover {
   transform: translateY(-1px);
   filter: brightness(1.06);
-  border-color: rgba(224, 164, 106, 0.7);
+  border-color: color-mix(in srgb, var(--color-gp-copper) 70%, transparent);
   box-shadow:
-    inset 0 1px 0 rgba(255, 240, 220, 0.28),
-    inset 0 0 0 1px rgba(0, 0, 0, 0.3),
-    0 14px 34px -10px rgba(199, 138, 74, 0.65),
-    0 2px 0 rgba(0, 0, 0, 0.4);
+    inset 0 1px 0 color-mix(in srgb, var(--color-gp-glow) 28%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, var(--color-gp-shadow) 30%, transparent),
+    0 14px 34px -10px color-mix(in srgb, var(--color-gp-bronze) 65%, transparent),
+    0 2px 0 color-mix(in srgb, var(--color-gp-shadow) 40%, transparent);
 }
 .gp-btn-live:active {
   transform: translateY(0) scale(0.988);
@@ -570,8 +579,8 @@ textarea,
   border-radius: 999px;
   background: var(--color-gp-amber);
   box-shadow:
-    0 0 0 1px rgba(242, 182, 115, 0.55),
-    0 0 10px rgba(242, 182, 115, 0.75);
+    0 0 0 1px color-mix(in srgb, var(--color-gp-amber) 55%, transparent),
+    0 0 10px color-mix(in srgb, var(--color-gp-amber) 75%, transparent);
   animation: gp-live-pulse 2.6s var(--gp-ease) infinite;
 }
 @keyframes gp-live-pulse {
@@ -2007,14 +2016,14 @@ input[type="color"] {
   align-items: center;
   gap: 12px;
   padding: 7px 18px;
-  background: rgba(241, 237, 228, 0.022);
-  border: 1px solid rgba(241, 237, 228, 0.05);
+  background: color-mix(in srgb, var(--color-gp-paper) 2.2%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-gp-paper) 5%, transparent);
   border-radius: 999px;
   backdrop-filter: blur(14px) saturate(118%);
   -webkit-backdrop-filter: blur(14px) saturate(118%);
   box-shadow:
-    inset 0 1px 0 rgba(255, 240, 220, 0.05),
-    0 6px 18px -12px rgba(0, 0, 0, 0.55);
+    inset 0 1px 0 color-mix(in srgb, var(--color-gp-glow) 5%, transparent),
+    0 6px 18px -12px color-mix(in srgb, var(--color-gp-shadow) 55%, transparent);
   max-width: 460px;
   min-width: 0;
   transition:
@@ -2022,8 +2031,8 @@ input[type="color"] {
     background 260ms var(--gp-ease);
 }
 .gp-filecrest:hover {
-  border-color: rgba(241, 237, 228, 0.1);
-  background: rgba(241, 237, 228, 0.035);
+  border-color: color-mix(in srgb, var(--color-gp-paper) 10%, transparent);
+  background: color-mix(in srgb, var(--color-gp-paper) 3.5%, transparent);
 }
 .gp-filecrest__dot {
   width: 6px;
@@ -2031,16 +2040,16 @@ input[type="color"] {
   border-radius: 999px;
   background: var(--color-gp-bronze);
   box-shadow:
-    0 0 0 1px rgba(199, 138, 74, 0.32),
-    0 0 8px rgba(224, 164, 106, 0.5);
+    0 0 0 1px color-mix(in srgb, var(--color-gp-bronze) 32%, transparent),
+    0 0 8px color-mix(in srgb, var(--color-gp-copper) 50%, transparent);
   flex: 0 0 auto;
   animation: gp-chip-pulse 3.6s var(--gp-ease) infinite;
 }
 .gp-filecrest__dot--dirty {
   background: var(--color-gp-sunset);
   box-shadow:
-    0 0 0 1px rgba(215, 122, 85, 0.35),
-    0 0 9px rgba(215, 122, 85, 0.68);
+    0 0 0 1px color-mix(in srgb, var(--color-gp-sunset) 35%, transparent),
+    0 0 9px color-mix(in srgb, var(--color-gp-sunset) 68%, transparent);
   animation: gp-chip-pulse 2.4s var(--gp-ease) infinite;
 }
 .gp-filecrest__name {
@@ -2064,7 +2073,7 @@ input[type="color"] {
   background: linear-gradient(
     180deg,
     transparent,
-    rgba(241, 237, 228, 0.18),
+    color-mix(in srgb, var(--color-gp-paper) 18%, transparent),
     transparent
   );
   flex: 0 0 auto;
@@ -2234,14 +2243,14 @@ input[type="color"] {
   background:
     linear-gradient(
       180deg,
-      rgba(0, 0, 0, 0.18),
-      rgba(0, 0, 0, 0) 35%
+      color-mix(in srgb, var(--color-gp-shadow) 18%, transparent),
+      transparent 35%
     ),
-    #0a0a0c;
+    var(--gp-surface-editor);
   box-shadow:
-    inset 0 1px 0 rgba(0, 0, 0, 0.55),
-    inset 0 0 0 1px rgba(0, 0, 0, 0.5),
-    0 1px 0 rgba(255, 240, 220, 0.025);
+    inset 0 1px 0 color-mix(in srgb, var(--color-gp-shadow) 55%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, var(--color-gp-shadow) 50%, transparent),
+    0 1px 0 color-mix(in srgb, var(--color-gp-glow) 2.5%, transparent);
 }
 .gp-frame--editor::before {
   content: "";
@@ -2252,10 +2261,10 @@ input[type="color"] {
   width: 2px;
   background: linear-gradient(
     180deg,
-    rgba(199, 138, 74, 0),
-    rgba(199, 138, 74, 0.38) 18%,
-    rgba(199, 138, 74, 0.38) 82%,
-    rgba(199, 138, 74, 0)
+    color-mix(in srgb, var(--color-gp-bronze) 0%, transparent),
+    color-mix(in srgb, var(--color-gp-bronze) 38%, transparent) 18%,
+    color-mix(in srgb, var(--color-gp-bronze) 38%, transparent) 82%,
+    color-mix(in srgb, var(--color-gp-bronze) 0%, transparent)
   );
   pointer-events: none;
   z-index: 1;
@@ -2271,14 +2280,14 @@ input[type="color"] {
   background:
     radial-gradient(
       120% 80% at 50% 0%,
-      rgba(255, 240, 220, 0.022),
+      color-mix(in srgb, var(--color-gp-glow) 2.2%, transparent),
       transparent 55%
     ),
-    #101013;
+    var(--gp-surface-preview);
   box-shadow:
-    inset 0 1px 0 rgba(255, 240, 220, 0.045),
-    0 1px 0 rgba(0, 0, 0, 0.5),
-    0 18px 48px -28px rgba(0, 0, 0, 0.7);
+    inset 0 1px 0 color-mix(in srgb, var(--color-gp-glow) 4.5%, transparent),
+    0 1px 0 color-mix(in srgb, var(--color-gp-shadow) 50%, transparent),
+    0 18px 48px -28px color-mix(in srgb, var(--color-gp-shadow) 70%, transparent);
 }
 
 /* ---------- Footer status rail (flat, editorial) ---------- */
