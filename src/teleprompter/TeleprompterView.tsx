@@ -66,6 +66,23 @@ function isEditableKeyboardTarget(target: EventTarget | null) {
   );
 }
 
+/** Return true when the focused element is an interactive control that should
+ *  receive the native Space / Enter activation instead of our global handler. */
+function isInteractiveControl(el: Element | null): boolean {
+  if (!el || !(el instanceof HTMLElement)) return false;
+  const tag = el.tagName;
+  if (
+    tag === "BUTTON" ||
+    tag === "INPUT" ||
+    tag === "TEXTAREA" ||
+    tag === "SELECT"
+  ) return true;
+  const role = el.getAttribute("role");
+  if (role === "menuitem" || role === "menuitemcheckbox" || role === "menuitemradio") return true;
+  if (el.isContentEditable) return true;
+  return false;
+}
+
 function useScreenSize() {
   const [size, setSize] = useState<ScreenSize>(() => getFallbackDisplayBounds());
   const [ready, setReady] = useState(false);
@@ -424,6 +441,7 @@ export function TeleprompterView() {
     const onKey = (e: KeyboardEvent) => {
       if (e.defaultPrevented || isEditableKeyboardTarget(e.target)) return;
       if (e.key === " " && editMode) {
+        if (isInteractiveControl(document.activeElement)) return;
         e.preventDefault();
         setPlaying(!playing);
         return;

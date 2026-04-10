@@ -1121,6 +1121,44 @@ describe("VAL-TELE-011: Play/Pause", () => {
     });
     expect(useModeStore.getState().playing).toBe(false);
   });
+
+  it("spacebar on a focused button does NOT toggle playing", () => {
+    useModeStore.setState({ editMode: true, playing: false });
+    render(<TeleprompterView />);
+
+    // Focus a toolbar button so document.activeElement is a <button>
+    const playBtn = screen.getByRole("button", { name: "Play" });
+    playBtn.focus();
+    expect(document.activeElement).toBe(playBtn);
+
+    act(() => {
+      window.dispatchEvent(
+        new KeyboardEvent("keydown", { key: " ", bubbles: true }),
+      );
+    });
+    // Playing should remain false — Space should activate the button, not toggle playback
+    expect(useModeStore.getState().playing).toBe(false);
+  });
+
+  it("spacebar on a focused [role=menuitem] does NOT toggle playing", () => {
+    useModeStore.setState({ editMode: true, playing: false });
+    const { container } = render(<TeleprompterView />);
+
+    // Inject a temporary menuitem to simulate focus on a role="menuitem" element
+    const menuItem = document.createElement("div");
+    menuItem.setAttribute("role", "menuitem");
+    menuItem.tabIndex = 0;
+    container.appendChild(menuItem);
+    menuItem.focus();
+    expect(document.activeElement).toBe(menuItem);
+
+    act(() => {
+      window.dispatchEvent(
+        new KeyboardEvent("keydown", { key: " ", bubbles: true }),
+      );
+    });
+    expect(useModeStore.getState().playing).toBe(false);
+  });
 });
 
 // =========================================================================
