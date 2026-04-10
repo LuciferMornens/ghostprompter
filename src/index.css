@@ -1217,28 +1217,30 @@ input[type="color"] {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  border: 1px solid rgba(199, 138, 74, 0.48);
+  border: 1px solid rgba(199, 138, 74, 0.4);
   border-radius: inherit;
   box-shadow:
-    inset 0 0 0 1px rgba(199, 138, 74, 0.12),
-    0 0 72px -8px rgba(199, 138, 74, 0.38),
-    inset 0 0 60px rgba(199, 138, 74, 0.08);
-  animation: gp-edit-border-breathe 5.4s var(--gp-ease) infinite;
+    inset 0 0 0 1px rgba(199, 138, 74, 0.1),
+    inset 0 0 0 2px rgba(199, 138, 74, 0.04),
+    0 0 0 1px rgba(199, 138, 74, 0.22);
   z-index: 3;
 }
-@keyframes gp-edit-border-breathe {
-  0%, 100% {
-    box-shadow:
-      inset 0 0 0 1px rgba(199, 138, 74, 0.1),
-      0 0 96px -10px rgba(199, 138, 74, 0.34),
-      inset 0 0 80px rgba(199, 138, 74, 0.06);
-  }
-  50% {
-    box-shadow:
-      inset 0 0 0 1px rgba(224, 164, 106, 0.18),
-      0 0 120px -6px rgba(224, 164, 106, 0.46),
-      inset 0 0 100px rgba(199, 138, 74, 0.1);
-  }
+.gp-edit-mode-border::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  border: 1px solid rgba(224, 164, 106, 0.32);
+  opacity: 0.55;
+  pointer-events: none;
+  animation: gp-edit-border-pulse 4.8s var(--gp-ease) infinite;
+}
+@keyframes gp-edit-border-pulse {
+  0%, 100% { opacity: 0.38; }
+  50%      { opacity: 0.7; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gp-edit-mode-border::after { animation: none; opacity: 0.48; }
 }
 
 /* Close button (settings modal) */
@@ -1276,11 +1278,41 @@ input[type="color"] {
 .gp-vp {
   border-radius: var(--gp-radius-lg);
   box-shadow:
-    0 1px 0 rgba(255, 240, 220, 0.06) inset,
     0 0 0 1px rgba(0, 0, 0, 0.32) inset,
-    0 28px 80px -22px rgba(0, 0, 0, 0.64),
-    0 10px 32px -14px rgba(0, 0, 0, 0.52);
-  will-change: left, top, width, height;
+    0 1px 0 rgba(255, 240, 220, 0.08) inset,
+    0 30px 80px -28px rgba(0, 0, 0, 0.72),
+    0 12px 32px -18px rgba(0, 0, 0, 0.52);
+  isolation: isolate;
+  /* Drives container queries used by the HUD + control cluster so they
+     respond to the overlay's own width, not the whole window. */
+  container-type: inline-size;
+  container-name: vp;
+  transition:
+    box-shadow 240ms var(--gp-ease-swift);
+}
+
+/* While the user is actively dragging or resizing the overlay, strip the
+   expensive visual layers (blur, big shadows, breathing border) so the OS
+   drag/resize loop has as little to composite per frame as possible.
+   Everything cross-fades back when the gesture ends. */
+.gp-vp--gesturing {
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.32) inset,
+    0 12px 28px -16px rgba(0, 0, 0, 0.5);
+}
+.gp-vp--gesturing .gp-vp-hud,
+.gp-vp--gesturing ~ * .gp-snap-popover {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+.gp-vp--gesturing .gp-edit-mode-border {
+  animation: none !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(199, 138, 74, 0.22) !important;
+}
+.gp-vp--gesturing .gp-vp-handle,
+.gp-vp--gesturing .gp-vp-grip {
+  transition: none !important;
 }
 
 .gp-vp-handle {
@@ -1288,34 +1320,62 @@ input[type="color"] {
   cursor: grab;
   background: linear-gradient(
     180deg,
-    rgba(255, 240, 220, 0.035),
-    transparent 85%
+    rgba(255, 240, 220, 0.028),
+    transparent 88%
   );
   border-top-left-radius: inherit;
   border-top-right-radius: inherit;
   display: grid;
   place-items: center;
-  transition: background-color 220ms var(--gp-ease-swift);
+  transition:
+    background 260ms var(--gp-ease-swift),
+    box-shadow 260ms var(--gp-ease-swift);
+}
+.gp-vp-handle::before {
+  content: "";
+  position: absolute;
+  inset: 0 10% auto 10%;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(241, 237, 228, 0.12),
+    transparent
+  );
+  opacity: 0;
+  transition: opacity 260ms var(--gp-ease-swift);
+  pointer-events: none;
 }
 .gp-vp-handle:hover {
   background: linear-gradient(
     180deg,
-    rgba(199, 138, 74, 0.08),
+    rgba(199, 138, 74, 0.1),
     transparent 85%
   );
+}
+.gp-vp-handle:hover::before {
+  opacity: 1;
 }
 .gp-vp-handle:active {
   cursor: grabbing;
 }
 .gp-vp-handle-grip {
   display: block;
-  width: 36px;
-  height: 4px;
+  width: 40px;
+  height: 3px;
   border-radius: 999px;
-  background: rgba(241, 237, 228, 0.2);
+  background: rgba(241, 237, 228, 0.16);
   box-shadow:
-    inset 0 1px 0 rgba(255, 240, 220, 0.3),
-    0 0 0 1px rgba(0, 0, 0, 0.28);
+    inset 0 1px 0 rgba(255, 240, 220, 0.28),
+    0 0 0 1px rgba(0, 0, 0, 0.32);
+  transition:
+    background-color 240ms var(--gp-ease-swift),
+    width 260ms var(--gp-spring-soft);
+}
+.gp-vp-handle:hover .gp-vp-handle-grip {
+  background: rgba(224, 164, 106, 0.52);
+  width: 52px;
 }
 
 .gp-vp-grip {
@@ -1346,6 +1406,69 @@ input[type="color"] {
   );
 }
 
+/* Full perimeter resize hit zones (rendered only in edit mode). */
+.gp-vp-edge,
+.gp-vp-corner {
+  position: absolute;
+  z-index: 6;
+  background: transparent;
+  touch-action: none;
+}
+.gp-vp-edge--n {
+  top: 0;
+  left: 14px;
+  right: 14px;
+  height: 6px;
+  cursor: n-resize;
+}
+.gp-vp-edge--s {
+  bottom: 0;
+  left: 14px;
+  right: 14px;
+  height: 6px;
+  cursor: s-resize;
+}
+.gp-vp-edge--w {
+  top: 14px;
+  bottom: 14px;
+  left: 0;
+  width: 6px;
+  cursor: w-resize;
+}
+.gp-vp-edge--e {
+  top: 14px;
+  bottom: 14px;
+  right: 0;
+  width: 6px;
+  cursor: e-resize;
+}
+.gp-vp-corner {
+  width: 14px;
+  height: 14px;
+}
+.gp-vp-corner--nw {
+  top: 0;
+  left: 0;
+  cursor: nwse-resize;
+}
+.gp-vp-corner--ne {
+  top: 0;
+  right: 0;
+  cursor: nesw-resize;
+}
+.gp-vp-corner--sw {
+  bottom: 0;
+  left: 0;
+  cursor: nesw-resize;
+}
+/* SE corner keeps the visible grip block's larger hit target and sits
+   at the same z-index as the other perimeter handles, so it never gets
+   layered behind them. */
+.gp-vp-grip.gp-vp-corner--se {
+  width: 22px;
+  height: 22px;
+}
+
 .gp-vp-hud {
   padding: 6px 11px;
   border-radius: 999px;
@@ -1359,6 +1482,263 @@ input[type="color"] {
   gap: 8px;
   display: inline-flex;
   align-items: center;
+  max-width: calc(100cqw - 24px);
+  min-width: 0;
+}
+.gp-vp-hud > * {
+  min-width: 0;
+}
+
+/* =========================================================================
+   Teleprompter control cluster — responsive, professional
+   ========================================================================= */
+
+.gp-vp-cluster {
+  position: absolute;
+  left: 50%;
+  bottom: max(14px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: 20;
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  row-gap: 6px;
+  column-gap: 6px;
+  padding: 8px 10px;
+  background: rgba(9, 9, 11, 0.78);
+  backdrop-filter: blur(22px) saturate(118%);
+  -webkit-backdrop-filter: blur(22px) saturate(118%);
+  border: 1px solid rgba(241, 237, 228, 0.12);
+  border-radius: 16px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 240, 220, 0.18),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.28),
+    0 22px 56px -16px rgba(0, 0, 0, 0.72),
+    0 10px 28px -12px rgba(199, 138, 74, 0.2),
+    0 0 0 1px rgba(199, 138, 74, 0.08);
+  max-width: calc(100cqw - 20px);
+  min-width: 0;
+  isolation: isolate;
+}
+.gp-vp--gesturing .gp-vp-cluster {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.36),
+    0 10px 26px -14px rgba(0, 0, 0, 0.6) !important;
+}
+.gp-vp-cluster-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+.gp-vp-cluster-sep {
+  display: inline-block;
+  width: 1px;
+  height: 22px;
+  margin: 0 2px;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    rgba(241, 237, 228, 0.14),
+    transparent
+  );
+  flex-shrink: 0;
+}
+
+/* Speed pill — compact stacked label + value, collapses to inline readout. */
+.gp-vp-speed {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 10px;
+  min-width: 46px;
+  line-height: 1;
+  border-radius: 8px;
+  background: rgba(255, 240, 220, 0.025);
+  border: 1px solid rgba(255, 240, 220, 0.05);
+}
+.gp-vp-speed-label {
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-gp-paper-dim-2);
+  line-height: 1;
+}
+.gp-vp-speed-value {
+  margin-top: 3px;
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-gp-paper);
+  letter-spacing: -0.014em;
+  font-feature-settings: "tnum", "lnum";
+}
+.gp-vp-speed-unit {
+  display: none;
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  color: var(--color-gp-mute);
+  margin-top: 2px;
+}
+
+/* Icon button tweaks for the cluster — tighter padding, SVG alignment,
+   hideable label via container query. */
+.gp-vp-cluster .gp-icn {
+  min-width: 34px;
+  height: 32px;
+  padding: 0 10px;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 9px;
+}
+.gp-vp-cluster .gp-icn--compact {
+  min-width: 28px;
+  width: 28px;
+  padding: 0;
+}
+.gp-vp-cluster .gp-icn--primary {
+  min-width: 40px;
+  padding: 0 12px;
+}
+.gp-vp-cluster .gp-icn--danger:hover {
+  color: #f0b9a3;
+  border-color: rgba(220, 110, 80, 0.55);
+  background: rgba(220, 110, 80, 0.1);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 240, 220, 0.1),
+    0 8px 22px -12px rgba(220, 110, 80, 0.55);
+}
+.gp-icn-symbol {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  font-size: 14px;
+  line-height: 1;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+.gp-icn-svg {
+  flex-shrink: 0;
+}
+.gp-icn-label {
+  display: inline-block;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* =========================================================================
+   Responsive tiers — driven by the overlay panel's own width
+   ========================================================================= */
+
+/* Very narrow: hide the right-side speed chip in the HUD (we show speed in
+   the cluster) and tighten the panel. */
+@container vp (max-width: 520px) {
+  .gp-vp-hud.top-3.right-3 {
+    display: none;
+  }
+}
+
+/* Medium: hide text labels on Snap/Lock/Exit, keep icons. */
+@container vp (max-width: 560px) {
+  .gp-icn-label {
+    display: none;
+  }
+  .gp-vp-cluster .gp-icn {
+    min-width: 32px;
+    padding: 0;
+    width: 32px;
+    justify-content: center;
+  }
+  .gp-vp-cluster .gp-icn--primary {
+    min-width: 38px;
+    width: 38px;
+  }
+}
+
+/* Narrow: tighter gaps, even smaller buttons, speed pill label hides. */
+@container vp (max-width: 420px) {
+  .gp-vp-cluster {
+    padding: 6px 8px;
+    column-gap: 4px;
+    row-gap: 4px;
+    border-radius: 14px;
+  }
+  .gp-vp-cluster-group {
+    gap: 3px;
+  }
+  .gp-vp-cluster-sep {
+    height: 18px;
+    margin: 0 1px;
+  }
+  .gp-vp-speed {
+    padding: 2px 8px;
+    min-width: 40px;
+  }
+  .gp-vp-speed-label {
+    display: none;
+  }
+  .gp-vp-speed-value {
+    margin-top: 0;
+    font-size: 12px;
+  }
+  .gp-vp-cluster .gp-icn,
+  .gp-vp-cluster .gp-icn--primary {
+    height: 30px;
+    min-width: 30px;
+    width: 30px;
+  }
+  .gp-vp-cluster .gp-icn--primary {
+    min-width: 34px;
+    width: 34px;
+  }
+}
+
+/* Very narrow: let the cluster wrap to two rows instead of overflowing. */
+@container vp (max-width: 340px) {
+  .gp-vp-cluster {
+    max-width: calc(100cqw - 12px);
+  }
+  .gp-vp-cluster-sep {
+    display: none;
+  }
+  .gp-vp-cluster-group:nth-of-type(3) {
+    flex-basis: 100%;
+    justify-content: center;
+  }
+}
+
+/* Squish: if the panel is really tiny, pull the cluster closer to the
+   bottom edge and shrink the drag handle so it doesn't crowd the HUD. */
+@container vp (max-height: 260px) {
+  .gp-vp-cluster {
+    bottom: 8px;
+    padding: 6px 8px;
+  }
+  .gp-vp-handle {
+    height: 20px;
+  }
+}
+
+/* Extra-wide: slightly more breathing room. */
+@container vp (min-width: 820px) {
+  .gp-vp-cluster {
+    padding: 10px 14px;
+    column-gap: 8px;
+  }
+  .gp-vp-cluster-group {
+    gap: 6px;
+  }
 }
 
 /* =========================================================================

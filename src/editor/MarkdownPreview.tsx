@@ -1,3 +1,4 @@
+import { memo } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
@@ -7,7 +8,7 @@ type Props = {
   className?: string;
 };
 
-export function MarkdownPreview({ content, className }: Props) {
+function MarkdownPreviewImpl({ content, className }: Props) {
   return (
     <div className={`gp-prose ${className ?? ""}`}>
       <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
@@ -16,3 +17,5 @@ export function MarkdownPreview({ content, className }: Props) {
     </div>
   );
 }
+
+export const MarkdownPreview = memo(MarkdownPreviewImpl);

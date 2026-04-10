@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useScriptStore } from "@/store/scriptStore";
 import { useSettingsStore } from "@/store/settingsStore";
 import { useModeStore } from "@/store/modeStore";
 import { ipc } from "@/lib/ipc";
+import { onHotkey } from "@/lib/events";
 import { getDisplayBounds, getFallbackDisplayBounds } from "@/lib/displayBounds";
 import { MarkdownPreview } from "@/editor/MarkdownPreview";
 import { RecDot } from "@/ui/RecDot";
@@ -17,6 +18,16 @@ import {
   type Rect,
   type ScreenSize,
 } from "./viewportMath";
+
+type ResizeDirection =
+  | "North"
+  | "South"
+  | "East"
+  | "West"
+  | "NorthEast"
+  | "NorthWest"
+  | "SouthEast"
+  | "SouthWest";
 
 type SnapCell = { preset: Preset; label: string };
 const SNAP_GRID: SnapCell[][] = [
@@ -44,6 +55,16 @@ const SNAP_STRIPS: SnapCell[] = [
   { preset: "right", label: "Right column" },
   { preset: "full", label: "Full screen" },
 ];
+
+function isEditableKeyboardTarget(target: EventTarget | null) {
+  if (!(target instanceof HTMLElement)) return false;
+  return (
+    target.isContentEditable ||
+    target instanceof HTMLInputElement ||
+    target instanceof HTMLTextAreaElement ||
+    target instanceof HTMLSelectElement
+  );
+}
 
 function useScreenSize() {
   const [size, setSize] = useState<ScreenSize>(() => getFallbackDisplayBounds());
@@ -129,7 +150,9 @@ export function TeleprompterView() {
   ]);
 
   const [windowRect, setWindowRect] = useState<Rect | null>(null);
+  const [isGesturing, setIsGesturing] = useState(false);
   const initializedOverlayRef = useRef(false);
+  const isGesturingRef = useRef(false);
   const rect = windowRect ?? persistedRect;
   const rectRef = useRef(rect);
   useEffect(() => {
@@ -163,7 +186,11 @@ export function TeleprompterView() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [persistedRect, screen, settings.overlayX, settings.overlayY, settingsLoaded, update]);
 
-  useAutoScroll(scrollRef, settings.scrollSpeed, playing);
+  const setPaused = useCallback(() => {
+    setPlaying(false);
+  }, [setPlaying]);
+
+  useAutoScroll(scrollRef, settings.scrollSpeed, playing, setPaused);
 
   // =========================================================================
   // Native window move / resize sync
@@ -174,73 +201,147 @@ export function TeleprompterView() {
   // to let the OS own the gesture via Tauri's native drag/resize APIs, then
   // mirror the real window bounds back into React/settings from window events.
   // =========================================================================
-  const syncNativeRect = (patch: Partial<Rect>) => {
-    const next = {
-      x: patch.x ?? rectRef.current.x,
-      y: patch.y ?? rectRef.current.y,
-      w: patch.w ?? rectRef.current.w,
-      h: patch.h ?? rectRef.current.h,
+  // Move/resize events from the OS arrive per pixel. Writing Zustand +
+  // settings.json and refreshing monitor bounds on every one of them freezes
+  // the UI on Windows. We coalesce visual updates into a single rAF and only
+  // persist + refresh on a trailing debounce (gesture end).
+  const pendingRectRef = useRef<Rect | null>(null);
+  const rafRef = useRef(0);
+  const persistTimerRef = useRef<number | null>(null);
+  const gestureEndTimerRef = useRef<number | null>(null);
+
+  const cancelPendingSync = useCallback(() => {
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = 0;
+    }
+    if (persistTimerRef.current !== null) {
+      clearTimeout(persistTimerRef.current);
+      persistTimerRef.current = null;
+    }
+    if (gestureEndTimerRef.current !== null) {
+      clearTimeout(gestureEndTimerRef.current);
+      gestureEndTimerRef.current = null;
+    }
+    pendingRectRef.current = null;
+    if (isGesturingRef.current) {
+      isGesturingRef.current = false;
+      setIsGesturing(false);
+    }
+  }, []);
+
+  // Latest `update` / `refreshScreen` for async timers: callbacks read `.current`
+  // when they run (not when scheduled). Assign every render so there is no gap
+  // before an effect runs after identity changes.
+  const refreshScreenRef = useRef(refreshScreen);
+  refreshScreenRef.current = refreshScreen;
+  const updateSettingsRef = useRef(update);
+  updateSettingsRef.current = update;
+
+  // Stable identity so native listeners are not torn down mid-gesture; deps
+  // intentionally empty — refs above stay current.
+  const scheduleNativeRect = useCallback((patch: Partial<Rect>) => {
+    const base = pendingRectRef.current ?? rectRef.current;
+    const next: Rect = {
+      x: patch.x ?? base.x,
+      y: patch.y ?? base.y,
+      w: patch.w ?? base.w,
+      h: patch.h ?? base.h,
     };
-    rectRef.current = next;
-    setWindowRect(next);
-    void update({
-      overlayX: next.x,
-      overlayY: next.y,
-      overlayWidth: next.w,
-      overlayHeight: next.h,
-    });
-  };
+    pendingRectRef.current = next;
+
+    if (!isGesturingRef.current) {
+      isGesturingRef.current = true;
+      setIsGesturing(true);
+    }
+
+    if (!rafRef.current) {
+      rafRef.current = requestAnimationFrame(() => {
+        rafRef.current = 0;
+        const flush = pendingRectRef.current;
+        if (!flush) return;
+        rectRef.current = flush;
+        setWindowRect(flush);
+      });
+    }
+
+    if (persistTimerRef.current !== null) {
+      clearTimeout(persistTimerRef.current);
+    }
+    persistTimerRef.current = window.setTimeout(() => {
+      persistTimerRef.current = null;
+      const flush = pendingRectRef.current ?? rectRef.current;
+      pendingRectRef.current = null;
+      rectRef.current = flush;
+      void updateSettingsRef.current({
+        overlayX: flush.x,
+        overlayY: flush.y,
+        overlayWidth: flush.w,
+        overlayHeight: flush.h,
+      });
+      void refreshScreenRef.current();
+    }, 180);
+
+    if (gestureEndTimerRef.current !== null) {
+      clearTimeout(gestureEndTimerRef.current);
+    }
+    gestureEndTimerRef.current = window.setTimeout(() => {
+      gestureEndTimerRef.current = null;
+      isGesturingRef.current = false;
+      setIsGesturing(false);
+    }, 260);
+  }, []);
 
   useEffect(() => {
     const overlayWindow = overlayWindowRef.current;
-    if (!overlayWindow) return;
-
-    const toLogicalPosition = (
-      value: { x: number; y: number; toLogical?: (scale: number) => { x: number; y: number } },
-      scaleFactor: number,
-    ) =>
-      typeof value.toLogical === "function"
-        ? value.toLogical(scaleFactor)
-        : { x: value.x / scaleFactor, y: value.y / scaleFactor };
-
-    const toLogicalSize = (
-      value: {
-        width: number;
-        height: number;
-        toLogical?: (scale: number) => { width: number; height: number };
-      },
-      scaleFactor: number,
-    ) =>
-      typeof value.toLogical === "function"
-        ? value.toLogical(scaleFactor)
-        : { width: value.width / scaleFactor, height: value.height / scaleFactor };
-
-    const syncScaleFactor = () => Math.max(window.devicePixelRatio || 1, 1);
     const unlistens: Array<Promise<() => void>> = [];
 
-    unlistens.push(
-      overlayWindow
-        .onMoved(({ payload }) => {
-          const logical = toLogicalPosition(payload, syncScaleFactor());
-          syncNativeRect({ x: logical.x, y: logical.y });
-          void refreshScreen();
-        })
-        .catch(() => () => {}),
-    );
-    unlistens.push(
-      overlayWindow
-        .onResized(({ payload }) => {
-          const logical = toLogicalSize(payload, syncScaleFactor());
-          syncNativeRect({ w: logical.width, h: logical.height });
-          void refreshScreen();
-        })
-        .catch(() => () => {}),
-    );
+    if (overlayWindow) {
+      const toLogicalPosition = (
+        value: { x: number; y: number; toLogical?: (scale: number) => { x: number; y: number } },
+        scaleFactor: number,
+      ) =>
+        typeof value.toLogical === "function"
+          ? value.toLogical(scaleFactor)
+          : { x: value.x / scaleFactor, y: value.y / scaleFactor };
+
+      const toLogicalSize = (
+        value: {
+          width: number;
+          height: number;
+          toLogical?: (scale: number) => { width: number; height: number };
+        },
+        scaleFactor: number,
+      ) =>
+        typeof value.toLogical === "function"
+          ? value.toLogical(scaleFactor)
+          : { width: value.width / scaleFactor, height: value.height / scaleFactor };
+
+      const syncScaleFactor = () => Math.max(window.devicePixelRatio || 1, 1);
+
+      unlistens.push(
+        overlayWindow
+          .onMoved(({ payload }) => {
+            const logical = toLogicalPosition(payload, syncScaleFactor());
+            scheduleNativeRect({ x: logical.x, y: logical.y });
+          })
+          .catch(() => () => {}),
+      );
+      unlistens.push(
+        overlayWindow
+          .onResized(({ payload }) => {
+            const logical = toLogicalSize(payload, syncScaleFactor());
+            scheduleNativeRect({ w: logical.width, h: logical.height });
+          })
+          .catch(() => () => {}),
+      );
+    }
 
     return () => {
       unlistens.forEach((p) => p.then((fn) => fn()).catch(() => {}));
+      cancelPendingSync();
     };
-  }, [refreshScreen, update]);
+  }, [cancelPendingSync, scheduleNativeRect]);
 
   const onDragHandlePointerDown = (e: React.PointerEvent) => {
     if (!editMode) return;
@@ -251,14 +352,19 @@ export function TeleprompterView() {
     });
   };
 
-  const onResizeGripPointerDown = (e: React.PointerEvent) => {
-    if (!editMode) return;
-    e.preventDefault();
-    e.stopPropagation();
-    void overlayWindowRef.current?.startResizeDragging("SouthEast").catch((error) => {
-      console.error("overlay resize failed", error);
-    });
-  };
+  const startResize = (direction: ResizeDirection) =>
+    (e: React.PointerEvent) => {
+      if (!editMode) return;
+      e.preventDefault();
+      e.stopPropagation();
+      void overlayWindowRef.current
+        ?.startResizeDragging(direction)
+        .catch((error) => {
+          console.error("overlay resize failed", error);
+        });
+    };
+
+  const onResizeGripPointerDown = startResize("SouthEast");
 
   // =========================================================================
   // Snap presets popover
@@ -297,25 +403,63 @@ export function TeleprompterView() {
     });
   };
 
+  const jumpLines = useCallback((dir: 1 | -1) => {
+    const el = scrollRef.current;
+    if (!el) return;
+    setPaused();
+    const lineHeight = settings.fontSize * settings.lineHeight;
+    el.scrollTop += dir * lineHeight * 1.5;
+  }, [setPaused, settings.fontSize, settings.lineHeight]);
+
+  const jumpBoundary = useCallback((edge: "start" | "end") => {
+    const el = scrollRef.current;
+    if (!el) return;
+    setPaused();
+    el.scrollTop = edge === "start" ? 0 : el.scrollHeight;
+  }, [setPaused]);
+
   // =========================================================================
   // Keyboard
   // =========================================================================
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      if (e.defaultPrevented || isEditableKeyboardTarget(e.target)) return;
       if (e.key === " " && editMode) {
         e.preventDefault();
         setPlaying(!playing);
+        return;
+      }
+      if (e.altKey || e.ctrlKey || e.metaKey) return;
+      if (e.key === "ArrowUp") {
+        e.preventDefault();
+        jumpLines(-1);
+        return;
+      }
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        jumpLines(1);
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [playing, editMode, setPlaying]);
+  }, [editMode, jumpLines, playing, setPlaying]);
+
+  useEffect(() => {
+    const unlistens: Array<Promise<() => void>> = [];
+    unlistens.push(onHotkey("line-up", () => jumpLines(-1)));
+    unlistens.push(onHotkey("line-down", () => jumpLines(1)));
+    unlistens.push(onHotkey("jump-start", () => jumpBoundary("start")));
+    unlistens.push(onHotkey("jump-end", () => jumpBoundary("end")));
+    return () => {
+      unlistens.forEach((promise) => promise.then((fn) => fn()).catch(() => {}));
+    };
+  }, [jumpBoundary, jumpLines]);
 
   const onExit = async () => {
     try {
       await ipc.unregisterHotkeys();
       await ipc.exitTeleprompter();
-      setPlaying(false);
+      setPaused();
       setEditMode(false);
       setMode("editor");
     } catch (e) {
@@ -332,13 +476,6 @@ export function TeleprompterView() {
   const speedDelta = async (delta: number) => {
     const next = Math.max(5, Math.min(500, settings.scrollSpeed + delta));
     await update({ scrollSpeed: next });
-  };
-
-  const jumpLines = (dir: 1 | -1) => {
-    const el = scrollRef.current;
-    if (!el) return;
-    const lineHeight = settings.fontSize * settings.lineHeight;
-    el.scrollTop += dir * lineHeight * 1.5;
   };
 
   const transform = `${settings.mirrorHorizontal ? "scaleX(-1)" : ""} ${
@@ -378,7 +515,9 @@ export function TeleprompterView() {
           dimensions so layout inside the window is correct. */}
       <div
         data-gp-viewport
-        className="gp-vp absolute overflow-hidden"
+        className={`gp-vp absolute overflow-hidden${
+          isGesturing ? " gp-vp--gesturing" : ""
+        }`}
         style={{
           left: 0,
           top: 0,
@@ -419,7 +558,10 @@ export function TeleprompterView() {
             transform: transform || undefined,
           }}
         >
-          <div className="gp-prose gp-prose--stage max-w-[1400px] mx-auto">
+          <div
+            className="gp-prose gp-prose--stage max-w-[1400px] mx-auto"
+            style={{ contain: "layout paint" }}
+          >
             <MarkdownPreview content={content} />
           </div>
         </div>
@@ -537,123 +679,256 @@ export function TeleprompterView() {
           </div>
         )}
 
-        {/* Resize grip — bottom-right corner */}
+        {/* Resize hit zones — full perimeter in edit mode.
+            Edges are 6px invisible strips; corners are 14px squares. The
+            SE grip still shows a visible grab icon for discoverability and
+            keeps the data-gp-resize-grip hook that tests rely on. */}
+        {editMode && (
+          <>
+            <div
+              aria-hidden
+              className="gp-vp-edge gp-vp-edge--n"
+              onPointerDown={startResize("North")}
+            />
+            <div
+              aria-hidden
+              className="gp-vp-edge gp-vp-edge--s"
+              onPointerDown={startResize("South")}
+            />
+            <div
+              aria-hidden
+              className="gp-vp-edge gp-vp-edge--e"
+              onPointerDown={startResize("East")}
+            />
+            <div
+              aria-hidden
+              className="gp-vp-edge gp-vp-edge--w"
+              onPointerDown={startResize("West")}
+            />
+            <div
+              aria-hidden
+              className="gp-vp-corner gp-vp-corner--nw"
+              onPointerDown={startResize("NorthWest")}
+            />
+            <div
+              aria-hidden
+              className="gp-vp-corner gp-vp-corner--ne"
+              onPointerDown={startResize("NorthEast")}
+            />
+            <div
+              aria-hidden
+              className="gp-vp-corner gp-vp-corner--sw"
+              onPointerDown={startResize("SouthWest")}
+            />
+            <div
+              data-gp-resize-grip
+              aria-label="Resize"
+              role="button"
+              tabIndex={-1}
+              className="gp-vp-grip gp-vp-corner gp-vp-corner--se absolute bottom-0 right-0"
+              onPointerDown={onResizeGripPointerDown}
+            >
+              <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
+                <path
+                  d="M13 1 L1 13 M13 5 L5 13 M13 9 L9 13"
+                  stroke="currentColor"
+                  strokeWidth="1.3"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </div>
+          </>
+        )}
+
+        {/* ================= CONTROL CLUSTER =================
+            Rendered inside the viewport panel so the panel's container
+            query context (`container-type: inline-size`) drives its
+            responsive layout. The cluster collapses labels, then wraps to
+            two rows on very narrow panels. */}
         {editMode && (
           <div
-            data-gp-resize-grip
-            aria-label="Resize"
-            role="button"
-            tabIndex={-1}
-            className="gp-vp-grip absolute bottom-0 right-0"
-            onPointerDown={onResizeGripPointerDown}
-            style={{ zIndex: 4 }}
+            className="gp-vp-cluster gp-scale-in"
+            role="toolbar"
+            aria-label="Teleprompter controls"
           >
-            <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
-              <path
-                d="M13 1 L1 13 M13 5 L5 13 M13 9 L9 13"
-                stroke="currentColor"
-                strokeWidth="1.3"
-                strokeLinecap="round"
-              />
-            </svg>
+            <div className="gp-vp-cluster-group">
+              <IconBtn
+                onClick={() => speedDelta(-5)}
+                title="Slower"
+                ariaLabel="Slower"
+                compact
+              >
+                <span className="gp-icn-symbol" aria-hidden>
+                  −
+                </span>
+              </IconBtn>
+              <div className="gp-vp-speed" aria-live="polite">
+                <span className="gp-vp-speed-label">Speed</span>
+                <span className="gp-vp-speed-value tabular-nums">
+                  {settings.scrollSpeed}
+                </span>
+                <span className="gp-vp-speed-unit">px/s</span>
+              </div>
+              <IconBtn
+                onClick={() => speedDelta(5)}
+                title="Faster"
+                ariaLabel="Faster"
+                compact
+              >
+                <span className="gp-icn-symbol" aria-hidden>
+                  +
+                </span>
+              </IconBtn>
+            </div>
+
+            <span className="gp-vp-cluster-sep" aria-hidden />
+
+            <div className="gp-vp-cluster-group">
+              <IconBtn
+                onClick={() => jumpLines(-1)}
+                title="Line up"
+                ariaLabel="Line up"
+                compact
+              >
+                <span className="gp-icn-symbol" aria-hidden>
+                  ↑
+                </span>
+              </IconBtn>
+              <IconBtn
+                onClick={() => setPlaying(!playing)}
+                title={playing ? "Pause" : "Play"}
+                ariaLabel={playing ? "Pause" : "Play"}
+                hot={playing}
+                className="gp-icn--primary"
+              >
+                <span className="gp-icn-symbol" aria-hidden>
+                  {playing ? "⏸" : "▶"}
+                </span>
+              </IconBtn>
+              <IconBtn
+                onClick={() => jumpLines(1)}
+                title="Line down"
+                ariaLabel="Line down"
+                compact
+              >
+                <span className="gp-icn-symbol" aria-hidden>
+                  ↓
+                </span>
+              </IconBtn>
+            </div>
+
+            <span className="gp-vp-cluster-sep" aria-hidden />
+
+            <div className="gp-vp-cluster-group">
+              <div className="relative" ref={snapPopoverRef}>
+                <IconBtn
+                  onClick={() => setSnapOpen((v) => !v)}
+                  title="Snap to preset layout"
+                  ariaLabel="Snap"
+                  hot={snapOpen}
+                >
+                  <svg
+                    className="gp-icn-svg"
+                    width="14"
+                    height="14"
+                    viewBox="0 0 14 14"
+                    aria-hidden
+                  >
+                    <rect
+                      x="1.5"
+                      y="1.5"
+                      width="11"
+                      height="11"
+                      rx="1.5"
+                      stroke="currentColor"
+                      strokeWidth="1.3"
+                      fill="none"
+                    />
+                    <line
+                      x1="7"
+                      y1="1.5"
+                      x2="7"
+                      y2="12.5"
+                      stroke="currentColor"
+                      strokeWidth="1.3"
+                    />
+                    <line
+                      x1="1.5"
+                      y1="7"
+                      x2="12.5"
+                      y2="7"
+                      stroke="currentColor"
+                      strokeWidth="1.3"
+                    />
+                  </svg>
+                  <span className="gp-icn-label">Snap</span>
+                </IconBtn>
+                {snapOpen && (
+                  <SnapPopover
+                    onPick={applyPreset}
+                    current={rect}
+                    screen={screen}
+                  />
+                )}
+              </div>
+              <IconBtn
+                onClick={toggleEdit}
+                title="Lock overlay"
+                ariaLabel="Lock overlay"
+              >
+                <svg
+                  className="gp-icn-svg"
+                  width="13"
+                  height="14"
+                  viewBox="0 0 13 14"
+                  aria-hidden
+                >
+                  <rect
+                    x="1.5"
+                    y="6"
+                    width="10"
+                    height="7"
+                    rx="1.3"
+                    stroke="currentColor"
+                    strokeWidth="1.3"
+                    fill="none"
+                  />
+                  <path
+                    d="M3.5 6 V4.2 a3 3 0 0 1 6 0 V6"
+                    stroke="currentColor"
+                    strokeWidth="1.3"
+                    fill="none"
+                    strokeLinecap="round"
+                  />
+                </svg>
+                <span className="gp-icn-label">Lock</span>
+              </IconBtn>
+              <IconBtn
+                onClick={onExit}
+                title="Exit teleprompter"
+                ariaLabel="Exit teleprompter"
+                className="gp-icn--danger"
+              >
+                <svg
+                  className="gp-icn-svg"
+                  width="12"
+                  height="12"
+                  viewBox="0 0 12 12"
+                  aria-hidden
+                >
+                  <path
+                    d="M2 2 L10 10 M10 2 L2 10"
+                    stroke="currentColor"
+                    strokeWidth="1.4"
+                    strokeLinecap="round"
+                  />
+                </svg>
+                <span className="gp-icn-label">Exit</span>
+              </IconBtn>
+            </div>
           </div>
         )}
       </div>
-
-      {/* ================= CONTROL CLUSTER ================= */}
-      {editMode && (
-        <div
-          className="gp-scale-in absolute flex items-center gap-2"
-          style={{
-            left: "50%",
-            bottom: 14,
-            transform: "translateX(-50%)",
-            padding: "10px 12px",
-            background: "rgba(9, 9, 11, 0.78)",
-            backdropFilter: "blur(22px) saturate(118%)",
-            WebkitBackdropFilter: "blur(22px) saturate(118%)",
-            border: "1px solid rgba(241,237,228,0.12)",
-            borderRadius: 18,
-            boxShadow:
-              "inset 0 1px 0 rgba(255,240,220,0.18), inset 0 0 0 1px rgba(0,0,0,0.28), 0 22px 56px -16px rgba(0,0,0,0.72), 0 10px 28px -12px rgba(199,138,74,0.2), 0 0 0 1px rgba(199,138,74,0.08)",
-            pointerEvents: "auto",
-            zIndex: 20,
-          }}
-        >
-          <IconBtn onClick={() => speedDelta(-5)} title="Slower">
-            −
-          </IconBtn>
-          <div
-            className="px-3 flex flex-col items-center leading-none"
-            style={{ minWidth: 52 }}
-          >
-            <span
-              style={{
-                fontFamily: "var(--font-mono)",
-                fontSize: 8.5,
-                letterSpacing: "0.18em",
-                textTransform: "uppercase",
-                color: "var(--color-gp-paper-dim-2)",
-              }}
-            >
-              Speed
-            </span>
-            <span
-              className="mt-1 tabular-nums"
-              style={{
-                fontFamily: "var(--font-display)",
-                fontSize: 13,
-                color: "var(--color-gp-paper)",
-                fontWeight: 600,
-                letterSpacing: "-0.014em",
-                fontFeatureSettings: '"tnum", "lnum"',
-              }}
-            >
-              {settings.scrollSpeed}
-            </span>
-          </div>
-          <IconBtn onClick={() => speedDelta(5)} title="Faster">
-            +
-          </IconBtn>
-          <Separator />
-          <IconBtn
-            onClick={() => setPlaying(!playing)}
-            title={playing ? "Pause" : "Play"}
-            hot={playing}
-          >
-            {playing ? "⏸" : "▶"}
-          </IconBtn>
-          <IconBtn onClick={() => jumpLines(-1)} title="Line up">
-            ↑
-          </IconBtn>
-          <IconBtn onClick={() => jumpLines(1)} title="Line down">
-            ↓
-          </IconBtn>
-          <Separator />
-          <div className="relative" ref={snapPopoverRef}>
-            <IconBtn
-              onClick={() => setSnapOpen((v) => !v)}
-              title="Snap to preset layout"
-              hot={snapOpen}
-            >
-              Snap
-            </IconBtn>
-            {snapOpen && (
-              <SnapPopover
-                onPick={applyPreset}
-                current={rect}
-                screen={screen}
-              />
-            )}
-          </div>
-          <IconBtn onClick={toggleEdit} title="Lock overlay">
-            Lock
-          </IconBtn>
-          <IconBtn onClick={onExit} title="Exit teleprompter">
-            Exit
-          </IconBtn>
-        </div>
-      )}
 
       {/* Unobtrusive hint when NOT in edit mode */}
       {!editMode && !hidden && (
@@ -748,35 +1023,31 @@ function IconBtn({
   children,
   onClick,
   title,
+  ariaLabel,
   hot = false,
+  compact = false,
+  className,
 }: {
   children: React.ReactNode;
   onClick: () => void;
   title?: string;
+  ariaLabel?: string;
   hot?: boolean;
+  compact?: boolean;
+  className?: string;
 }) {
   return (
     <button
+      type="button"
       onClick={onClick}
       title={title}
-      className={`gp-icn ${hot ? "gp-icn-hot" : ""}`.trim()}
+      aria-label={ariaLabel ?? title}
+      className={`gp-icn${hot ? " gp-icn-hot" : ""}${
+        compact ? " gp-icn--compact" : ""
+      }${className ? " " + className : ""}`}
     >
       {children}
     </button>
-  );
-}
-
-function Separator() {
-  return (
-    <span
-      className="h-6 mx-1"
-      style={{
-        width: 1,
-        background:
-          "linear-gradient(180deg, transparent, rgba(241,237,228,0.13), transparent)",
-      }}
-      aria-hidden
-    />
   );
 }
 

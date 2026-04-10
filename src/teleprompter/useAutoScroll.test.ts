@@ -33,6 +33,24 @@ function makeRef(overrides: Partial<HTMLDivElement> = {}) {
   return { current: el };
 }
 
+function makeRoundedRef(overrides: Partial<HTMLDivElement> = {}) {
+  let scrollTop = 0;
+  const el = {
+    clientHeight: 100,
+    scrollHeight: 1000,
+    ...overrides,
+  } as Partial<HTMLDivElement>;
+  Object.defineProperty(el, "scrollTop", {
+    configurable: true,
+    enumerable: true,
+    get: () => scrollTop,
+    set: (value: number) => {
+      scrollTop = Math.round(value);
+    },
+  });
+  return { current: el as HTMLDivElement };
+}
+
 beforeEach(() => {
   rafQueue = new Map();
   rafIdCounter = 0;
@@ -87,6 +105,17 @@ describe("useAutoScroll", () => {
     expect(ref.current.scrollTop).toBeCloseTo(125, 5);
   });
 
+  it("keeps accumulating low speeds when scrollTop rounds to whole pixels", () => {
+    const ref = makeRoundedRef();
+    renderHook(() => useAutoScroll(ref, 20, true));
+
+    for (let i = 0; i < 10; i += 1) {
+      flushRaf(16);
+    }
+
+    expect(ref.current.scrollTop).toBeGreaterThan(0);
+  });
+
   it("stops scheduling rAF when reaching the end", () => {
     const ref = makeRef({
       scrollTop: 0,
@@ -100,6 +129,20 @@ describe("useAutoScroll", () => {
     flushRaf(1000);
     // No additional rAF should be scheduled
     expect(rafQueueLength()).toBe(0);
+  });
+
+  it("calls onStop when reaching the end", () => {
+    const ref = makeRef({
+      scrollTop: 0,
+      clientHeight: 100,
+      scrollHeight: 200,
+    });
+    const onStop = vi.fn();
+    renderHook(() => useAutoScroll(ref, 200, true, onStop));
+
+    flushRaf(1000);
+
+    expect(onStop).toHaveBeenCalledTimes(1);
   });
 
   it("calls cancelAnimationFrame on unmount while playing", () => {

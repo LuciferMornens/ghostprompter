@@ -11,6 +11,7 @@ const {
   emitMoved,
   emitResized,
   resetNativeWindowListeners,
+  hotkeyListeners,
 } = vi.hoisted(() => {
   let movedHandler:
     | ((event: {
@@ -61,6 +62,7 @@ const {
       movedHandler = null;
       resizedHandler = null;
     },
+    hotkeyListeners: new Map<string, (event: { payload: unknown }) => void>(),
   };
 });
 
@@ -78,7 +80,12 @@ vi.mock("@tauri-apps/api/window", () => ({
   }),
 }));
 vi.mock("@tauri-apps/api/event", () => ({
-  listen: vi.fn().mockResolvedValue(() => {}),
+  listen: vi.fn(async (event: string, handler: (event: { payload: unknown }) => void) => {
+    hotkeyListeners.set(event, handler);
+    return () => {
+      hotkeyListeners.delete(event);
+    };
+  }),
 }));
 vi.mock("@tauri-apps/plugin-dialog", () => ({
   open: vi.fn(),
@@ -119,6 +126,7 @@ beforeEach(() => {
   onMovedMock.mockClear();
   onResizedMock.mockClear();
   resetNativeWindowListeners();
+  hotkeyListeners.clear();
 
   useModeStore.setState({
     mode: "teleprompter",
@@ -215,6 +223,24 @@ describe("<TeleprompterView />", () => {
     render(<TeleprompterView />);
     await user.click(screen.getByTitle("Play"));
     expect(useModeStore.getState().playing).toBe(true);
+  });
+
+  it("arrow navigation pauses playback so a single restart action is correct", () => {
+    useModeStore.setState({ editMode: true, playing: true });
+    const { container } = render(<TeleprompterView />);
+    const scrollable = container.querySelector(".gp-no-scrollbar") as HTMLDivElement;
+    Object.defineProperty(scrollable, "scrollTop", {
+      value: 120,
+      writable: true,
+      configurable: true,
+    });
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }));
+    });
+
+    expect(useModeStore.getState().playing).toBe(false);
+    expect(scrollable.scrollTop).toBeGreaterThan(120);
   });
 
   it("clicking Exit unregisters hotkeys, exits teleprompter, and resets mode state", async () => {
@@ -511,6 +537,59 @@ describe("<TeleprompterView /> movable viewport", () => {
     expect(viewport.style.height).toBe("640px");
   });
 
+  it(
+    "coalesces a burst of native resize events into one settings write",
+    async () => {
+      const realUpdate = useSettingsStore.getState().update;
+      const updateSpy = vi.fn(
+        async (patch: Partial<typeof DEFAULT_SETTINGS>) => {
+          await realUpdate(patch);
+        },
+      );
+      useModeStore.setState({ editMode: true });
+      useSettingsStore.setState({
+        settings: {
+          ...DEFAULT_SETTINGS,
+          overlayX: 100,
+          overlayY: 100,
+          overlayWidth: 320,
+          overlayHeight: 220,
+        },
+        loaded: true,
+        update: updateSpy,
+      });
+      render(<TeleprompterView />);
+
+      // Fire 10 resize events back to back, simulating a per-pixel gesture.
+      act(() => {
+        for (let i = 1; i <= 10; i++) {
+          emitResized({
+            width: 400 + i,
+            height: 300 + i,
+            toLogical: () => ({ width: 400 + i, height: 300 + i }),
+          });
+        }
+      });
+
+      await waitFor(() => {
+        expect(useSettingsStore.getState().settings.overlayWidth).toBe(410);
+      });
+      expect(useSettingsStore.getState().settings.overlayHeight).toBe(310);
+      // Exactly one trailing rect write, not one per event.
+      const rectWrites = updateSpy.mock.calls.filter((call) => {
+        const patch = call[0] as Partial<typeof DEFAULT_SETTINGS>;
+        return (
+          "overlayX" in patch &&
+          "overlayY" in patch &&
+          "overlayWidth" in patch &&
+          "overlayHeight" in patch
+        );
+      });
+      expect(rectWrites).toHaveLength(1);
+      useSettingsStore.setState({ update: realUpdate });
+    },
+  );
+
   it("renders a Snap button and opens the snap popover", async () => {
     useModeStore.setState({ editMode: true });
     const user = userEvent.setup();
@@ -591,5 +670,49 @@ describe("<TeleprompterView /> movable viewport", () => {
     expect(
       (container.querySelector("[data-gp-viewport]") as HTMLElement).style.pointerEvents,
     ).toBe("auto");
+  });
+
+  it("line-down hotkey pauses playback and scrolls the script", async () => {
+    useModeStore.setState({ editMode: false, playing: true });
+    const { container } = render(<TeleprompterView />);
+    const scrollable = container.querySelector(".gp-no-scrollbar") as HTMLDivElement;
+    Object.defineProperty(scrollable, "scrollTop", {
+      value: 40,
+      writable: true,
+      configurable: true,
+    });
+
+    await waitFor(() => {
+      expect(hotkeyListeners.get("hotkey://line-down")).toBeDefined();
+    });
+
+    act(() => {
+      hotkeyListeners.get("hotkey://line-down")?.({ payload: undefined });
+    });
+
+    expect(useModeStore.getState().playing).toBe(false);
+    expect(scrollable.scrollTop).toBeGreaterThan(40);
+  });
+
+  it("jump-start hotkey pauses playback and seeks to the top", async () => {
+    useModeStore.setState({ editMode: false, playing: true });
+    const { container } = render(<TeleprompterView />);
+    const scrollable = container.querySelector(".gp-no-scrollbar") as HTMLDivElement;
+    Object.defineProperty(scrollable, "scrollTop", {
+      value: 320,
+      writable: true,
+      configurable: true,
+    });
+
+    await waitFor(() => {
+      expect(hotkeyListeners.get("hotkey://jump-start")).toBeDefined();
+    });
+
+    act(() => {
+      hotkeyListeners.get("hotkey://jump-start")?.({ payload: undefined });
+    });
+
+    expect(useModeStore.getState().playing).toBe(false);
+    expect(scrollable.scrollTop).toBe(0);
   });
 });

@@ -63,7 +63,6 @@ fn apply_overlay_rect(window: &WebviewWindow, rect: OverlayRect) -> Result<()> {
     let rect = normalize_overlay_rect(rect);
     window.set_size(LogicalSize::new(rect.w, rect.h))?;
     window.set_position(LogicalPosition::new(rect.x, rect.y))?;
-    let _ = window.set_shadow(false);
     Ok(())
 }
 
@@ -94,6 +93,9 @@ pub async fn enter_teleprompter_mode(
     window.set_skip_taskbar(true)?;
     window.set_resizable(true)?;
     window.set_ignore_cursor_events(false)?;
+    // Overlay is a transparent frameless window; disabling the OS drop-shadow
+    // once here keeps per-frame `set_overlay_rect` cheap during drag/resize.
+    let _ = window.set_shadow(false);
     platform::set_capture_hidden(&window, true)?;
     apply_overlay_rect(&window, rect)?;
     window.show()?;
