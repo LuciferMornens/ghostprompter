@@ -5,7 +5,7 @@ import { useSettingsStore } from "@/store/settingsStore";
 import { ipc } from "@/lib/ipc";
 import { scriptStats } from "@/lib/scriptStats";
 import { getDisplayBounds } from "@/lib/displayBounds";
-import { StatBlock } from "@/ui/StatBlock";
+import { BrandMark, PanelHeader, StatBlock } from "@/ui";
 import { MarkdownEditor } from "./MarkdownEditor";
 import { MarkdownPreview } from "./MarkdownPreview";
 import { SettingsModal } from "@/settings/SettingsModal";
@@ -175,53 +175,7 @@ export function EditorView() {
   );
 }
 
-function BrandMark() {
-  return (
-    <div className="gp-brand-mark" aria-hidden>
-      <svg
-        width="16"
-        height="16"
-        viewBox="0 0 18 18"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        style={{ position: "relative" }}
-      >
-        <path
-          d="M3 8a6 6 0 1 1 12 0v8l-2-1.5L11 16l-2-1.5L7 16l-2-1.5L3 16V8Z"
-          stroke="#f1ede4"
-          strokeOpacity="0.94"
-          strokeWidth="1.25"
-          strokeLinejoin="round"
-        />
-        <circle cx="7" cy="8.5" r="0.95" fill="#e0a46a" />
-        <circle cx="11" cy="8.5" r="0.95" fill="#e0a46a" />
-      </svg>
-    </div>
-  );
-}
 
-function PanelHeader({
-  numeral,
-  label,
-  meta,
-}: {
-  numeral: string;
-  label: string;
-  meta: string;
-}) {
-  return (
-    <div className="gp-panelhead">
-      <div className="gp-panelhead__lead">
-        <span className="gp-panelhead__numeral" aria-hidden>
-          {numeral}
-        </span>
-        <span className="gp-panelhead__rule" aria-hidden />
-        <span className="gp-panelhead__label">{label}</span>
-      </div>
-      <span className="gp-panelhead__meta">{meta}</span>
-    </div>
-  );
-}
 
 function KbdHint({ keys, label }: { keys: string[]; label: string }) {
   return (
