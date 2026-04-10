@@ -66,12 +66,6 @@ export function EditorView() {
       <header className="gp-topbar gp-reveal gp-reveal-1">
         <div className="gp-topbar-left">
           <BrandMark />
-          <div className="gp-wordmark">
-            <span className="gp-wordmark-title">
-              Ghost<em>prompter</em>
-            </span>
-            <span className="gp-wordmark-kicker">a quiet teleprompter</span>
-          </div>
         </div>
 
         <div className="gp-topbar-center">

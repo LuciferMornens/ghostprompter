@@ -33,6 +33,12 @@ export function BrandMark({ className }: BrandMarkProps) {
         <circle cx="7" cy="8.5" r="0.95" fill="var(--color-gp-bronze)" />
         <circle cx="11" cy="8.5" r="0.95" fill="var(--color-gp-bronze)" />
       </svg>
+      <div className="gp-wordmark">
+        <span className="gp-wordmark-title">
+          Ghost<em>prompter</em>
+        </span>
+        <span className="gp-wordmark-kicker">a quiet teleprompter</span>
+      </div>
     </div>
   );
 }
