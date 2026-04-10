@@ -5,7 +5,7 @@ import { useSettingsStore } from "@/store/settingsStore";
 import { ipc } from "@/lib/ipc";
 import { scriptStats } from "@/lib/scriptStats";
 import { getDisplayBounds } from "@/lib/displayBounds";
-import { BrandMark, KbdHint, PanelHeader, StatBlock } from "@/ui";
+import { BrandMark, KbdHint, PanelHeader, StatBlock, ToolbarButton } from "@/ui";
 import { MarkdownEditor } from "./MarkdownEditor";
 import { MarkdownPreview } from "./MarkdownPreview";
 import { SettingsModal } from "@/settings/SettingsModal";
@@ -175,23 +175,3 @@ export function EditorView() {
   );
 }
 
-
-
-function ToolbarButton({
-  children,
-  onClick,
-  className,
-}: {
-  children: React.ReactNode;
-  onClick: () => void;
-  className?: string;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={`gp-btn gp-btn--ghost ${className ?? ""}`.trim()}
-    >
-      {children}
-    </button>
-  );
-}

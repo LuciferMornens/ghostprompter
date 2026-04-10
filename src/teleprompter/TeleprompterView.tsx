@@ -7,7 +7,7 @@ import { ipc } from "@/lib/ipc";
 import { onHotkey } from "@/lib/events";
 import { getDisplayBounds, getFallbackDisplayBounds } from "@/lib/displayBounds";
 import { MarkdownPreview } from "@/editor/MarkdownPreview";
-import { RecDot } from "@/ui/RecDot";
+import { RecDot, IconBtn } from "@/ui";
 import { useAutoScroll } from "./useAutoScroll";
 import { ReadingLine } from "./ReadingLine";
 import {
@@ -1015,38 +1015,6 @@ function SnapPopover({
         ))}
       </div>
     </div>
-  );
-}
-
-function IconBtn({
-  children,
-  onClick,
-  title,
-  ariaLabel,
-  hot = false,
-  compact = false,
-  className,
-}: {
-  children: React.ReactNode;
-  onClick: () => void;
-  title?: string;
-  ariaLabel?: string;
-  hot?: boolean;
-  compact?: boolean;
-  className?: string;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      title={title}
-      aria-label={ariaLabel ?? title}
-      className={`gp-icn${hot ? " gp-icn-hot" : ""}${
-        compact ? " gp-icn--compact" : ""
-      }${className ? " " + className : ""}`}
-    >
-      {children}
-    </button>
   );
 }
 

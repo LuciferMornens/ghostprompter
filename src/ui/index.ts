@@ -12,3 +12,9 @@ export type { RecDotProps } from "./RecDot";
 
 export { KbdHint } from "./KbdHint";
 export type { KbdHintProps } from "./KbdHint";
+
+export { ToolbarButton } from "./ToolbarButton";
+export type { ToolbarButtonProps } from "./ToolbarButton";
+
+export { IconBtn } from "./IconBtn";
+export type { IconBtnProps } from "./IconBtn";
