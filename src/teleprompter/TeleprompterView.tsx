@@ -475,13 +475,17 @@ export function TeleprompterView() {
   const onExit = async () => {
     try {
       await ipc.unregisterHotkeys();
+    } catch (e) {
+      console.error("unregister hotkeys failed (continuing exit)", e);
+    }
+    try {
       await ipc.exitTeleprompter();
-      setPaused();
-      setEditMode(false);
-      setMode("editor");
     } catch (e) {
       console.error("exit teleprompter failed", e);
     }
+    setPaused();
+    setEditMode(false);
+    setMode("editor");
   };
 
   const toggleEdit = async () => {

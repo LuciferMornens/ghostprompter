@@ -1348,6 +1348,31 @@ describe("VAL-TELE-013: Exit flow", () => {
     expect(useModeStore.getState().editMode).toBe(false);
     expect(useModeStore.getState().mode).toBe("editor");
   });
+
+  it("exit completes even when unregisterHotkeys rejects", async () => {
+    useModeStore.setState({ editMode: true, playing: true, mode: "teleprompter" });
+    invokeMock.mockImplementation(async (cmd: string) => {
+      if (cmd === "unregister_hotkeys") {
+        throw new Error("hotkey unregister failed");
+      }
+      return undefined;
+    });
+    const user = userEvent.setup();
+    render(<TeleprompterView />);
+
+    await user.click(screen.getByRole("button", { name: "Exit teleprompter" }));
+    await Promise.resolve();
+    await Promise.resolve();
+
+    // exitTeleprompter should still be called despite unregisterHotkeys failing
+    const calls = invokeMock.mock.calls.map((call) => call[0]);
+    expect(calls).toContain("exit_teleprompter_mode");
+
+    // State should be fully reset to editor
+    expect(useModeStore.getState().playing).toBe(false);
+    expect(useModeStore.getState().editMode).toBe(false);
+    expect(useModeStore.getState().mode).toBe("editor");
+  });
 });
 
 // =========================================================================
