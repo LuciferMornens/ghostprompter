@@ -1,0 +1,50 @@
+{
+  "milestone": "overlay",
+  "round": 2,
+  "status": "fail",
+  "validatorsRun": {
+    "test": {
+      "passed": true,
+      "command": "npm --prefix \"D:\\coding\\somewhat\" test",
+      "exitCode": 0
+    },
+    "typecheck": {
+      "passed": true,
+      "command": "npm --prefix \"D:\\coding\\somewhat\" run typecheck",
+      "exitCode": 0
+    },
+    "lint": {
+      "passed": true,
+      "command": "npm --prefix \"D:\\coding\\somewhat\" run lint",
+      "exitCode": 0
+    }
+  },
+  "reviewsSummary": {
+    "total": 2,
+    "passed": 1,
+    "failed": 1,
+    "failedFeatures": [
+      "fix-exit-resilience"
+    ]
+  },
+  "blockingIssues": [
+    {
+      "featureId": "fix-exit-resilience",
+      "severity": "blocking",
+      "description": "Commit `95ef80b` hardens `TeleprompterView.onExit`, but `src/App.tsx:119` still wraps `unregisterHotkeys()`, `exitTeleprompter()`, and local mode cleanup for the `hotkey://stop` path in one `try`. If `unregisterHotkeys()` rejects there, the overlay can still fail to exit and remain stuck in teleprompter mode."
+    }
+  ],
+  "appliedUpdates": [],
+  "suggestedGuidanceUpdates": [],
+  "rejectedObservations": [
+    {
+      "observation": "The `frontend-redesign` skill procedure still does not match how small fix sessions are actually executed or reported.",
+      "reason": "Already documented in round 1 synthesis as a systemic frontend-redesign skill guidance issue; this rerun did not add materially different evidence."
+    },
+    {
+      "observation": "Workers are still pointed at `.factory/library/README.md` even though this repository has no such shared-library index file.",
+      "reason": "Already documented in round 1 synthesis as a worker bootstrap/shared-library guidance issue; this rerun only repeated the same dead-end lookup."
+    }
+  ],
+  "previousRound": ".factory/validation/overlay/scrutiny/synthesis.round1.json"
+}

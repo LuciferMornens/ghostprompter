@@ -1,0 +1,21 @@
+{
+  "featureId": "fix-app-stop-exit-resilience",
+  "reviewedAt": "2026-04-10T18:45:30.5282292+02:00",
+  "commitId": "3b6f4e2",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "pass",
+  "codeReview": {
+    "summary": "Pass. The prior blocking issue from `fix-exit-resilience` is now covered: `src/App.tsx` splits `ipc.unregisterHotkeys()` from the rest of the stop flow, then still calls `ipc.exitTeleprompter()` and unconditionally resets local teleprompter state to editor mode. The new regression test exercises the reject path and verifies the exit IPC plus state reset still happen.",
+    "issues": []
+  },
+  "sharedStateObservations": [
+    {
+      "area": "skills",
+      "observation": "The `frontend-redesign` skill procedure still does not match how this small bug-fix session was actually executed or reported.",
+      "evidence": "D:\\coding\\somewhat\\.factory\\skills\\frontend-redesign\\SKILL.md:21 requires invoking `frontend-design` at session start, line 31 requires reading `.factory/library/architecture.md`, and lines 41-45 require a RED test-first phase. But C:\\Users\\mitte\\.factory\\missions\\fe650437-0d94-4ece-8085-ac6da736d0ec\\worker-transcripts.jsonl:28 shows the worker only invoked `mission-worker-base`, read mission files plus `src/App.tsx`/`src/App.test.tsx`, and ran baseline tests before editing; it never invoked `frontend-redesign` or read `architecture.md`. The handoff at C:\\Users\\mitte\\.factory\\missions\\fe650437-0d94-4ece-8085-ac6da736d0ec\\handoffs\\2026-04-10T16-41-57-311Z__fix-app-stop-exit-resilience__ec4846df-7182-474e-962e-4df981f89475.json:43-44 still records `followedProcedure: true` with no deviations."
+    }
+  ],
+  "addressesFailureFrom": ".factory/validation/overlay/scrutiny/reviews/fix-exit-resilience.json",
+  "summary": "Pass. I reviewed prior failure `fix-exit-resilience` (commit `95ef80b`) and the rerun fix `fix-app-stop-exit-resilience` (commit `3b6f4e2`). The previously-missed App-level `hotkey://stop` path now mirrors the TeleprompterView resilience fix, and `src/App.test.tsx` adds a focused regression test proving exit still completes when `unregisterHotkeys()` rejects."
+}

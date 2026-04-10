@@ -1,7 +1,7 @@
 {
   "milestone": "overlay",
-  "round": 2,
-  "status": "fail",
+  "round": 3,
+  "status": "pass",
   "validatorsRun": {
     "test": {
       "passed": true,
@@ -20,31 +20,19 @@
     }
   },
   "reviewsSummary": {
-    "total": 2,
+    "total": 1,
     "passed": 1,
-    "failed": 1,
-    "failedFeatures": [
-      "fix-exit-resilience"
-    ]
+    "failed": 0,
+    "failedFeatures": []
   },
-  "blockingIssues": [
-    {
-      "featureId": "fix-exit-resilience",
-      "severity": "blocking",
-      "description": "Commit `95ef80b` hardens `TeleprompterView.onExit`, but `src/App.tsx:119` still wraps `unregisterHotkeys()`, `exitTeleprompter()`, and local mode cleanup for the `hotkey://stop` path in one `try`. If `unregisterHotkeys()` rejects there, the overlay can still fail to exit and remain stuck in teleprompter mode."
-    }
-  ],
+  "blockingIssues": [],
   "appliedUpdates": [],
   "suggestedGuidanceUpdates": [],
   "rejectedObservations": [
     {
-      "observation": "The `frontend-redesign` skill procedure still does not match how small fix sessions are actually executed or reported.",
-      "reason": "Already documented in round 1 synthesis as a systemic frontend-redesign skill guidance issue; this rerun did not add materially different evidence."
-    },
-    {
-      "observation": "Workers are still pointed at `.factory/library/README.md` even though this repository has no such shared-library index file.",
-      "reason": "Already documented in round 1 synthesis as a worker bootstrap/shared-library guidance issue; this rerun only repeated the same dead-end lookup."
+      "observation": "The `frontend-redesign` skill procedure still does not match how this small bug-fix session was actually executed or reported.",
+      "reason": "Already documented in overlay scrutiny rounds 1 and 2 as a systemic frontend-redesign skill guidance issue; this rerun added no materially new guidance."
     }
   ],
-  "previousRound": ".factory/validation/overlay/scrutiny/synthesis.round1.json"
+  "previousRound": ".factory/validation/overlay/scrutiny/synthesis.round2.json"
 }
