@@ -1,8 +1,8 @@
-type Props = {
+export interface RecDotProps {
   active: boolean;
-};
+}
 
-export function RecDot({ active }: Props) {
+export function RecDot({ active }: RecDotProps) {
   return (
     <span
       className={`gp-rec-dot ${active ? "" : "gp-rec-dot--idle"}`.trim()}
