@@ -44,6 +44,13 @@ describe("<MarkdownEditor />", () => {
     expect(ta.placeholder.toLowerCase()).toContain("markdown");
   });
 
+  it("has spellCheck enabled", () => {
+    render(<MarkdownEditor />);
+    const ta = screen.getByRole("textbox") as HTMLTextAreaElement;
+    // React sets the attribute "spellcheck" via the spellCheck prop
+    expect(ta.getAttribute("spellcheck")).toBe("true");
+  });
+
   it("typing updates the script store content", async () => {
     const user = userEvent.setup();
     // Start with empty content so userEvent.type appends predictably.

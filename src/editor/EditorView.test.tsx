@@ -512,6 +512,60 @@ describe("<EditorView /> — Save file flow (VAL-EDIT-006)", () => {
 });
 
 /* ============================================================
+   VAL-EDIT-007: Dual panels render with correct headers
+   ============================================================ */
+describe("<EditorView /> — dual panel headers (VAL-EDIT-007)", () => {
+  it("first section has PanelHeader '01 — Script' with meta 'draft · markdown'", () => {
+    const { container } = render(<EditorView />);
+    const main = container.querySelector("main");
+    expect(main).not.toBeNull();
+    const sections = main!.querySelectorAll(":scope > section");
+    expect(sections.length).toBeGreaterThanOrEqual(2);
+
+    // First section: Script
+    const first = sections[0];
+    expect(first.textContent).toContain("01");
+    expect(first.textContent).toContain("Script");
+    expect(first.textContent).toContain("draft · markdown");
+  });
+
+  it("second section has PanelHeader '02 — Preview' with meta 'live render'", () => {
+    const { container } = render(<EditorView />);
+    const main = container.querySelector("main");
+    const sections = main!.querySelectorAll(":scope > section");
+
+    // Second section: Preview
+    const second = sections[1];
+    expect(second.textContent).toContain("02");
+    expect(second.textContent).toContain("Preview");
+    expect(second.textContent).toContain("live render");
+  });
+
+  it("both sections have PanelHeader components with gp-panelhead class", () => {
+    const { container } = render(<EditorView />);
+    const main = container.querySelector("main");
+    const sections = main!.querySelectorAll(":scope > section");
+    for (const section of sections) {
+      expect(section.querySelector(".gp-panelhead")).not.toBeNull();
+    }
+  });
+
+  it("Script panel has a textarea inside its frame", () => {
+    render(<EditorView />);
+    const ta = screen.getByRole("textbox");
+    expect(ta.tagName).toBe("TEXTAREA");
+  });
+
+  it("Preview panel has gp-prose wrapper for rendered content", () => {
+    const { container } = render(<EditorView />);
+    const main = container.querySelector("main");
+    const sections = main!.querySelectorAll(":scope > section");
+    const previewSection = sections[1];
+    expect(previewSection.querySelector(".gp-prose")).not.toBeNull();
+  });
+});
+
+/* ============================================================
    VAL-EDIT-013: Go Live triggers enter_teleprompter_mode IPC with script and rect
    ============================================================ */
 describe("<EditorView /> — Go Live IPC payload (VAL-EDIT-013)", () => {

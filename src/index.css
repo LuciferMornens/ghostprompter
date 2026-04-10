@@ -2172,8 +2172,8 @@ input[type="color"] {
   height: 1px;
   background: linear-gradient(
     90deg,
-    rgba(199, 138, 74, 0.42),
-    rgba(199, 138, 74, 0.04)
+    color-mix(in srgb, var(--color-gp-bronze) 42%, transparent),
+    color-mix(in srgb, var(--color-gp-bronze) 4%, transparent)
   );
   flex: 0 0 auto;
 }
@@ -2218,10 +2218,12 @@ input[type="color"] {
   inset: 0;
   border-radius: inherit;
   pointer-events: none;
-  border: 1px solid rgba(241, 237, 228, 0.055);
+  border: 1px solid var(--gp-hairline);
+  opacity: 0.78;
 }
 .gp-frame:focus-within::after {
-  border-color: rgba(199, 138, 74, 0.26);
+  border-color: color-mix(in srgb, var(--color-gp-bronze) 26%, transparent);
+  opacity: 1;
 }
 .gp-frame__scroll {
   padding: 56px 68px 72px 68px;
