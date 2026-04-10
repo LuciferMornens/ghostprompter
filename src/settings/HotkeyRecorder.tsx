@@ -42,6 +42,22 @@ export function HotkeyRecorder({ value, onChange }: Props) {
   );
 }
 
+/** Map physical keyboard codes to their base (unshifted) key form. */
+const CODE_TO_KEY: Record<string, string> = {
+  Slash: "/",
+  Period: ".",
+  Comma: ",",
+  Semicolon: ";",
+  Quote: "'",
+  BracketLeft: "[",
+  BracketRight: "]",
+  Backslash: "\\",
+  Minus: "-",
+  Equal: "=",
+  Backquote: "`",
+  IntlBackslash: "\\",
+};
+
 function normalizeKey(key: string, code: string): string | null {
   const map: Record<string, string> = {
     " ": "Space",
@@ -60,9 +76,15 @@ function normalizeKey(key: string, code: string): string | null {
     Delete: "Delete",
   };
   if (map[key]) return map[key];
-  if (key.length === 1) return key.toUpperCase();
   if (/^F\d+$/.test(key)) return key;
+
+  // Resolve via physical key code so shifted symbols (! ? etc.) become
+  // their base-key form (1 / etc.) that the Rust hotkey parser expects.
   if (code.startsWith("Key")) return code.slice(3);
   if (code.startsWith("Digit")) return code.slice(5);
+  if (CODE_TO_KEY[code]) return CODE_TO_KEY[code];
+
+  // Fallback for keys not covered above (e.g. numpad digits).
+  if (key.length === 1) return key.toUpperCase();
   return null;
 }

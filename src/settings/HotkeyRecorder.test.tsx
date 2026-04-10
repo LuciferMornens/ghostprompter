@@ -97,6 +97,75 @@ describe("<HotkeyRecorder />", () => {
     ).toBeInTheDocument();
   });
 
+  it("captures Shift+1 not Shift+! for shifted digit", async () => {
+    const onChange = vi.fn();
+    const user = userEvent.setup();
+    render(<HotkeyRecorder value="X" onChange={onChange} />);
+    const btn = screen.getByRole("button");
+    await user.click(btn);
+    fireEvent.keyDown(btn, {
+      key: "!",
+      code: "Digit1",
+      shiftKey: true,
+    });
+    expect(onChange).toHaveBeenCalledWith("Shift+1");
+  });
+
+  it("captures Shift+/ not Shift+? for shifted punctuation", async () => {
+    const onChange = vi.fn();
+    const user = userEvent.setup();
+    render(<HotkeyRecorder value="X" onChange={onChange} />);
+    const btn = screen.getByRole("button");
+    await user.click(btn);
+    fireEvent.keyDown(btn, {
+      key: "?",
+      code: "Slash",
+      shiftKey: true,
+    });
+    expect(onChange).toHaveBeenCalledWith("Shift+/");
+  });
+
+  it("captures Shift+2 not Shift+@ for shifted digit 2", async () => {
+    const onChange = vi.fn();
+    const user = userEvent.setup();
+    render(<HotkeyRecorder value="X" onChange={onChange} />);
+    const btn = screen.getByRole("button");
+    await user.click(btn);
+    fireEvent.keyDown(btn, {
+      key: "@",
+      code: "Digit2",
+      shiftKey: true,
+    });
+    expect(onChange).toHaveBeenCalledWith("Shift+2");
+  });
+
+  it("captures Shift+; not Shift+: for shifted semicolon", async () => {
+    const onChange = vi.fn();
+    const user = userEvent.setup();
+    render(<HotkeyRecorder value="X" onChange={onChange} />);
+    const btn = screen.getByRole("button");
+    await user.click(btn);
+    fireEvent.keyDown(btn, {
+      key: ":",
+      code: "Semicolon",
+      shiftKey: true,
+    });
+    expect(onChange).toHaveBeenCalledWith("Shift+;");
+  });
+
+  it("captures unshifted / correctly via code", async () => {
+    const onChange = vi.fn();
+    const user = userEvent.setup();
+    render(<HotkeyRecorder value="X" onChange={onChange} />);
+    const btn = screen.getByRole("button");
+    await user.click(btn);
+    fireEvent.keyDown(btn, {
+      key: "/",
+      code: "Slash",
+    });
+    expect(onChange).toHaveBeenCalledWith("/");
+  });
+
   it("after a successful capture, recording state ends and shows new value", async () => {
     const Wrapper = () => {
       const [v, setV] = useState("F1");
