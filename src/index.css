@@ -1938,13 +1938,21 @@ input[type="color"] {
   flex: 0 0 auto;
 }
 
-/* ---------- Brand mark (refined crest) ---------- */
+/* ---------- Brand mark (crest tile + wordmark row) ---------- */
 .gp-brand-mark {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  flex: 0 0 auto;
+}
+.gp-brand-mark__crest {
   position: relative;
   display: grid;
   place-items: center;
   width: 34px;
   height: 34px;
+  flex: 0 0 auto;
   border-radius: 11px;
   background:
     radial-gradient(
@@ -1965,12 +1973,16 @@ input[type="color"] {
     inset 0 0 0 1px rgba(0, 0, 0, 0.32),
     0 10px 28px -14px rgba(0, 0, 0, 0.6),
     0 0 0 1px rgba(0, 0, 0, 0.28);
-  flex: 0 0 auto;
   transition:
     border-color 320ms var(--gp-ease),
     box-shadow 320ms var(--gp-ease);
 }
-.gp-brand-mark::after {
+.gp-brand-mark__crest svg {
+  position: relative;
+  z-index: 1;
+  display: block;
+}
+.gp-brand-mark__crest::after {
   content: "";
   position: absolute;
   inset: 1px;
@@ -1987,9 +1999,10 @@ input[type="color"] {
 .gp-wordmark {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
   min-width: 0;
-  line-height: 1;
+  line-height: normal;
+  padding: 2px 0;
 }
 .gp-wordmark-title {
   font-family: var(--font-serif);
@@ -1998,7 +2011,7 @@ input[type="color"] {
   font-weight: 500;
   letter-spacing: -0.028em;
   color: var(--color-gp-paper);
-  line-height: 1;
+  line-height: 1.18;
   font-feature-settings: "ss01", "ss02";
 }
 .gp-wordmark-title em {
@@ -2013,7 +2026,8 @@ input[type="color"] {
   letter-spacing: 0.24em;
   text-transform: uppercase;
   color: var(--color-gp-paper-dim-2);
-  margin-top: 3px;
+  line-height: 1.35;
+  padding-left: 0.04em;
 }
 
 /* ---------- File crest (breadcrumb-style subject line) ---------- */

@@ -15,14 +15,14 @@ export function BrandMark({ className }: BrandMarkProps) {
       className={`gp-brand-mark ${className ?? ""}`.trim()}
       aria-hidden="true"
     >
-      <svg
-        width="16"
-        height="16"
-        viewBox="0 0 18 18"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        style={{ position: "relative" }}
-      >
+      <div className="gp-brand-mark__crest">
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 18 18"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
         <path
           d="M3 8a6 6 0 1 1 12 0v8l-2-1.5L11 16l-2-1.5L7 16l-2-1.5L3 16V8Z"
           stroke="var(--color-gp-paper)"
@@ -32,7 +32,8 @@ export function BrandMark({ className }: BrandMarkProps) {
         />
         <circle cx="7" cy="8.5" r="0.95" fill="var(--color-gp-bronze)" />
         <circle cx="11" cy="8.5" r="0.95" fill="var(--color-gp-bronze)" />
-      </svg>
+        </svg>
+      </div>
       <div className="gp-wordmark">
         <span className="gp-wordmark-title">
           Ghost<em>prompter</em>
